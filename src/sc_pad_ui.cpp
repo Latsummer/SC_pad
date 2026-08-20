@@ -2,6 +2,8 @@
 
 #include "lvgl.h"
 
+LV_FONT_DECLARE(sc_pad_font_source_han_22)
+
 namespace sc_pad {
 namespace {
 
@@ -48,18 +50,18 @@ struct ActionRuntime {
 };
 
 const ActionSpec kActions[kActionCount] = {
-    {"01", "GEAR UP", "GEAR DOWN", ButtonKind::Accent, ButtonBehavior::Transition},
-    {"02", "VTOL OFF", "VTOL ON", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"03", "COUPLED", "DECOUPLED", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"04", "LIMITER OFF", "LIMITER ON", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"05", "LIGHTS OFF", "LIGHTS ON", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"06", "QUANTUM OFF", "QUANTUM ON", ButtonKind::Accent, ButtonBehavior::Toggle},
-    {"07", "SCAN OFF", "SCAN ON", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"08", "TARGET AHEAD", nullptr, ButtonKind::Normal, ButtonBehavior::Momentary},
-    {"09", "POWER OFF", "POWER ON", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"10", "ENGINES OFF", "ENGINES ON", ButtonKind::Accent, ButtonBehavior::Toggle},
-    {"11", "SHIELDS OFF", "SHIELDS ON", ButtonKind::Normal, ButtonBehavior::Toggle},
-    {"12", "EJECT", nullptr, ButtonKind::Danger, ButtonBehavior::Momentary},
+    {"01", "收起起落架", "放下起落架", ButtonKind::Accent, ButtonBehavior::Transition},
+    {"02", "关闭垂直起降", "开启垂直起降", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"03", "耦合模式", "解耦模式", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"04", "关闭限速器", "开启限速器", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"05", "关闭灯光", "开启灯光", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"06", "关闭量子模式", "开启量子模式", ButtonKind::Accent, ButtonBehavior::Toggle},
+    {"07", "关闭扫描", "开启扫描", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"08", "锁定前方目标", nullptr, ButtonKind::Normal, ButtonBehavior::Momentary},
+    {"09", "关闭电源", "开启电源", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"10", "关闭引擎", "开启引擎", ButtonKind::Accent, ButtonBehavior::Toggle},
+    {"11", "关闭护盾", "开启护盾", ButtonKind::Normal, ButtonBehavior::Toggle},
+    {"12", "弹射", nullptr, ButtonKind::Danger, ButtonBehavior::Momentary},
 };
 
 const char *kNavLabels[] = {"FLIGHT", "COMBAT", "SHIP", "CAMERA", "SYSTEM"};
@@ -298,8 +300,8 @@ void create_header(lv_obj_t *screen)
     lv_obj_set_style_border_color(header, color(0x1C3948), 0);
 
     lv_obj_t *accent = lv_obj_create(header);
-    lv_obj_set_pos(accent, 20, 15);
     lv_obj_set_size(accent, 4, 34);
+    lv_obj_align(accent, LV_ALIGN_LEFT_MID, 20, 0);
     lv_obj_set_style_radius(accent, 2, 0);
     lv_obj_set_style_bg_color(accent, color(0x35C8F0), 0);
     lv_obj_set_style_bg_opa(accent, LV_OPA_COVER, 0);
@@ -307,7 +309,7 @@ void create_header(lv_obj_t *screen)
 
     lv_obj_t *title = lv_label_create(header);
     lv_label_set_text(title, "SC PAD  //  FLIGHT CONTROL");
-    lv_obj_set_pos(title, 38, 23);
+    lv_obj_align(title, LV_ALIGN_LEFT_MID, 38, 0);
     lv_obj_set_style_text_color(title, color(0xE4F7FF), 0);
     lv_obj_set_style_text_font(title, &lv_font_montserrat_16, 0);
 
@@ -405,7 +407,7 @@ void create_action_button(lv_obj_t *screen, int index)
     runtime.label = lv_label_create(button);
     lv_obj_align(runtime.label, LV_ALIGN_CENTER, 0, -5);
     lv_obj_set_style_text_color(runtime.label, color(0xE2F2F7), 0);
-    lv_obj_set_style_text_font(runtime.label, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_font(runtime.label, &sc_pad_font_source_han_22, 0);
 
     runtime.hint = lv_label_create(button);
     lv_obj_align(runtime.hint, LV_ALIGN_BOTTOM_MID, 0, -14);
