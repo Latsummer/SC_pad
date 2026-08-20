@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.20)
 
 project(sc_pad_simulator LANGUAGES C CXX)
 
-if(NOT WIN32)
-    message(FATAL_ERROR "This simulator backend currently targets Windows.")
-endif()
-
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,8 +25,23 @@ target_compile_definitions(lvgl PUBLIC
     LV_LVGL_H_INCLUDE_SIMPLE
 )
 
+if(WIN32)
+    set(SIMULATOR_PLATFORM_SOURCE main.cpp)
+else()
+    set(SIMULATOR_PLATFORM_SOURCE main_sdl.cpp)
+
+    find_package(SDL2 CONFIG REQUIRED)
+    if(TARGET SDL2::SDL2)
+        set(SIMULATOR_PLATFORM_LIBRARIES SDL2::SDL2)
+    elseif(TARGET SDL2::SDL2-static)
+        set(SIMULATOR_PLATFORM_LIBRARIES SDL2::SDL2-static)
+    else()
+        message(FATAL_ERROR "SDL2 was found, but it did not provide a supported CMake target.")
+    endif()
+endif()
+
 add_executable(sc_pad_simulator
-    main.cpp
+    ${SIMULATOR_PLATFORM_SOURCE}
     "${PROJECT_ROOT}/src/sc_pad_font_source_han_22.c"
     "${PROJECT_ROOT}/src/sc_pad_ui.cpp"
 )
@@ -40,13 +51,16 @@ target_include_directories(sc_pad_simulator PRIVATE
     "${PROJECT_ROOT}/lib"
 )
 
-target_compile_definitions(sc_pad_simulator PRIVATE
-    WIN32_LEAN_AND_MEAN
-    NOMINMAX
-)
-
 target_link_libraries(sc_pad_simulator PRIVATE
     lvgl::lvgl
-    user32
-    gdi32
 )
+
+if(WIN32)
+    target_compile_definitions(sc_pad_simulator PRIVATE
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+    )
+    target_link_libraries(sc_pad_simulator PRIVATE user32 gdi32)
+else()
+    target_link_libraries(sc_pad_simulator PRIVATE ${SIMULATOR_PLATFORM_LIBRARIES})
+endif()
