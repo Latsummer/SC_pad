@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# PlatformIO generated files
+.pio/
+.vscode/
+
 # Object files
 *.o
 *.ko
