@@ -4,6 +4,7 @@
 # PlatformIO generated files
 .pio/
 .vscode/
+simulator/build/
 
 # Object files
 *.o
