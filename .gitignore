@@ -5,6 +5,7 @@
 .pio/
 .vscode/
 simulator/build/
+simulator/font_sources/
 
 # Object files
 *.o
@@ -49,7 +50,6 @@ simulator/build/
 
 # Kernel Module Compile Results
 *.mod*
-*.cmd
 .tmp_versions/
 modules.order
 Module.symvers

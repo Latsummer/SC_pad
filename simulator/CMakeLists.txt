@@ -31,6 +31,7 @@ target_compile_definitions(lvgl PUBLIC
 
 add_executable(sc_pad_simulator
     main.cpp
+    "${PROJECT_ROOT}/src/sc_pad_font_source_han_22.c"
     "${PROJECT_ROOT}/src/sc_pad_ui.cpp"
 )
 
