@@ -1,36 +1,28 @@
-# sc_pad
+# SC Pad
 
-#### Description
-SC pad
+A Star Citizen touch control panel based on the Waveshare ESP32-S3-Touch-LCD-7B.
 
-#### Software Architecture
-Software architecture description
+## Current milestone
 
-#### Installation
+The first working version implements this complete path:
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```text
+GT911 touch -> LVGL button -> ESP32-S3 native USB HID -> Windows keyboard input
+```
 
-#### Instructions
+The screen shows a `Send A` button. Each click sends and releases the `A` key once over native USB.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Build and upload
 
-#### Contribution
+Connect the `USB TO UART` port, set the UART selector to `UART1`, and run:
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+```powershell
+pio run
+pio run --target upload
+```
 
+The checked-in configuration currently uses `COM8`; adjust `upload_port` and `monitor_port` in `platformio.ini` if Windows assigns a different port.
 
-#### Gitee Feature
+After uploading, connect the board's native `USB` port. Windows should enumerate it as a standard keyboard. Clicking `Send A` in a text editor should produce exactly one lowercase `a`.
 
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+GPIO19/20 are shared between USB and CAN on this board. This firmware selects USB, so the onboard CAN interface cannot be used at the same time.
