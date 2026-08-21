@@ -6,17 +6,29 @@ namespace sc_pad {
 
 enum class Command : uint8_t {
     Gear = 0,
+    Doors,
+    MiningMode,
     Vtol,
-    Coupled,
-    Limiter,
     Lights,
     Quantum,
     Scan,
     Map,
     Power,
     Engines,
-    Shields,
+    RequestAtc,
     ExitSeat,
+    ShieldUp,
+    ShieldFront,
+    ShieldLeft,
+    ResetShields,
+    ShieldRight,
+    ShieldRear,
+    ShieldDown,
+    PowerWeapons,
+    PowerEngines,
+    PowerShields,
+    ResetPower,
+    Count,
 };
 
 using CommandCallback = void (*)(Command command, void *user_data);

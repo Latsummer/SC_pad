@@ -54,6 +54,7 @@ struct ProcessSpec {
 };
 
 struct ActionSpec {
+    Command command;
     const char *number;
     const char *inactive_label;
     const char *active_label;
@@ -145,6 +146,11 @@ struct MiningControlRuntime {
     lv_obj_t *label = nullptr;
 };
 
+struct ShipControlRuntime {
+    Command command = Command::ShieldUp;
+    lv_obj_t *button = nullptr;
+};
+
 struct PageTransition {
     bool active = false;
     PanelPage target = PanelPage::Flight;
@@ -163,18 +169,18 @@ constexpr ProcessSpec kExitSeatProcess = {2000, 400, ProcessEffect::Pulse};
 constexpr ProcessSpec kReqACTProcess = {6000, 500, ProcessEffect::Pulse};
 
 const ActionSpec kActions[kActionCount] = {
-    {"01", "Gear UP", "Gear Down", ButtonBehavior::ProcessAndToggle, &kGearProcess},
-    {"02", "ALL Doors CLOSE", "ALL Doors OPEN", ButtonBehavior::ProcessAndToggle, &kDoorsProcess},
-    {"03", "Miner MODE", nullptr, ButtonBehavior::Momentary},
-    {"04", "VTOL MODE", "VTOL ON", ButtonBehavior::LocalToggle},
-    {"05", "Light OFF", "Light ON", ButtonBehavior::LocalToggle},
-    {"06", "Quantum OFF", "Quantum ON", ButtonBehavior::LocalToggle},
-    {"07", "Scan MODE", "Scan ON", ButtonBehavior::LocalToggle},
-    {"08", "MAP", nullptr, ButtonBehavior::Momentary},
-    {"09", "Power OFF", "Power ON", ButtonBehavior::LocalToggle},
-    {"10", "Engine OFF", "Engine ON", ButtonBehavior::LocalToggle},
-    {"11", "Request ATC", nullptr, ButtonBehavior::Request, &kReqACTProcess},
-    {"12", "离席", nullptr, ButtonBehavior::Request, &kExitSeatProcess},
+    {Command::Gear, "01", "Gear UP", "Gear Down", ButtonBehavior::ProcessAndToggle, &kGearProcess},
+    {Command::Doors, "02", "ALL Doors CLOSE", "ALL Doors OPEN", ButtonBehavior::ProcessAndToggle, &kDoorsProcess},
+    {Command::MiningMode, "03", "Miner MODE", nullptr, ButtonBehavior::Momentary},
+    {Command::Vtol, "04", "VTOL MODE", "VTOL ON", ButtonBehavior::LocalToggle},
+    {Command::Lights, "05", "Light OFF", "Light ON", ButtonBehavior::LocalToggle},
+    {Command::Quantum, "06", "Quantum OFF", "Quantum ON", ButtonBehavior::LocalToggle},
+    {Command::Scan, "07", "Scan MODE", "Scan ON", ButtonBehavior::LocalToggle},
+    {Command::Map, "08", "MAP", nullptr, ButtonBehavior::Momentary},
+    {Command::Power, "09", "Power OFF", "Power ON", ButtonBehavior::LocalToggle},
+    {Command::Engines, "10", "Engine OFF", "Engine ON", ButtonBehavior::LocalToggle},
+    {Command::RequestAtc, "11", "Request ATC", nullptr, ButtonBehavior::Request, &kReqACTProcess},
+    {Command::ExitSeat, "12", "离席", nullptr, ButtonBehavior::Request, &kExitSeatProcess},
 };
 
 const char *kNavLabels[] = {"FLIGHT", "SHIP", "MINING", "CAMERA", "SYSTEM"};
@@ -186,6 +192,7 @@ ActionState action_state[kActionCount];
 NavigationRuntime navigation_runtime[5];
 MiningState mining_state;
 MiningControlRuntime mining_controls[7];
+ShipControlRuntime ship_controls[11];
 PageTransition page_transition;
 
 ActionState &state_for(ActionRuntime &runtime)
@@ -287,14 +294,18 @@ void init_styles()
     styles_initialized = true;
 }
 
-void send_command(ActionRuntime &runtime)
+void send_command(Command command)
 {
     if (command_callback == nullptr) {
         return;
     }
 
-    const auto index = static_cast<uint8_t>(&runtime - action_runtime);
-    command_callback(static_cast<Command>(index), command_user_data);
+    command_callback(command, command_user_data);
+}
+
+void send_command(ActionRuntime &runtime)
+{
+    send_command(runtime.spec->command);
 }
 
 bool contains_non_ascii(const char *text)
@@ -473,6 +484,9 @@ void rebuild_ui(void *)
     for (MiningControlRuntime &runtime : mining_controls) {
         runtime = {};
     }
+    for (ShipControlRuntime &runtime : ship_controls) {
+        runtime = {};
+    }
     for (NavigationRuntime &runtime : navigation_runtime) {
         runtime = {};
     }
@@ -526,6 +540,9 @@ void action_event_cb(lv_event_t *event)
 
     const int action_index = static_cast<int>(runtime - action_runtime);
     if (action_index == 2) {
+        if (attach_mode) {
+            send_command(*runtime);
+        }
         start_page_transition(PanelPage::Mining, runtime->button);
         return;
     }
@@ -782,17 +799,35 @@ lv_obj_t *create_control_section(lv_obj_t *page, int x, const char *title)
 
 void create_ship_control_button(
     lv_obj_t *section,
+    int index,
+    Command command,
     const char *label,
     int x,
     int y,
     int width,
     int height)
 {
+    ShipControlRuntime &runtime = ship_controls[index];
+    runtime.command = command;
     lv_obj_t *button = lv_btn_create(section);
+    runtime.button = button;
     lv_obj_set_pos(button, x, y);
     lv_obj_set_size(button, width, height);
     lv_obj_add_style(button, &style_action, LV_STATE_DEFAULT);
     lv_obj_add_style(button, &style_action_pressed, LV_STATE_PRESSED);
+    lv_obj_add_event_cb(
+        button,
+        [](lv_event_t *event) {
+            if (lv_event_get_code(event) != LV_EVENT_CLICKED) {
+                return;
+            }
+            const auto *control = static_cast<const ShipControlRuntime *>(lv_event_get_user_data(event));
+            if (control != nullptr && attach_mode) {
+                send_command(control->command);
+            }
+        },
+        LV_EVENT_CLICKED,
+        &runtime);
 
     lv_obj_t *button_label = lv_label_create(button);
     lv_label_set_text(button_label, label);
@@ -813,21 +848,21 @@ void create_ship_page(lv_obj_t *page)
     constexpr int kShieldButtonHeight = 100;
     constexpr int kShieldColumnX[] = {24, 171, 318};
     constexpr int kShieldRowY[] = {55, 165, 275};
-    create_ship_control_button(shields, "UP +", kShieldColumnX[0], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "FRONT +", kShieldColumnX[1], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "LEFT +", kShieldColumnX[0], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "RESET SHIELDS", kShieldColumnX[1], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "RIGHT +", kShieldColumnX[2], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "REAR +", kShieldColumnX[1], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "DOWN +", kShieldColumnX[2], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 0, Command::ShieldUp, "UP +", kShieldColumnX[0], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 1, Command::ShieldFront, "FRONT +", kShieldColumnX[1], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 2, Command::ShieldLeft, "LEFT +", kShieldColumnX[0], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 3, Command::ResetShields, "RESET SHIELDS", kShieldColumnX[1], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 4, Command::ShieldRight, "RIGHT +", kShieldColumnX[2], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 5, Command::ShieldRear, "REAR +", kShieldColumnX[1], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 6, Command::ShieldDown, "DOWN +", kShieldColumnX[2], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
 
     lv_obj_t *power = create_control_section(page, 24 + kSectionWidth + kSectionGap, "POWER DISTRIBUTION");
     constexpr int kPowerButtonWidth = 137;
     constexpr int kPowerButtonHeight = 120;
-    create_ship_control_button(power, "WEAPONS +", 15, 65, kPowerButtonWidth, kPowerButtonHeight);
-    create_ship_control_button(power, "ENGINES +", 171, 65, kPowerButtonWidth, kPowerButtonHeight);
-    create_ship_control_button(power, "SHIELDS +", 327, 65, kPowerButtonWidth, kPowerButtonHeight);
-    create_ship_control_button(power, "RESET POWER", 171, 230, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 7, Command::PowerWeapons, "WEAPONS +", 15, 65, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 8, Command::PowerEngines, "ENGINES +", 171, 65, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 9, Command::PowerShields, "SHIELDS +", 327, 65, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 10, Command::ResetPower, "RESET POWER", 171, 230, kPowerButtonWidth, kPowerButtonHeight);
 }
 
 void update_mining_presentation()

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "lvgl.h"
+#include "sc_pad_keymap.h"
 #include "sc_pad_ui.h"
 
 namespace {
@@ -88,12 +89,18 @@ void handle_events()
 
 void print_command(sc_pad::Command command, void *)
 {
-    constexpr std::array<const char *, 12> names = {
-        "GEAR", "VTOL", "COUPLED", "LIMITER", "LIGHTS", "QUANTUM",
-        "SCAN", "MAP", "POWER", "ENGINES", "SHIELDS", "LEAVE SEAT",
+    constexpr std::array<const char *, static_cast<std::size_t>(sc_pad::Command::Count)> names = {
+        "GEAR", "DOORS", "MINING MODE", "VTOL", "LIGHTS", "QUANTUM",
+        "SCAN", "MAP", "POWER", "ENGINES", "REQUEST ATC", "LEAVE SEAT",
+        "SHIELD UP", "SHIELD FRONT", "SHIELD LEFT", "RESET SHIELDS",
+        "SHIELD RIGHT", "SHIELD REAR", "SHIELD DOWN", "POWER WEAPONS",
+        "POWER ENGINES", "POWER SHIELDS", "RESET POWER",
     };
     const auto index = static_cast<std::size_t>(command);
-    std::cout << "[SC PAD] command: " << names.at(index) << std::endl;
+    const sc_pad::KeyBinding &binding = sc_pad::key_binding_for(command);
+    std::cout << "[SC PAD] command: " << names.at(index)
+              << " [" << sc_pad::input_mode_name(binding.mode)
+              << " " << binding.display_name << "]" << std::endl;
 }
 
 } // namespace
