@@ -16,7 +16,7 @@ enum class Command : uint8_t {
     Power,
     Engines,
     Shields,
-    Eject,
+    ExitSeat,
 };
 
 using CommandCallback = void (*)(Command command, void *user_data);

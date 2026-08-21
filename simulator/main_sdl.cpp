@@ -90,7 +90,7 @@ void print_command(sc_pad::Command command, void *)
 {
     constexpr std::array<const char *, 12> names = {
         "GEAR", "VTOL", "COUPLED", "LIMITER", "LIGHTS", "QUANTUM",
-        "SCAN", "TARGET AHEAD", "POWER", "ENGINES", "SHIELDS", "EJECT",
+        "SCAN", "TARGET AHEAD", "POWER", "ENGINES", "SHIELDS", "LEAVE SEAT",
     };
     const auto index = static_cast<std::size_t>(command);
     std::cout << "[SC PAD] command: " << names.at(index) << std::endl;
