@@ -45,6 +45,7 @@ enum class PanelPage : uint8_t {
     Flight,
     Ship,
     Mining,
+    System,
 };
 
 struct ProcessSpec {
@@ -54,6 +55,7 @@ struct ProcessSpec {
 };
 
 struct ActionSpec {
+    Command command;
     const char *number;
     const char *inactive_label;
     const char *active_label;
@@ -124,6 +126,10 @@ struct NavigationRuntime {
     lv_obj_t *button = nullptr;
 };
 
+struct ThemeSelectionRuntime {
+    uint8_t index = 0;
+};
+
 enum class MiningControl : uint8_t {
     LaserDecrease,
     LaserIncrease,
@@ -145,6 +151,11 @@ struct MiningControlRuntime {
     lv_obj_t *label = nullptr;
 };
 
+struct ShipControlRuntime {
+    Command command = Command::ShieldUp;
+    lv_obj_t *button = nullptr;
+};
+
 struct PageTransition {
     bool active = false;
     PanelPage target = PanelPage::Flight;
@@ -163,18 +174,18 @@ constexpr ProcessSpec kExitSeatProcess = {2000, 400, ProcessEffect::Pulse};
 constexpr ProcessSpec kReqACTProcess = {6000, 500, ProcessEffect::Pulse};
 
 const ActionSpec kActions[kActionCount] = {
-    {"01", "Gear UP", "Gear Down", ButtonBehavior::ProcessAndToggle, &kGearProcess},
-    {"02", "ALL Doors CLOSE", "ALL Doors OPEN", ButtonBehavior::ProcessAndToggle, &kDoorsProcess},
-    {"03", "Miner MODE", nullptr, ButtonBehavior::Momentary},
-    {"04", "VTOL MODE", "VTOL ON", ButtonBehavior::LocalToggle},
-    {"05", "Light OFF", "Light ON", ButtonBehavior::LocalToggle},
-    {"06", "Quantum OFF", "Quantum ON", ButtonBehavior::LocalToggle},
-    {"07", "Scan MODE", "Scan ON", ButtonBehavior::LocalToggle},
-    {"08", "MAP", nullptr, ButtonBehavior::Momentary},
-    {"09", "Power OFF", "Power ON", ButtonBehavior::LocalToggle},
-    {"10", "Engine OFF", "Engine ON", ButtonBehavior::LocalToggle},
-    {"11", "Request ATC", nullptr, ButtonBehavior::Request, &kReqACTProcess},
-    {"12", "离席", nullptr, ButtonBehavior::Request, &kExitSeatProcess},
+    {Command::Gear, "01", "Gear UP", "Gear Down", ButtonBehavior::ProcessAndToggle, &kGearProcess},
+    {Command::Doors, "02", "ALL Doors CLOSE", "ALL Doors OPEN", ButtonBehavior::ProcessAndToggle, &kDoorsProcess},
+    {Command::MiningMode, "03", "Miner MODE", nullptr, ButtonBehavior::Momentary},
+    {Command::Vtol, "04", "VTOL MODE", "VTOL ON", ButtonBehavior::LocalToggle},
+    {Command::Lights, "05", "Light OFF", "Light ON", ButtonBehavior::LocalToggle},
+    {Command::Quantum, "06", "Quantum OFF", "Quantum ON", ButtonBehavior::LocalToggle},
+    {Command::Scan, "07", "Scan MODE", "Scan ON", ButtonBehavior::LocalToggle},
+    {Command::Map, "08", "MAP", nullptr, ButtonBehavior::Momentary},
+    {Command::Power, "09", "Power OFF", "Power ON", ButtonBehavior::LocalToggle},
+    {Command::Engines, "10", "Engine OFF", "Engine ON", ButtonBehavior::LocalToggle},
+    {Command::RequestAtc, "11", "Request ATC", nullptr, ButtonBehavior::Request, &kReqACTProcess},
+    {Command::ExitSeat, "12", "离席", nullptr, ButtonBehavior::Request, &kExitSeatProcess},
 };
 
 const char *kNavLabels[] = {"FLIGHT", "SHIP", "MINING", "CAMERA", "SYSTEM"};
@@ -184,8 +195,10 @@ void *command_user_data = nullptr;
 ActionRuntime action_runtime[kActionCount];
 ActionState action_state[kActionCount];
 NavigationRuntime navigation_runtime[5];
+ThemeSelectionRuntime theme_selection_runtime[kThemeCount];
 MiningState mining_state;
 MiningControlRuntime mining_controls[7];
+ShipControlRuntime ship_controls[11];
 PageTransition page_transition;
 
 ActionState &state_for(ActionRuntime &runtime)
@@ -203,6 +216,7 @@ lv_style_t style_nav_active;
 // Attach ON permits HID output; Attach OFF keeps the on-screen model editable
 // without sending commands to the host.
 bool attach_mode = true;
+bool orientation_180 = false;
 int current_theme = 0;
 PanelPage current_page = PanelPage::Flight;
 bool styles_initialized = false;
@@ -211,6 +225,7 @@ lv_obj_t *attach_mode_button = nullptr;
 lv_obj_t *attach_mode_label = nullptr;
 lv_obj_t *theme_button = nullptr;
 lv_obj_t *theme_label = nullptr;
+lv_obj_t *theme_picker_overlay = nullptr;
 
 const Theme &theme()
 {
@@ -287,14 +302,18 @@ void init_styles()
     styles_initialized = true;
 }
 
-void send_command(ActionRuntime &runtime)
+void send_command(Command command)
 {
     if (command_callback == nullptr) {
         return;
     }
 
-    const auto index = static_cast<uint8_t>(&runtime - action_runtime);
-    command_callback(static_cast<Command>(index), command_user_data);
+    command_callback(command, command_user_data);
+}
+
+void send_command(ActionRuntime &runtime)
+{
+    send_command(runtime.spec->command);
 }
 
 bool contains_non_ascii(const char *text)
@@ -473,11 +492,144 @@ void rebuild_ui(void *)
     for (MiningControlRuntime &runtime : mining_controls) {
         runtime = {};
     }
+    for (ShipControlRuntime &runtime : ship_controls) {
+        runtime = {};
+    }
     for (NavigationRuntime &runtime : navigation_runtime) {
         runtime = {};
     }
+    theme_picker_overlay = nullptr;
     lv_obj_clean(lv_scr_act());
     create_ui_impl();
+}
+
+void dismiss_theme_picker()
+{
+    if (theme_picker_overlay == nullptr) {
+        return;
+    }
+
+    lv_obj_del_async(theme_picker_overlay);
+    theme_picker_overlay = nullptr;
+}
+
+void theme_choice_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) {
+        return;
+    }
+
+    const auto *selection = static_cast<const ThemeSelectionRuntime *>(lv_event_get_user_data(event));
+    current_theme = selection->index;
+    // The screen rebuild removes the picker after this click event returns.
+    theme_picker_overlay = nullptr;
+    lv_async_call(rebuild_ui, nullptr);
+}
+
+void create_theme_picker()
+{
+    if (theme_picker_overlay != nullptr) {
+        return;
+    }
+
+    const Theme &palette = theme();
+    lv_obj_t *screen = lv_scr_act();
+    theme_picker_overlay = lv_obj_create(screen);
+    lv_obj_set_size(theme_picker_overlay, kScreenWidth, 600);
+    lv_obj_set_pos(theme_picker_overlay, 0, 0);
+    lv_obj_clear_flag(theme_picker_overlay, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(theme_picker_overlay, 0, 0);
+    lv_obj_set_style_bg_color(theme_picker_overlay, color(palette.screen), 0);
+    lv_obj_set_style_bg_opa(theme_picker_overlay, LV_OPA_90, 0);
+    lv_obj_set_style_border_width(theme_picker_overlay, 0, 0);
+    lv_obj_set_style_pad_all(theme_picker_overlay, 0, 0);
+
+    lv_obj_t *panel = lv_obj_create(theme_picker_overlay);
+    lv_obj_set_size(panel, 936, 420);
+    lv_obj_align(panel, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(panel, palette.action_radius, 0);
+    lv_obj_set_style_bg_color(panel, color(palette.header), 0);
+    lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(panel, color(palette.primary), 0);
+    lv_obj_set_style_border_width(panel, 1, 0);
+    lv_obj_set_style_shadow_width(panel, 0, 0);
+    lv_obj_set_style_pad_all(panel, 0, 0);
+
+    lv_obj_t *title = lv_label_create(panel);
+    lv_label_set_text(title, "SELECT MANUFACTURER THEME");
+    lv_obj_set_pos(title, 24, 18);
+    lv_obj_set_style_text_color(title, color(palette.text), 0);
+    lv_obj_set_style_text_font(title, &sc_pad_font_jetbrains_mono_16, 0);
+
+    lv_obj_t *subtitle = lv_label_create(panel);
+    lv_label_set_text_fmt(subtitle, "CURRENT: %s", palette.name);
+    lv_obj_set_pos(subtitle, 24, 44);
+    lv_obj_set_style_text_color(subtitle, color(palette.muted_text), 0);
+    lv_obj_set_style_text_font(subtitle, &sc_pad_font_jetbrains_mono_12, 0);
+
+    lv_obj_t *close_button = lv_btn_create(panel);
+    lv_obj_set_size(close_button, 108, 30);
+    lv_obj_align(close_button, LV_ALIGN_TOP_RIGHT, -18, 15);
+    lv_obj_set_style_radius(close_button, palette.control_radius, 0);
+    lv_obj_set_style_bg_color(close_button, color(palette.surface), 0);
+    lv_obj_set_style_bg_opa(close_button, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(close_button, color(palette.border), 0);
+    lv_obj_set_style_border_width(close_button, 1, 0);
+    lv_obj_set_style_pad_all(close_button, 0, 0);
+    lv_obj_add_event_cb(
+        close_button,
+        [](lv_event_t *event) {
+            if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
+                dismiss_theme_picker();
+            }
+        },
+        LV_EVENT_CLICKED,
+        nullptr);
+    lv_obj_t *close_label = lv_label_create(close_button);
+    lv_label_set_text(close_label, "X  CLOSE");
+    lv_obj_center(close_label);
+    lv_obj_set_style_text_color(close_label, color(palette.text), 0);
+    lv_obj_set_style_text_font(close_label, &sc_pad_font_jetbrains_mono_12, 0);
+
+    constexpr int kCardWidth = 208;
+    constexpr int kCardHeight = 136;
+    constexpr int kCardLeft = 28;
+    constexpr int kCardTop = 82;
+    constexpr int kCardGapX = 16;
+    constexpr int kCardGapY = 22;
+    for (int i = 0; i < kThemeCount; ++i) {
+        const int column = i % 4;
+        const int row = i / 4;
+        const Theme &candidate = kThemes[i];
+        ThemeSelectionRuntime &selection = theme_selection_runtime[i];
+        selection.index = static_cast<uint8_t>(i);
+
+        lv_obj_t *card = lv_btn_create(panel);
+        lv_obj_set_size(card, kCardWidth, kCardHeight);
+        const int card_left = row == 1 ? 140 : kCardLeft;
+        lv_obj_set_pos(card, card_left + column * (kCardWidth + kCardGapX),
+                       kCardTop + row * (kCardHeight + kCardGapY));
+        lv_obj_set_style_radius(card, candidate.action_radius, 0);
+        lv_obj_set_style_bg_color(card, color(candidate.logo_surface), 0);
+        lv_obj_set_style_bg_opa(card, LV_OPA_COVER, 0);
+        lv_obj_set_style_border_color(card, color(i == current_theme ? palette.primary : candidate.logo_border), 0);
+        lv_obj_set_style_border_width(card, i == current_theme ? 2 : 1, 0);
+        lv_obj_set_style_shadow_width(card, 0, 0);
+        lv_obj_set_style_pad_all(card, 0, 0);
+        lv_obj_set_style_bg_color(card, color(candidate.surface_pressed), LV_STATE_PRESSED);
+        lv_obj_add_event_cb(card, theme_choice_event_cb, LV_EVENT_CLICKED, &selection);
+
+        lv_obj_t *logo = lv_img_create(card);
+        lv_img_set_src(logo, candidate.logo);
+        lv_obj_align(logo, LV_ALIGN_CENTER, 0, -16);
+
+        lv_obj_t *card_label = lv_label_create(card);
+        lv_label_set_text(card_label, i == current_theme ? "ACTIVE" : "SELECT");
+        lv_obj_align(card_label, LV_ALIGN_BOTTOM_MID, 0, -12);
+        lv_obj_set_style_text_color(card_label, color(i == current_theme ? palette.primary : candidate.muted_text), 0);
+        lv_obj_set_style_text_font(card_label, &sc_pad_font_jetbrains_mono_12, 0);
+    }
 }
 
 void theme_event_cb(lv_event_t *event)
@@ -486,8 +638,7 @@ void theme_event_cb(lv_event_t *event)
         return;
     }
 
-    current_theme = (current_theme + 1) % kThemeCount;
-    lv_async_call(rebuild_ui, nullptr);
+    create_theme_picker();
 }
 
 void attach_mode_event_cb(lv_event_t *event)
@@ -526,6 +677,9 @@ void action_event_cb(lv_event_t *event)
 
     const int action_index = static_cast<int>(runtime - action_runtime);
     if (action_index == 2) {
+        if (attach_mode) {
+            send_command(*runtime);
+        }
         start_page_transition(PanelPage::Mining, runtime->button);
         return;
     }
@@ -557,6 +711,8 @@ const char *page_title_text(PanelPage page)
             return "SHIP";
         case PanelPage::Mining:
             return "MINING";
+        case PanelPage::System:
+            return "SYSTEM";
     }
     return "FLIGHT";
 }
@@ -782,17 +938,35 @@ lv_obj_t *create_control_section(lv_obj_t *page, int x, const char *title)
 
 void create_ship_control_button(
     lv_obj_t *section,
+    int index,
+    Command command,
     const char *label,
     int x,
     int y,
     int width,
     int height)
 {
+    ShipControlRuntime &runtime = ship_controls[index];
+    runtime.command = command;
     lv_obj_t *button = lv_btn_create(section);
+    runtime.button = button;
     lv_obj_set_pos(button, x, y);
     lv_obj_set_size(button, width, height);
     lv_obj_add_style(button, &style_action, LV_STATE_DEFAULT);
     lv_obj_add_style(button, &style_action_pressed, LV_STATE_PRESSED);
+    lv_obj_add_event_cb(
+        button,
+        [](lv_event_t *event) {
+            if (lv_event_get_code(event) != LV_EVENT_CLICKED) {
+                return;
+            }
+            const auto *control = static_cast<const ShipControlRuntime *>(lv_event_get_user_data(event));
+            if (control != nullptr && attach_mode) {
+                send_command(control->command);
+            }
+        },
+        LV_EVENT_CLICKED,
+        &runtime);
 
     lv_obj_t *button_label = lv_label_create(button);
     lv_label_set_text(button_label, label);
@@ -813,21 +987,64 @@ void create_ship_page(lv_obj_t *page)
     constexpr int kShieldButtonHeight = 100;
     constexpr int kShieldColumnX[] = {24, 171, 318};
     constexpr int kShieldRowY[] = {55, 165, 275};
-    create_ship_control_button(shields, "UP +", kShieldColumnX[0], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "FRONT +", kShieldColumnX[1], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "LEFT +", kShieldColumnX[0], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "RESET SHIELDS", kShieldColumnX[1], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "RIGHT +", kShieldColumnX[2], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "REAR +", kShieldColumnX[1], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, "DOWN +", kShieldColumnX[2], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 0, Command::ShieldUp, "UP +", kShieldColumnX[0], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 1, Command::ShieldFront, "FRONT +", kShieldColumnX[1], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 2, Command::ShieldLeft, "LEFT +", kShieldColumnX[0], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 3, Command::ResetShields, "RESET SHIELDS", kShieldColumnX[1], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 4, Command::ShieldRight, "RIGHT +", kShieldColumnX[2], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 5, Command::ShieldRear, "REAR +", kShieldColumnX[1], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 6, Command::ShieldDown, "DOWN +", kShieldColumnX[2], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
 
     lv_obj_t *power = create_control_section(page, 24 + kSectionWidth + kSectionGap, "POWER DISTRIBUTION");
     constexpr int kPowerButtonWidth = 137;
     constexpr int kPowerButtonHeight = 120;
-    create_ship_control_button(power, "WEAPONS +", 15, 65, kPowerButtonWidth, kPowerButtonHeight);
-    create_ship_control_button(power, "ENGINES +", 171, 65, kPowerButtonWidth, kPowerButtonHeight);
-    create_ship_control_button(power, "SHIELDS +", 327, 65, kPowerButtonWidth, kPowerButtonHeight);
-    create_ship_control_button(power, "RESET POWER", 171, 230, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 7, Command::PowerWeapons, "WEAPONS +", 15, 65, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 8, Command::PowerEngines, "ENGINES +", 171, 65, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 9, Command::PowerShields, "SHIELDS +", 327, 65, kPowerButtonWidth, kPowerButtonHeight);
+    create_ship_control_button(power, 10, Command::ResetPower, "RESET POWER", 171, 230, kPowerButtonWidth, kPowerButtonHeight);
+}
+
+void create_system_page(lv_obj_t *page)
+{
+    lv_obj_t *section = create_control_section(page, 24, "DISPLAY ORIENTATION");
+    lv_obj_set_size(section, 976, 424);
+
+    lv_obj_t *description = lv_label_create(section);
+    lv_label_set_text(description, "ROTATES DISPLAY + TOUCH 180 DEG  //  SAVED AFTER RESTART");
+    lv_obj_set_pos(description, 16, 51);
+    lv_obj_set_style_text_color(description, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(description, &sc_pad_font_jetbrains_mono_12, 0);
+
+    lv_obj_t *orientation_button = lv_btn_create(section);
+    lv_obj_set_size(orientation_button, 608, 190);
+    lv_obj_align(orientation_button, LV_ALIGN_CENTER, 0, 35);
+    lv_obj_add_style(orientation_button, &style_action, LV_STATE_DEFAULT);
+    lv_obj_add_style(orientation_button, &style_action_pressed, LV_STATE_PRESSED);
+    lv_obj_add_event_cb(
+        orientation_button,
+        [](lv_event_t *event) {
+            if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
+                // Orientation is local hardware configuration: it must work
+                // even while ATTACH is off and never produces a HID key.
+                send_command(Command::ToggleOrientation);
+            }
+        },
+        LV_EVENT_CLICKED,
+        nullptr);
+
+    lv_obj_t *button_title = lv_label_create(orientation_button);
+    lv_label_set_text(button_title, orientation_180 ? "RETURN TO 0 DEG" : "ROTATE 180 DEG");
+    lv_obj_align(button_title, LV_ALIGN_CENTER, 0, -18);
+    lv_obj_set_style_text_color(button_title, color(theme().text), 0);
+    lv_obj_set_style_text_font(button_title, &sc_pad_font_jetbrains_mono_20, 0);
+
+    lv_obj_t *button_detail = lv_label_create(orientation_button);
+    lv_label_set_text(
+        button_detail,
+        orientation_180 ? "CURRENT: 180 DEG  //  USB EDGE: RIGHT" : "CURRENT: 0 DEG  //  USB EDGE: LEFT");
+    lv_obj_align(button_detail, LV_ALIGN_CENTER, 0, 26);
+    lv_obj_set_style_text_color(button_detail, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(button_detail, &sc_pad_font_jetbrains_mono_12, 0);
 }
 
 void update_mining_presentation()
@@ -961,8 +1178,10 @@ void create_navigation(lv_obj_t *screen)
         lv_obj_t *nav_button = lv_btn_create(nav_bg);
         NavigationRuntime &runtime = navigation_runtime[i];
         runtime.button = nav_button;
-        runtime.available = i < 3;
-        runtime.page = i == 1 ? PanelPage::Ship : (i == 2 ? PanelPage::Mining : PanelPage::Flight);
+        runtime.available = i < 3 || i == 4;
+        runtime.page = i == 1 ? PanelPage::Ship
+                               : (i == 2 ? PanelPage::Mining
+                                         : (i == 4 ? PanelPage::System : PanelPage::Flight));
         lv_obj_set_size(nav_button, 192, 44);
         lv_obj_align(nav_button, LV_ALIGN_LEFT_MID, 12 + i * 200, 0);
         lv_obj_add_style(nav_button, &style_nav, LV_STATE_DEFAULT);
@@ -1002,6 +1221,9 @@ void create_ui_impl()
         case PanelPage::Mining:
             create_mining_page(page);
             break;
+        case PanelPage::System:
+            create_system_page(page);
+            break;
     }
 
     create_navigation(screen);
@@ -1014,6 +1236,11 @@ void create_ui(CommandCallback callback, void *user_data)
     command_callback = callback;
     command_user_data = user_data;
     create_ui_impl();
+}
+
+void set_orientation_180(bool enabled)
+{
+    orientation_180 = enabled;
 }
 
 } // namespace sc_pad

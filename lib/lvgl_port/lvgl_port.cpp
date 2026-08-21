@@ -13,6 +13,7 @@
 static const char *TAG = "lv_port";                      // Tag for logging
 static SemaphoreHandle_t lvgl_mux;                       // LVGL mutex for synchronization
 static TaskHandle_t lvgl_task_handle = NULL;             // Handle for the LVGL task
+static bool lvgl_port_rotation_180 = false;
 
 #if EXAMPLE_LVGL_PORT_ROTATION_DEGREE != 0
 // Function to get the next frame buffer for double buffering
@@ -38,6 +39,17 @@ IRAM_ATTR static void rotate_copy_pixel(const uint16_t *from, uint16_t *to, uint
     int to_index_const = 0;                               // Constant index for destination buffer
 
     switch (rotation) {
+    case 0:
+        for (int from_y = y_start; from_y < y_end + 1; from_y++) {
+            from_index = from_y * w + x_start;
+            to_index = from_index;
+            for (int from_x = x_start; from_x < x_end + 1; from_x++) {
+                *(to + to_index) = *(from + from_index);
+                from_index += 1;
+                to_index += 1;
+            }
+        }
+        break;
     case 90:
         to_index_const = (w - x_start - 1) * h;          // Calculate constant index for 90-degree rotation
         for (int from_y = y_start; from_y < y_end + 1; from_y++) {
@@ -158,7 +170,7 @@ static lv_port_flush_probe_t flush_copy_probe(lv_disp_drv_t *drv)
 }
 
 // Inline function to get the next buffer for flushing
-static inline void *flush_get_next_buf(void *panel_handle)
+static inline void *flush_get_next_buf(esp_lcd_panel_handle_t panel_handle)
 {
     return get_next_frame_buffer(panel_handle); // Return the next frame buffer
 }
@@ -169,7 +181,7 @@ static inline void *flush_get_next_buf(void *panel_handle)
  * @note This function is used to avoid tearing effect, and only works with LVGL direct mode.
  *
  */
-static void flush_dirty_copy(void *dst, void *src, lv_port_dirty_area_t *dirty_area)
+static void flush_dirty_copy(uint16_t *dst, const uint16_t *src, lv_port_dirty_area_t *dirty_area)
 {
     lv_coord_t x_start, x_end, y_start, y_end; // Coordinates for the area to be copied
     for (int i = 0; i < dirty_area->inv_p; i++) {
@@ -181,7 +193,7 @@ static void flush_dirty_copy(void *dst, void *src, lv_port_dirty_area_t *dirty_a
             y_end = dirty_area->inv_areas[i].y2;   // End Y coordinate
 
             // Rotate and copy pixel data from source to destination buffer
-            rotate_copy_pixel(src, dst, x_start, y_start, x_end, y_end, LV_HOR_RES, LV_VER_RES, EXAMPLE_LVGL_PORT_ROTATION_DEGREE);
+            rotate_copy_pixel(src, dst, x_start, y_start, x_end, y_end, LV_HOR_RES, LV_VER_RES, lvgl_port_rotation_180 ? 180 : 0);
         }
     }
 }
@@ -207,7 +219,7 @@ static void flush_callback(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t
 
             // Rotate and copy data from the whole screen LVGL's buffer to the next frame buffer
             next_fb = flush_get_next_buf(panel_handle);
-            rotate_copy_pixel((uint16_t *)color_map, next_fb, offsetx1, offsety1, offsetx2, offsety2, LV_HOR_RES, LV_VER_RES, EXAMPLE_LVGL_PORT_ROTATION_DEGREE);
+            rotate_copy_pixel((const uint16_t *)color_map, (uint16_t *)next_fb, offsetx1, offsety1, offsetx2, offsety2, LV_HOR_RES, LV_VER_RES, lvgl_port_rotation_180 ? 180 : 0);
 
             /* Switch the current RGB frame buffer to `next_fb` */
             esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, next_fb);
@@ -217,7 +229,7 @@ static void flush_callback(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
             /* Synchronously update the dirty area for another frame buffer */
-            flush_dirty_copy(flush_get_next_buf(panel_handle), color_map, &dirty_area);
+            flush_dirty_copy((uint16_t *)flush_get_next_buf(panel_handle), (const uint16_t *)color_map, &dirty_area);
             flush_get_next_buf(panel_handle);
         } else {
             /* Probe the copy method for the current dirty area */
@@ -238,7 +250,7 @@ static void flush_callback(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t
                 /* Update current dirty area for the next frame buffer */
                 next_fb = flush_get_next_buf(panel_handle);
                 flush_dirty_save(&dirty_area);
-                flush_dirty_copy(next_fb, color_map, &dirty_area);
+                flush_dirty_copy((uint16_t *)next_fb, (const uint16_t *)color_map, &dirty_area);
 
                 /* Switch the current RGB frame buffer to `next_fb` */
                 esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, next_fb);
@@ -250,7 +262,7 @@ static void flush_callback(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t
                 if (probe_result == FLUSH_PROBE_PART_COPY) {
                     /* Synchronously update the dirty area for another frame buffer */
                     flush_dirty_save(&dirty_area);
-                    flush_dirty_copy(flush_get_next_buf(panel_handle), color_map, &dirty_area);
+                    flush_dirty_copy((uint16_t *)flush_get_next_buf(panel_handle), (const uint16_t *)color_map, &dirty_area);
                     flush_get_next_buf(panel_handle);
                 }
             }
@@ -324,7 +336,7 @@ void flush_callback(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color
     void *next_fb = get_next_frame_buffer(panel_handle); // Get the next frame buffer
 
     /* Rotate and copy dirty area from the current LVGL's buffer to the next RGB frame buffer */
-    rotate_copy_pixel((uint16_t *)color_map, next_fb, offsetx1, offsety1, offsetx2, offsety2, LV_HOR_RES, LV_VER_RES, EXAMPLE_LVGL_PORT_ROTATION_DEGREE);
+    rotate_copy_pixel((const uint16_t *)color_map, (uint16_t *)next_fb, offsetx1, offsety1, offsetx2, offsety2, LV_HOR_RES, LV_VER_RES, lvgl_port_rotation_180 ? 180 : 0);
 
     /* Switch the current RGB frame buffer to `next_fb` */
     esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, next_fb);
@@ -510,17 +522,6 @@ esp_err_t lvgl_port_init(esp_lcd_panel_handle_t lcd_handle, esp_lcd_touch_handle
         lv_indev_t *indev = indev_init(tp_handle); // Initialize the touchpad input device
         assert(indev); // Ensure the input device initialization was successful
 
-        // Set touch panel orientation based on rotation
-#if EXAMPLE_LVGL_PORT_ROTATION_90
-        esp_lcd_touch_set_swap_xy(tp_handle, true); // Swap X and Y coordinates
-        esp_lcd_touch_set_mirror_y(tp_handle, true); // Mirror Y coordinates
-#elif EXAMPLE_LVGL_PORT_ROTATION_180
-        esp_lcd_touch_set_mirror_x(tp_handle, true); // Mirror X coordinates
-        esp_lcd_touch_set_mirror_y(tp_handle, true); // Mirror Y coordinates
-#elif EXAMPLE_LVGL_PORT_ROTATION_270
-        esp_lcd_touch_set_swap_xy(tp_handle, true); // Swap X and Y coordinates
-        esp_lcd_touch_set_mirror_x(tp_handle, true); // Mirror X coordinates
-#endif
     }
 
     lvgl_mux = xSemaphoreCreateRecursiveMutex(); // Create a recursive mutex for LVGL
@@ -536,6 +537,11 @@ esp_err_t lvgl_port_init(esp_lcd_panel_handle_t lcd_handle, esp_lcd_touch_handle
     }
 
     return ESP_OK; // Return success
+}
+
+void lvgl_port_set_rotation_180(bool enabled)
+{
+    lvgl_port_rotation_180 = enabled;
 }
 
 bool lvgl_port_lock(int timeout_ms)

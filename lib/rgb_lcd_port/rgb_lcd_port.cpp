@@ -60,7 +60,9 @@ esp_lcd_panel_handle_t waveshare_esp32_s3_rgb_lcd_init()
         },
         .data_width = EXAMPLE_RGB_DATA_WIDTH,                    // Data width for RGB signals
         .bits_per_pixel = EXAMPLE_RGB_BIT_PER_PIXEL,             // Number of bits per pixel (color depth)
-        .num_fbs = EXAMPLE_LCD_RGB_BUFFER_NUMS,                  // Number of framebuffers for double/triple buffering
+        // Keep the panel allocation in sync with the LVGL port. Rotation
+        // needs two RGB output buffers plus one LVGL render buffer.
+        .num_fbs = LVGL_PORT_LCD_RGB_BUFFER_NUMS,
         .bounce_buffer_size_px = EXAMPLE_RGB_BOUNCE_BUFFER_SIZE, // Bounce buffer size in pixels
         .sram_trans_align = 4,                                   // SRAM transaction alignment in bytes
         .psram_trans_align = 64,                                 // PSRAM transaction alignment in bytes
