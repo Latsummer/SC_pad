@@ -12,7 +12,7 @@ enum class Command : uint8_t {
     Lights,
     Quantum,
     Scan,
-    TargetAhead,
+    Map,
     Power,
     Engines,
     Shields,

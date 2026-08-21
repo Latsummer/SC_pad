@@ -15,8 +15,9 @@ void send_command(sc_pad::Command command, void *user_data)
     (void)command;
     (void)user_data;
 
-    // Every action deliberately remains mapped to the safe test key for now.
-    keyboard.press('a');
+    // The Star Citizen default binding for the Starmap is F2. Other actions
+    // deliberately remain on the safe test key until their mappings are set.
+    keyboard.press(command == sc_pad::Command::Map ? KEY_F2 : 'a');
     delay(30);
     keyboard.releaseAll();
 }
