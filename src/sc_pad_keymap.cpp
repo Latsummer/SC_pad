@@ -32,6 +32,8 @@ constexpr KeyBinding kBindings[static_cast<uint8_t>(Command::Count)] = {
     {InputMode::Tap, {Key::F6, Key::None, Key::None}, kTapHoldMs, "F6"},
     {InputMode::Tap, {Key::F7, Key::None, Key::None}, kTapHoldMs, "F7"},
     {InputMode::Tap, {Key::F8, Key::None, Key::None}, kTapHoldMs, "F8"},
+    // This command is handled by the firmware itself and never reaches HID.
+    {InputMode::Tap, {Key::None, Key::None, Key::None}, 0, "LOCAL"},
 };
 
 constexpr KeyBinding kUnbound = {

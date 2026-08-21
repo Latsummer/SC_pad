@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Preferences.h>
 #include <USB.h>
 #include <USBHIDKeyboard.h>
 #include <esp_system.h>
@@ -12,12 +13,12 @@ namespace {
 
 USBHIDKeyboard keyboard;
 
+constexpr char kSettingsNamespace[] = "sc-pad";
+constexpr char kOrientationKey[] = "rot180";
+bool orientation_180 = false;
+bool orientation_restart_pending = false;
+
 constexpr uint16_t kChordKeyIntervalMs = 25;
-// Keep HID timing subtly organic without jeopardising a recognised key press.
-// All variation is intentionally much smaller than the nominal hold time.
-constexpr uint16_t kTapJitterMs = 12;
-constexpr uint16_t kLongHoldJitterMs = 90;
-constexpr uint16_t kChordIntervalJitterMs = 8;
 
 enum class HidDispatchState : uint8_t {
     Idle,
@@ -33,25 +34,6 @@ struct HidDispatch {
 };
 
 HidDispatch hid_dispatch;
-
-uint16_t jittered_duration(uint16_t nominal_ms, uint16_t jitter_ms)
-{
-    if (jitter_ms == 0) {
-        return nominal_ms;
-    }
-
-    const uint32_t range = static_cast<uint32_t>(jitter_ms) * 2 + 1;
-    const int32_t offset = static_cast<int32_t>(esp_random() % range) - jitter_ms;
-    return static_cast<uint16_t>(static_cast<int32_t>(nominal_ms) + offset);
-}
-
-uint16_t binding_hold_duration(const sc_pad::KeyBinding &binding)
-{
-    const uint16_t jitter = binding.mode == sc_pad::InputMode::Hold
-                                ? kLongHoldJitterMs
-                                : kTapJitterMs;
-    return jittered_duration(binding.hold_ms, jitter);
-}
 
 uint8_t hid_key(sc_pad::Key key)
 {
@@ -121,11 +103,10 @@ void start_hid_dispatch(const sc_pad::KeyBinding &binding)
     const bool has_more_keys = binding.keys[1] != sc_pad::Key::None;
     if (binding.mode == sc_pad::InputMode::Chord && has_more_keys) {
         hid_dispatch.state = HidDispatchState::PressingChord;
-        hid_dispatch.deadline_ms = millis() +
-                                   jittered_duration(kChordKeyIntervalMs, kChordIntervalJitterMs);
+        hid_dispatch.deadline_ms = millis() + kChordKeyIntervalMs;
     } else {
         hid_dispatch.state = HidDispatchState::Holding;
-        hid_dispatch.deadline_ms = millis() + binding_hold_duration(binding);
+        hid_dispatch.deadline_ms = millis() + binding.hold_ms;
     }
 }
 
@@ -146,21 +127,52 @@ void update_hid_dispatch()
         if (hid_dispatch.next_key < sc_pad::kMaxChordKeys &&
             hid_dispatch.binding->keys[hid_dispatch.next_key] != sc_pad::Key::None) {
             hid_dispatch.deadline_ms = millis() +
-                                       jittered_duration(kChordKeyIntervalMs, kChordIntervalJitterMs);
+                                       kChordKeyIntervalMs;
             return;
         }
 
         hid_dispatch.state = HidDispatchState::Holding;
-        hid_dispatch.deadline_ms = millis() + binding_hold_duration(*hid_dispatch.binding);
+        hid_dispatch.deadline_ms = millis() + hid_dispatch.binding->hold_ms;
         return;
     }
 
     finish_hid_dispatch();
 }
 
+void apply_touch_orientation(esp_lcd_touch_handle_t touch, bool rotate_180)
+{
+    // The RGB output is rotated while copying its frame buffer. Mirror both
+    // GT911 axes so touch coordinates follow the visible orientation.
+    ESP_ERROR_CHECK(esp_lcd_touch_set_mirror_x(touch, rotate_180));
+    ESP_ERROR_CHECK(esp_lcd_touch_set_mirror_y(touch, rotate_180));
+}
+
+void persist_and_restart_orientation()
+{
+    Preferences settings;
+    if (!settings.begin(kSettingsNamespace, false)) {
+        return;
+    }
+
+    const size_t written = settings.putBool(kOrientationKey, !orientation_180);
+    settings.end();
+    if (written != sizeof(bool)) {
+        return;
+    }
+
+    // The port owns display frame buffers, so a clean reboot is the safest
+    // way to apply an orientation change while a frame may be in flight.
+    delay(80);
+    ESP.restart();
+}
+
 void send_command(sc_pad::Command command, void *user_data)
 {
     (void)user_data;
+    if (command == sc_pad::Command::ToggleOrientation) {
+        orientation_restart_pending = true;
+        return;
+    }
     start_hid_dispatch(sc_pad::key_binding_for(command));
 }
 
@@ -173,6 +185,12 @@ void setup()
 
     touch_handle = touch_gt911_init();
 
+    Preferences settings;
+    if (settings.begin(kSettingsNamespace, true)) {
+        orientation_180 = settings.getBool(kOrientationKey, false);
+        settings.end();
+    }
+
     // GPIO19/20 are shared by USB and CAN. Select the native USB path.
     IO_EXTENSION_Output(IO_EXTENSION_IO_5, 0);
 
@@ -180,10 +198,13 @@ void setup()
     USB.begin();
 
     panel_handle = waveshare_esp32_s3_rgb_lcd_init();
+    lvgl_port_set_rotation_180(orientation_180);
     wavesahre_rgb_lcd_bl_on();
     ESP_ERROR_CHECK(lvgl_port_init(panel_handle, touch_handle));
+    apply_touch_orientation(touch_handle, orientation_180);
 
     if (lvgl_port_lock(-1)) {
+        sc_pad::set_orientation_180(orientation_180);
         sc_pad::create_ui(send_command);
         lvgl_port_unlock();
     }
@@ -192,4 +213,8 @@ void setup()
 void loop()
 {
     update_hid_dispatch();
+    if (orientation_restart_pending) {
+        orientation_restart_pending = false;
+        persist_and_restart_orientation();
+    }
 }

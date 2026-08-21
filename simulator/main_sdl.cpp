@@ -94,7 +94,7 @@ void print_command(sc_pad::Command command, void *)
         "SCAN", "MAP", "POWER", "ENGINES", "REQUEST ATC", "LEAVE SEAT",
         "SHIELD UP", "SHIELD FRONT", "SHIELD LEFT", "RESET SHIELDS",
         "SHIELD RIGHT", "SHIELD REAR", "SHIELD DOWN", "POWER WEAPONS",
-        "POWER ENGINES", "POWER SHIELDS", "RESET POWER",
+        "POWER ENGINES", "POWER SHIELDS", "RESET POWER", "TOGGLE ORIENTATION",
     };
     const auto index = static_cast<std::size_t>(command);
     const sc_pad::KeyBinding &binding = sc_pad::key_binding_for(command);
