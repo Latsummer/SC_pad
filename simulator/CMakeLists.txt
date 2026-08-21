@@ -43,6 +43,10 @@ endif()
 add_executable(sc_pad_simulator
     ${SIMULATOR_PLATFORM_SOURCE}
     "${PROJECT_ROOT}/src/sc_pad_font_source_han_22.c"
+    "${PROJECT_ROOT}/src/sc_pad_font_jetbrains_mono_12.c"
+    "${PROJECT_ROOT}/src/sc_pad_font_jetbrains_mono_16.c"
+    "${PROJECT_ROOT}/src/sc_pad_font_jetbrains_mono_20.c"
+    "${PROJECT_ROOT}/src/sc_pad_logos.c"
     "${PROJECT_ROOT}/src/sc_pad_ui.cpp"
 )
 

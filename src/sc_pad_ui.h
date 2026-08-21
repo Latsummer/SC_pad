@@ -12,11 +12,11 @@ enum class Command : uint8_t {
     Lights,
     Quantum,
     Scan,
-    TargetAhead,
+    Map,
     Power,
     Engines,
     Shields,
-    Eject,
+    ExitSeat,
 };
 
 using CommandCallback = void (*)(Command command, void *user_data);
