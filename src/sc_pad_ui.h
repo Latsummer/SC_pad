@@ -28,6 +28,13 @@ enum class Command : uint8_t {
     PowerEngines,
     PowerShields,
     ResetPower,
+    LaserPowerDecrease,
+    LaserPowerIncrease,
+    MiningModule1,
+    MiningModule2,
+    MiningModule3,
+    CollectMode,
+    ExitMining,
     ToggleOrientation,
     Count,
 };

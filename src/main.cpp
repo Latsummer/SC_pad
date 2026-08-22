@@ -18,7 +18,9 @@ constexpr char kOrientationKey[] = "rot180";
 bool orientation_180 = false;
 bool orientation_restart_pending = false;
 
-constexpr uint16_t kChordKeyIntervalMs = 25;
+// Press modifiers first, then wait long enough for the host/game input stack
+// to observe them before adding the chord's target key.
+constexpr uint16_t kChordKeyIntervalMs = 100;
 
 enum class HidDispatchState : uint8_t {
     Idle,
@@ -56,6 +58,18 @@ uint8_t hid_key(sc_pad::Key key)
             return KEY_F7;
         case sc_pad::Key::F8:
             return KEY_F8;
+        case sc_pad::Key::TopRow0:
+            return '0';
+        case sc_pad::Key::TopRow1:
+            return '1';
+        case sc_pad::Key::TopRow2:
+            return '2';
+        case sc_pad::Key::TopRow3:
+            return '3';
+        case sc_pad::Key::Minus:
+            return '-';
+        case sc_pad::Key::Equals:
+            return '=';
         case sc_pad::Key::Keypad2:
             return KEY_KP_2;
         case sc_pad::Key::Keypad4:

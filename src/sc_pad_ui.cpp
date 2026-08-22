@@ -147,6 +147,7 @@ struct MiningState {
 
 struct MiningControlRuntime {
     MiningControl control = MiningControl::LaserDecrease;
+    Command command = Command::LaserPowerDecrease;
     lv_obj_t *button = nullptr;
     lv_obj_t *label = nullptr;
 };
@@ -1082,6 +1083,10 @@ void mining_control_event_cb(lv_event_t *event)
         return;
     }
 
+    if (attach_mode) {
+        send_command(runtime->command);
+    }
+
     switch (runtime->control) {
         case MiningControl::LaserDecrease:
         case MiningControl::LaserIncrease:
@@ -1103,8 +1108,6 @@ void mining_control_event_cb(lv_event_t *event)
             return;
     }
 
-    // These states intentionally remain panel-local until the eventual keymap
-    // is agreed; no mining commands are sent to the game yet.
     update_mining_presentation();
 }
 
@@ -1112,6 +1115,7 @@ void create_mining_button(
     lv_obj_t *section,
     int index,
     MiningControl control,
+    Command command,
     const char *label,
     int x,
     int y,
@@ -1120,6 +1124,7 @@ void create_mining_button(
 {
     MiningControlRuntime &runtime = mining_controls[index];
     runtime.control = control;
+    runtime.command = command;
     runtime.button = lv_btn_create(section);
     lv_obj_set_pos(runtime.button, x, y);
     lv_obj_set_size(runtime.button, width, height);
@@ -1144,15 +1149,15 @@ void create_mining_page(lv_obj_t *page)
     constexpr int kControlHeight = 120;
 
     lv_obj_t *laser = create_control_section(page, 24, "LASER POWER");
-    create_mining_button(laser, 0, MiningControl::LaserDecrease, "POWER -", 15, 65, 213, kControlHeight);
-    create_mining_button(laser, 1, MiningControl::LaserIncrease, "POWER +", 251, 65, 213, kControlHeight);
-    create_mining_button(laser, 5, MiningControl::CollectMode, "COLLECT MODE", 15, 220, 449, 145);
+    create_mining_button(laser, 0, MiningControl::LaserDecrease, Command::LaserPowerDecrease, "POWER -", 15, 65, 213, kControlHeight);
+    create_mining_button(laser, 1, MiningControl::LaserIncrease, Command::LaserPowerIncrease, "POWER +", 251, 65, 213, kControlHeight);
+    create_mining_button(laser, 5, MiningControl::CollectMode, Command::CollectMode, "COLLECT MODE", 15, 220, 449, 145);
 
     lv_obj_t *modules = create_control_section(page, 24 + kSectionWidth + kSectionGap, "MINING MODULES");
-    create_mining_button(modules, 2, MiningControl::Module1, "MODULE 1", 15, 65, kControlWidth, kControlHeight);
-    create_mining_button(modules, 3, MiningControl::Module2, "MODULE 2", 171, 65, kControlWidth, kControlHeight);
-    create_mining_button(modules, 4, MiningControl::Module3, "MODULE 3", 327, 65, kControlWidth, kControlHeight);
-    create_mining_button(modules, 6, MiningControl::ExitMining, "EXIT MINING", 15, 220, 449, 145);
+    create_mining_button(modules, 2, MiningControl::Module1, Command::MiningModule1, "MODULE 1", 15, 65, kControlWidth, kControlHeight);
+    create_mining_button(modules, 3, MiningControl::Module2, Command::MiningModule2, "MODULE 2", 171, 65, kControlWidth, kControlHeight);
+    create_mining_button(modules, 4, MiningControl::Module3, Command::MiningModule3, "MODULE 3", 327, 65, kControlWidth, kControlHeight);
+    create_mining_button(modules, 6, MiningControl::ExitMining, Command::ExitMining, "EXIT MINING", 15, 220, 449, 145);
 
     update_mining_presentation();
 }
