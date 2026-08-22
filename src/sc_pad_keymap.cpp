@@ -32,6 +32,14 @@ constexpr KeyBinding kBindings[static_cast<uint8_t>(Command::Count)] = {
     {InputMode::Tap, {Key::F6, Key::None, Key::None}, kTapHoldMs, "F6"},
     {InputMode::Tap, {Key::F7, Key::None, Key::None}, kTapHoldMs, "F7"},
     {InputMode::Tap, {Key::F8, Key::None, Key::None}, kTapHoldMs, "F8"},
+    // Mining controls use the main keyboard row, not the numeric keypad.
+    {InputMode::Chord, {Key::LeftAlt, Key::Minus, Key::None}, kTapHoldMs, "LALT + -"},
+    {InputMode::Chord, {Key::LeftAlt, Key::Equals, Key::None}, kTapHoldMs, "LALT + ="},
+    {InputMode::Chord, {Key::LeftAlt, Key::TopRow1, Key::None}, kTapHoldMs, "LALT + 1"},
+    {InputMode::Chord, {Key::LeftAlt, Key::TopRow2, Key::None}, kTapHoldMs, "LALT + 2"},
+    {InputMode::Chord, {Key::LeftAlt, Key::TopRow3, Key::None}, kTapHoldMs, "LALT + 3"},
+    {InputMode::Chord, {Key::LeftAlt, Key::TopRow0, Key::None}, kTapHoldMs, "LALT + 0"},
+    {InputMode::Tap, {Key::M, Key::None, Key::None}, kTapHoldMs, "M"},
     // This command is handled by the firmware itself and never reaches HID.
     {InputMode::Tap, {Key::None, Key::None, Key::None}, 0, "LOCAL"},
 };

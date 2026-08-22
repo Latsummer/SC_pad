@@ -52,6 +52,14 @@ enum class Key : uint8_t {
     F6,
     F7,
     F8,
+    // Main keyboard row, above the letters. These are distinct from keypad
+    // keys and are used by the mining controls.
+    TopRow0,
+    TopRow1,
+    TopRow2,
+    TopRow3,
+    Minus,
+    Equals,
     Keypad2,
     Keypad4,
     Keypad5,
