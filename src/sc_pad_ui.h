@@ -48,4 +48,13 @@ void create_ui(CommandCallback callback, void *user_data = nullptr);
 // the orientation that was restored from non-volatile storage.
 void set_orientation_180(bool enabled);
 
+// The firmware calls this before create_ui() to restore the last selected
+// theme (index into theme::kThemes) from non-volatile storage. Values outside
+// the valid range are ignored.
+void set_theme_index(int index);
+
+// Returns the currently selected theme index. The firmware compares this with
+// its persisted copy each loop and writes back when it changes.
+int theme_index();
+
 } // namespace sc_pad
