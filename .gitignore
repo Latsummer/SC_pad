@@ -4,6 +4,7 @@
 # PlatformIO generated files
 .pio/
 .vscode/
+.idea/
 simulator/build/
 simulator/font_sources/
 

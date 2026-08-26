@@ -68,6 +68,7 @@ enum class Key : uint8_t {
     Keypad8,
     Keypad9,
     LeftAlt,
+    LeftCtrl,
 };
 
 constexpr uint8_t kMaxChordKeys = 3;
