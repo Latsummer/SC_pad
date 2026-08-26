@@ -15,8 +15,8 @@ constexpr int kScreenWidth = 1024;
 constexpr int kHeaderHeight = 64;
 // The navigation occupies the full lower chin. Its controls are centered in
 // this area, while the divider sits slightly below the action grid.
-constexpr int kNavTop = 524;
-constexpr int kNavHeight = 76;
+constexpr int kNavTop = 508;
+constexpr int kNavHeight = 92;
 constexpr int kActionCount = 12;
 constexpr int kThemeCount = 7;
 
@@ -62,6 +62,7 @@ struct ActionSpec {
     ButtonBehavior behavior;
     const ProcessSpec *process = nullptr;
     bool visible = true;
+    bool initially_active = false;
 };
 
 // Theme tokens describe surfaces and hierarchy only. Amber remains the
@@ -118,6 +119,7 @@ struct ActionState {
     bool active = false;
     bool processing = false;
     uint16_t process_elapsed_ms = 0;
+    bool initialized = false;
 };
 
 struct NavigationRuntime {
@@ -175,10 +177,12 @@ constexpr ProcessSpec kExitSeatProcess = {2000, 400, ProcessEffect::Pulse};
 constexpr ProcessSpec kReqACTProcess = {6000, 500, ProcessEffect::Pulse};
 
 const ActionSpec kActions[kActionCount] = {
-    {Command::Gear, "01", "Gear UP", "Gear Down", ButtonBehavior::ProcessAndToggle, &kGearProcess},
+    // The landing gear starts engaged: a ship leaving the hangar always has
+    // its gear down, so the button reads "Gear Down" and appears pressed.
+    {Command::Gear, "01", "Gear UP", "Gear Down", ButtonBehavior::ProcessAndToggle, &kGearProcess, true, true},
     {Command::Doors, "02", "ALL Doors CLOSE", "ALL Doors OPEN", ButtonBehavior::ProcessAndToggle, &kDoorsProcess},
     {Command::MiningMode, "03", "Miner MODE", nullptr, ButtonBehavior::Momentary},
-    {Command::Vtol, "04", "VTOL MODE", "VTOL ON", ButtonBehavior::LocalToggle},
+    {Command::MissileMode, "04", "Missile MODE", "Missile ON", ButtonBehavior::LocalToggle},
     {Command::Lights, "05", "Light OFF", "Light ON", ButtonBehavior::LocalToggle},
     {Command::Quantum, "06", "Quantum OFF", "Quantum ON", ButtonBehavior::LocalToggle},
     {Command::Scan, "07", "Scan MODE", "Scan ON", ButtonBehavior::LocalToggle},
@@ -261,26 +265,22 @@ void init_styles()
     // RGB display configuration. Color and border feedback are deterministic.
     lv_style_init(&style_action_pressed);
     lv_style_set_bg_color(&style_action_pressed, color(palette.surface_pressed));
-    lv_style_set_border_color(&style_action_pressed, color(palette.primary));
+    lv_style_set_border_color(&style_action_pressed, color(palette.border));
     lv_style_set_border_width(&style_action_pressed, palette.action_border_width);
     lv_style_set_shadow_width(&style_action_pressed, 0);
 
     // This is a panel-local state, never a claim about the in-game state.
     lv_style_init(&style_action_active);
     lv_style_set_bg_color(&style_action_active, color(palette.local_state_surface));
-    lv_style_set_border_color(&style_action_active, color(palette.local_state_border));
+    lv_style_set_border_color(&style_action_active, color(palette.border));
     lv_style_set_border_width(&style_action_active, palette.action_border_width);
     lv_style_set_shadow_width(&style_action_active, 0);
 
     // Applied and removed by a timer to create the transition flash.
     lv_style_init(&style_action_transition);
-    // Bias strongly toward the signal color so the pulse remains obvious on
-    // lower-saturation touch panels, not only on a desktop display.
-    lv_style_set_bg_color(
-        &style_action_transition,
-        lv_color_mix(color(palette.progress_border), color(palette.progress_surface), LV_OPA_80));
+    lv_style_set_bg_color(&style_action_transition, color(palette.progress_border));
     lv_style_set_bg_opa(&style_action_transition, LV_OPA_COVER);
-    lv_style_set_border_color(&style_action_transition, color(palette.progress_border));
+    lv_style_set_border_color(&style_action_transition, color(palette.border));
     lv_style_set_border_opa(&style_action_transition, LV_OPA_COVER);
     lv_style_set_border_width(&style_action_transition, palette.action_border_width);
     lv_style_set_shadow_width(&style_action_transition, 0);
@@ -290,7 +290,7 @@ void init_styles()
     lv_style_set_bg_opa(&style_nav, LV_OPA_TRANSP);
     lv_style_set_border_width(&style_nav, 0);
     lv_style_set_text_color(&style_nav, color(palette.muted_text));
-    lv_style_set_text_font(&style_nav, &sc_pad_font_jetbrains_mono_12);
+    lv_style_set_text_font(&style_nav, &sc_pad_font_jetbrains_mono_16);
     lv_style_set_shadow_width(&style_nav, 0);
 
     lv_style_init(&style_nav_active);
@@ -881,6 +881,14 @@ void create_action_button(lv_obj_t *screen, int index)
     ActionRuntime &runtime = action_runtime[index];
     runtime.spec = &spec;
 
+    // Apply a spec's default state once; later rebuilds (theme/page changes)
+    // must preserve whatever the operator has toggled since boot.
+    ActionState &state = state_for(runtime);
+    if (!state.initialized) {
+        state.active = spec.initially_active;
+        state.initialized = true;
+    }
+
     const int column = index % 4;
     const int row = index / 4;
 
@@ -1187,7 +1195,7 @@ void create_navigation(lv_obj_t *screen)
         runtime.page = i == 1 ? PanelPage::Ship
                                : (i == 2 ? PanelPage::Mining
                                          : (i == 4 ? PanelPage::System : PanelPage::Flight));
-        lv_obj_set_size(nav_button, 192, 44);
+        lv_obj_set_size(nav_button, 192, 60);
         lv_obj_align(nav_button, LV_ALIGN_LEFT_MID, 12 + i * 200, 0);
         lv_obj_add_style(nav_button, &style_nav, LV_STATE_DEFAULT);
         if (runtime.available && runtime.page == current_page) {

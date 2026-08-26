@@ -86,6 +86,8 @@ uint8_t hid_key(sc_pad::Key key)
             return KEY_KP_9;
         case sc_pad::Key::LeftAlt:
             return KEY_LEFT_ALT;
+        case sc_pad::Key::LeftCtrl:
+            return KEY_LEFT_CTRL;
         default:
             return 0;
     }

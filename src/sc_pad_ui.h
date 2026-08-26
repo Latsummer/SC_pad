@@ -8,7 +8,7 @@ enum class Command : uint8_t {
     Gear = 0,
     Doors,
     MiningMode,
-    Vtol,
+    MissileMode,
     Lights,
     Quantum,
     Scan,

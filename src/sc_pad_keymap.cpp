@@ -11,7 +11,7 @@ constexpr KeyBinding kBindings[static_cast<uint8_t>(Command::Count)] = {
     {InputMode::Tap, {Key::N, Key::None, Key::None}, kTapHoldMs, "N"},
     {InputMode::Tap, {Key::Slash, Key::None, Key::None}, kTapHoldMs, "/"},
     {InputMode::Tap, {Key::M, Key::None, Key::None}, kTapHoldMs, "M"},
-    {InputMode::Tap, {Key::K, Key::None, Key::None}, kTapHoldMs, "K"},
+    {InputMode::Chord, {Key::LeftCtrl, Key::G, Key::None}, kTapHoldMs, "LEFT CTRL + G"},
     {InputMode::Tap, {Key::L, Key::None, Key::None}, kTapHoldMs, "L"},
     {InputMode::Hold, {Key::B, Key::None, Key::None}, kLongHoldMs, "B"},
     {InputMode::Tap, {Key::V, Key::None, Key::None}, kTapHoldMs, "V"},
