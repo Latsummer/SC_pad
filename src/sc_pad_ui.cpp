@@ -1083,7 +1083,8 @@ void create_mining_button(
     int x,
     int y,
     int width,
-    int height)
+    int height,
+    bool primary = false)
 {
     MiningControlRuntime &runtime = mining_controls[index];
     runtime.control = control;
@@ -1101,7 +1102,10 @@ void create_mining_button(
     lv_label_set_text(runtime.label, label);
     lv_obj_center(runtime.label);
     lv_obj_set_style_text_color(runtime.label, color(theme().text), 0);
-    lv_obj_set_style_text_font(runtime.label, &sc_pad_font_jetbrains_mono_16, 0);
+    lv_obj_set_style_text_font(
+        runtime.label,
+        primary ? &sc_pad_font_jetbrains_mono_20 : &sc_pad_font_jetbrains_mono_16,
+        0);
 }
 
 void create_mining_page(lv_obj_t *page)
@@ -1109,18 +1113,19 @@ void create_mining_page(lv_obj_t *page)
     constexpr int kSectionWidth = 479;
     constexpr int kSectionGap = 18;
     constexpr int kControlWidth = 137;
-    constexpr int kControlHeight = 120;
+    constexpr int kAuxiliaryHeight = 56;
+    constexpr int kPrimaryHeight = 222;
 
     lv_obj_t *laser = create_control_section(page, 24, "LASER POWER");
-    create_mining_button(laser, 0, MiningControl::LaserDecrease, Command::LaserPowerDecrease, "POWER -", 15, 65, 213, kControlHeight);
-    create_mining_button(laser, 1, MiningControl::LaserIncrease, Command::LaserPowerIncrease, "POWER +", 251, 65, 213, kControlHeight);
-    create_mining_button(laser, 5, MiningControl::CollectMode, Command::CollectMode, "COLLECT MODE", 15, 220, 449, 145);
+    create_mining_button(laser, 5, MiningControl::CollectMode, Command::CollectMode, "COLLECT MODE", 15, 65, 449, kAuxiliaryHeight);
+    create_mining_button(laser, 0, MiningControl::LaserDecrease, Command::LaserPowerDecrease, "POWER -", 15, 142, 213, kPrimaryHeight, true);
+    create_mining_button(laser, 1, MiningControl::LaserIncrease, Command::LaserPowerIncrease, "POWER +", 251, 142, 213, kPrimaryHeight, true);
 
     lv_obj_t *modules = create_control_section(page, 24 + kSectionWidth + kSectionGap, "MINING MODULES");
-    create_mining_button(modules, 2, MiningControl::Module1, Command::MiningModule1, "MODULE 1", 15, 65, kControlWidth, kControlHeight);
-    create_mining_button(modules, 3, MiningControl::Module2, Command::MiningModule2, "MODULE 2", 171, 65, kControlWidth, kControlHeight);
-    create_mining_button(modules, 4, MiningControl::Module3, Command::MiningModule3, "MODULE 3", 327, 65, kControlWidth, kControlHeight);
-    create_mining_button(modules, 6, MiningControl::ExitMining, Command::ExitMining, "EXIT MINING", 15, 220, 449, 145);
+    create_mining_button(modules, 6, MiningControl::ExitMining, Command::ExitMining, "EXIT MINING", 15, 65, 449, kAuxiliaryHeight);
+    create_mining_button(modules, 2, MiningControl::Module1, Command::MiningModule1, "MODULE 1", 15, 142, kControlWidth, kPrimaryHeight);
+    create_mining_button(modules, 3, MiningControl::Module2, Command::MiningModule2, "MODULE 2", 171, 142, kControlWidth, kPrimaryHeight);
+    create_mining_button(modules, 4, MiningControl::Module3, Command::MiningModule3, "MODULE 3", 327, 142, kControlWidth, kPrimaryHeight);
 
     update_mining_presentation();
 }
