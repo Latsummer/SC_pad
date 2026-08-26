@@ -15,6 +15,7 @@
  */
 
 #define LVGL_PORT_TICK_PERIOD_MS    (2)
+#define LVGL_PORT_TOUCH_READ_PERIOD_MS (10)
 
 
 /**

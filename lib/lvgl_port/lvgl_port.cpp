@@ -469,7 +469,14 @@ static lv_indev_t *indev_init(esp_lcd_touch_handle_t tp)
     indev_drv_tp.read_cb = touchpad_read; // Set the read callback function
     indev_drv_tp.user_data = tp; // Set user data to the touch panel handle
 
-    return lv_indev_drv_register(&indev_drv_tp); // Register the input device driver
+    lv_indev_t *indev = lv_indev_drv_register(&indev_drv_tp); // Register the input device driver
+    if (indev != nullptr && indev->driver != nullptr && indev->driver->read_timer != nullptr) {
+        // LVGL defaults to a 30 ms input poll. 10 ms keeps taps responsive
+        // while leaving the rest of the UI timing and release-to-activate
+        // interaction model unchanged.
+        lv_timer_set_period(indev->driver->read_timer, LVGL_PORT_TOUCH_READ_PERIOD_MS);
+    }
+    return indev;
 }
 
 static void tick_increment(void *arg)
