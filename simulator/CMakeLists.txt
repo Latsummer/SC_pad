@@ -48,6 +48,7 @@ add_executable(sc_pad_simulator
     "${PROJECT_ROOT}/src/sc_pad_font_jetbrains_mono_20.c"
     "${PROJECT_ROOT}/src/sc_pad_logos.c"
     "${PROJECT_ROOT}/src/sc_pad_keymap.cpp"
+    "${PROJECT_ROOT}/src/sc_pad_theme.cpp"
     "${PROJECT_ROOT}/src/sc_pad_ui.cpp"
 )
 

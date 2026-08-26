@@ -15,8 +15,10 @@ USBHIDKeyboard keyboard;
 
 constexpr char kSettingsNamespace[] = "sc-pad";
 constexpr char kOrientationKey[] = "rot180";
+constexpr char kThemeKey[] = "theme";
 bool orientation_180 = false;
 bool orientation_restart_pending = false;
+int saved_theme_index = 0;
 
 // Press modifiers first, then wait long enough for the host/game input stack
 // to observe them before adding the chord's target key.
@@ -182,6 +184,16 @@ void persist_and_restart_orientation()
     ESP.restart();
 }
 
+void persist_theme()
+{
+    Preferences settings;
+    if (!settings.begin(kSettingsNamespace, false)) {
+        return;
+    }
+    settings.putInt(kThemeKey, saved_theme_index);
+    settings.end();
+}
+
 void send_command(sc_pad::Command command, void *user_data)
 {
     (void)user_data;
@@ -204,6 +216,7 @@ void setup()
     Preferences settings;
     if (settings.begin(kSettingsNamespace, true)) {
         orientation_180 = settings.getBool(kOrientationKey, false);
+        saved_theme_index = settings.getInt(kThemeKey, 0);
         settings.end();
     }
 
@@ -221,6 +234,7 @@ void setup()
 
     if (lvgl_port_lock(-1)) {
         sc_pad::set_orientation_180(orientation_180);
+        sc_pad::set_theme_index(saved_theme_index);
         sc_pad::create_ui(send_command);
         lvgl_port_unlock();
     }
@@ -232,5 +246,11 @@ void loop()
     if (orientation_restart_pending) {
         orientation_restart_pending = false;
         persist_and_restart_orientation();
+    }
+
+    const int selected_theme = sc_pad::theme_index();
+    if (selected_theme != saved_theme_index) {
+        saved_theme_index = selected_theme;
+        persist_theme();
     }
 }

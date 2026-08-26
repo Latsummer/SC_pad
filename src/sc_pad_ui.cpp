@@ -1,7 +1,7 @@
 #include "sc_pad_ui.h"
 
 #include "lvgl.h"
-#include "sc_pad_logos.h"
+#include "sc_pad_theme.h"
 
 LV_FONT_DECLARE(sc_pad_font_source_han_22)
 LV_FONT_DECLARE(sc_pad_font_jetbrains_mono_12)
@@ -11,6 +11,8 @@ LV_FONT_DECLARE(sc_pad_font_jetbrains_mono_20)
 namespace sc_pad {
 namespace {
 
+using namespace theme;
+
 constexpr int kScreenWidth = 1024;
 constexpr int kHeaderHeight = 64;
 // The navigation occupies the full lower chin. Its controls are centered in
@@ -18,12 +20,6 @@ constexpr int kHeaderHeight = 64;
 constexpr int kNavTop = 508;
 constexpr int kNavHeight = 92;
 constexpr int kActionCount = 12;
-constexpr int kThemeCount = 7;
-
-lv_color_t color(uint32_t value)
-{
-    return lv_color_hex(value);
-}
 
 enum class ButtonBehavior {
     // A panel-local state changes immediately after the command is sent.
@@ -63,47 +59,6 @@ struct ActionSpec {
     const ProcessSpec *process = nullptr;
     bool visible = true;
     bool initially_active = false;
-};
-
-// Theme tokens describe surfaces and hierarchy only. Amber remains the
-// panel-local state/progress color and red is reserved for faults or
-// destructive actions; a theme's primary color is used for touch and selection.
-struct Theme {
-    const char *name;
-    const char *short_name;
-    const lv_img_dsc_t *logo;
-    uint32_t logo_surface;
-    uint32_t logo_border;
-    uint32_t screen;
-    uint32_t header;
-    uint32_t surface;
-    uint32_t surface_pressed;
-    uint32_t border;
-    uint32_t nav;
-    uint32_t text;
-    uint32_t muted_text;
-    uint32_t primary;
-    uint32_t primary_dim;
-    uint32_t accent_surface;
-    uint32_t local_state_surface;
-    uint32_t local_state_border;
-    uint32_t local_state_text;
-    uint32_t progress_surface;
-    uint32_t progress_border;
-    uint32_t progress_text;
-    uint8_t action_radius;
-    uint8_t action_border_width;
-    uint8_t control_radius;
-};
-
-const Theme kThemes[kThemeCount] = {
-    {"ROBERTS SPACE INDUSTRIES", "RSI", &sc_pad_logo_rsi, 0x22272B, 0xFBB815, 0x080B0D, 0x11171A, 0x151B1D, 0x2A3438, 0x4A565A, 0x0E1315, 0xF4F3EE, 0xAAB0B0, 0xFBB815, 0x60480B, 0x302D21, 0x5A4611, 0xFBB815, 0xFFE7A0, 0x50320B, 0xF2A93B, 0xFFD58A, 12, 1, 17},
-    {"AEGIS DYNAMICS", "AEGIS", &sc_pad_logo_aegis, 0xEEE7DF, 0xC22323, 0x0C0D0F, 0x141317, 0x1A1B1E, 0x303238, 0x51535A, 0x101114, 0xF1F0EA, 0xA8A9A6, 0xC22323, 0x4B2023, 0x292124, 0x482024, 0xC22323, 0xFFC4C4, 0x42351A, 0xF0B84F, 0xFFDC91, 3, 2, 4},
-    {"ANVIL AEROSPACE", "ANVIL", &sc_pad_logo_anvil, 0xD5D0B9, 0x525445, 0x10110E, 0x1B1C18, 0x252720, 0x383A31, 0x565A4B, 0x161713, 0xF1F0E7, 0xB0B1A3, 0x8D9274, 0x3F4433, 0x33352C, 0x494C3A, 0x8D9274, 0xF1F5D7, 0x51411A, 0xE1B849, 0xFFE7A0, 4, 2, 5},
-    {"DRAKE INTERPLANETARY", "DRAKE", &sc_pad_logo_drake, 0xE0B887, 0x000000, 0x130D08, 0x22170E, 0x2D2116, 0x4A321D, 0x6D5136, 0x1B120B, 0xF5E7D2, 0xC2AD91, 0xC57934, 0x593411, 0x3A2919, 0x633A16, 0xC57934, 0xFFDB9B, 0x5A4611, 0xF4C542, 0xFFF0B2, 1, 2, 2},
-    {"MISC", "MISC", &sc_pad_logo_misc, 0xB9D3D4, 0x124B6B, 0xF3F8F8, 0xE9F1F2, 0xFFFFFF, 0xDCE9EC, 0x9EB4BA, 0xF3F8F8, 0x122A35, 0x5A717A, 0x124B6B, 0x9DC7D4, 0xE2F0F3, 0xC9E4EB, 0x124B6B, 0x0C3C50, 0xD6E5EA, 0x397A98, 0x173E50, 18, 1, 18},
-    {"ORIGIN JUMPWORKS", "ORIGIN", &sc_pad_logo_origin, 0xE8E0D2, 0x000000, 0xF7F4EF, 0xEFE9E0, 0xFFFDF9, 0xEEE6DB, 0xB8AA97, 0xF7F4EF, 0x1B1917, 0x746C62, 0xB49A78, 0xD8C9B3, 0xF3E7D4, 0xE9D4B5, 0xB49A78, 0x5B4127, 0xD6E1E9, 0x6A8495, 0x223B4D, 22, 1, 20},
-    {"CRUSADER INDUSTRIES", "CRUSADER", &sc_pad_logo_crusader, 0x101E2A, 0x1772D5, 0x061019, 0x091923, 0x0C2230, 0x14384C, 0x245267, 0x081720, 0xE4F7FF, 0x9CC7D8, 0x1772D5, 0x173F54, 0x103044, 0x114D69, 0x1772D5, 0xC6F3FF, 0x3D3154, 0xC49AFF, 0xE8DAFF, 10, 1, 17},
 };
 
 struct ActionRuntime {
@@ -1254,6 +1209,19 @@ void create_ui(CommandCallback callback, void *user_data)
 void set_orientation_180(bool enabled)
 {
     orientation_180 = enabled;
+}
+
+void set_theme_index(int index)
+{
+    if (index < 0 || index >= theme::kThemeCount) {
+        return;
+    }
+    current_theme = index;
+}
+
+int theme_index()
+{
+    return current_theme;
 }
 
 } // namespace sc_pad
