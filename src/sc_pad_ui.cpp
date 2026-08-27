@@ -1,5 +1,7 @@
 #include "sc_pad_ui.h"
 
+#include <initializer_list>
+
 #include "lvgl.h"
 #include "sc_pad_theme.h"
 
@@ -41,6 +43,7 @@ enum class PanelPage : uint8_t {
     Flight,
     Ship,
     Mining,
+    Camera,
     System,
 };
 
@@ -61,10 +64,21 @@ struct ActionSpec {
     bool initially_active = false;
 };
 
+// The visual layers are entirely inside a button's original bounds. They are
+// shared by every full-size control page so the physical treatment stays
+// consistent without moving labels or altering hit targets.
+struct PhysicalButtonLayers {
+    lv_obj_t *face = nullptr;
+    lv_obj_t *leading_bevel = nullptr;
+    lv_obj_t *trailing_bevel = nullptr;
+    lv_obj_t *state_ring = nullptr;
+};
+
 struct ActionRuntime {
     const ActionSpec *spec = nullptr;
     lv_obj_t *button = nullptr;
     lv_obj_t *label = nullptr;
+    PhysicalButtonLayers layers;
     lv_timer_t *timer = nullptr;
 };
 
@@ -107,11 +121,13 @@ struct MiningControlRuntime {
     Command command = Command::LaserPowerDecrease;
     lv_obj_t *button = nullptr;
     lv_obj_t *label = nullptr;
+    PhysicalButtonLayers layers;
 };
 
 struct ShipControlRuntime {
     Command command = Command::ShieldUp;
     lv_obj_t *button = nullptr;
+    PhysicalButtonLayers layers;
 };
 
 struct PageTransition {
@@ -170,6 +186,30 @@ lv_style_t style_action;
 lv_style_t style_action_pressed;
 lv_style_t style_action_active;
 lv_style_t style_action_transition;
+lv_style_t style_flight_action;
+lv_style_t style_flight_action_pressed;
+lv_style_t style_flight_action_active;
+lv_style_t style_flight_action_transition;
+lv_style_t style_flight_face;
+lv_style_t style_flight_face_pressed;
+lv_style_t style_flight_face_active;
+lv_style_t style_flight_face_active_pressed;
+lv_style_t style_flight_face_transition;
+lv_style_t style_flight_bevel_leading;
+lv_style_t style_flight_bevel_leading_pressed;
+lv_style_t style_flight_bevel_leading_active;
+lv_style_t style_flight_bevel_leading_active_pressed;
+lv_style_t style_flight_bevel_leading_transition;
+lv_style_t style_flight_bevel_trailing;
+lv_style_t style_flight_bevel_trailing_pressed;
+lv_style_t style_flight_bevel_trailing_active;
+lv_style_t style_flight_bevel_trailing_active_pressed;
+lv_style_t style_flight_bevel_trailing_transition;
+lv_style_t style_flight_state_ring;
+lv_style_t style_flight_state_ring_pressed;
+lv_style_t style_flight_state_ring_active;
+lv_style_t style_flight_state_ring_active_pressed;
+lv_style_t style_flight_state_ring_transition;
 lv_style_t style_nav;
 lv_style_t style_nav_active;
 
@@ -185,9 +225,6 @@ bool styles_initialized = false;
 lv_obj_t *page_title = nullptr;
 lv_obj_t *attach_mode_button = nullptr;
 lv_obj_t *attach_mode_label = nullptr;
-lv_obj_t *theme_button = nullptr;
-lv_obj_t *theme_label = nullptr;
-lv_obj_t *theme_picker_overlay = nullptr;
 
 const Theme &theme()
 {
@@ -203,6 +240,30 @@ void init_styles()
         lv_style_reset(&style_action_pressed);
         lv_style_reset(&style_action_active);
         lv_style_reset(&style_action_transition);
+        lv_style_reset(&style_flight_action);
+        lv_style_reset(&style_flight_action_pressed);
+        lv_style_reset(&style_flight_action_active);
+        lv_style_reset(&style_flight_action_transition);
+        lv_style_reset(&style_flight_face);
+        lv_style_reset(&style_flight_face_pressed);
+        lv_style_reset(&style_flight_face_active);
+        lv_style_reset(&style_flight_face_active_pressed);
+        lv_style_reset(&style_flight_face_transition);
+        lv_style_reset(&style_flight_bevel_leading);
+        lv_style_reset(&style_flight_bevel_leading_pressed);
+        lv_style_reset(&style_flight_bevel_leading_active);
+        lv_style_reset(&style_flight_bevel_leading_active_pressed);
+        lv_style_reset(&style_flight_bevel_leading_transition);
+        lv_style_reset(&style_flight_bevel_trailing);
+        lv_style_reset(&style_flight_bevel_trailing_pressed);
+        lv_style_reset(&style_flight_bevel_trailing_active);
+        lv_style_reset(&style_flight_bevel_trailing_active_pressed);
+        lv_style_reset(&style_flight_bevel_trailing_transition);
+        lv_style_reset(&style_flight_state_ring);
+        lv_style_reset(&style_flight_state_ring_pressed);
+        lv_style_reset(&style_flight_state_ring_active);
+        lv_style_reset(&style_flight_state_ring_active_pressed);
+        lv_style_reset(&style_flight_state_ring_transition);
         lv_style_reset(&style_nav);
         lv_style_reset(&style_nav_active);
     }
@@ -241,6 +302,142 @@ void init_styles()
     lv_style_set_border_opa(&style_action_transition, LV_OPA_COVER);
     lv_style_set_border_width(&style_action_transition, palette.action_border_width);
     lv_style_set_shadow_width(&style_action_transition, 0);
+
+    // Flight established the panel's restrained physical language. Every
+    // full-size control now shares this fixed 4 px recess around a themed
+    // inner face, with no shadow, blur, transform, or layout change. A
+    // transparent state ring completes all four edges without changing the
+    // button's hit area.
+    constexpr int kFlightStateRingWidth = 3;
+    const lv_color_t flight_fill_default = color(palette.surface);
+    const lv_color_t flight_fill_pressed = lv_color_darken(flight_fill_default, LV_OPA_20);
+    const lv_color_t flight_fill_active = color(palette.local_state_surface);
+    const lv_color_t flight_fill_active_pressed = lv_color_darken(flight_fill_active, LV_OPA_20);
+    const lv_color_t flight_fill_transition = color(palette.progress_border);
+    const auto reflected_edge = [](lv_color_t fill) {
+        return lv_color_lighten(fill, LV_OPA_30);
+    };
+    const auto shaded_edge = [](lv_color_t fill) {
+        return lv_color_darken(fill, LV_OPA_60);
+    };
+    const auto surrounding_reflection = [](lv_color_t fill) {
+        return lv_color_darken(fill, LV_OPA_70);
+    };
+    lv_style_init(&style_flight_action);
+    lv_style_set_radius(&style_flight_action, palette.action_radius);
+    lv_style_set_bg_opa(&style_flight_action, LV_OPA_COVER);
+    lv_style_set_bg_color(&style_flight_action, shaded_edge(flight_fill_default));
+    lv_style_set_border_width(&style_flight_action, palette.action_border_width);
+    lv_style_set_border_color(&style_flight_action, surrounding_reflection(flight_fill_default));
+    lv_style_set_shadow_width(&style_flight_action, 0);
+    lv_style_set_pad_all(&style_flight_action, 0);
+
+    lv_style_init(&style_flight_action_pressed);
+    lv_style_set_bg_color(&style_flight_action_pressed, shaded_edge(flight_fill_pressed));
+    lv_style_set_border_width(&style_flight_action_pressed, palette.action_border_width);
+    lv_style_set_border_color(&style_flight_action_pressed, surrounding_reflection(flight_fill_pressed));
+    lv_style_set_shadow_width(&style_flight_action_pressed, 0);
+
+    lv_style_init(&style_flight_action_active);
+    lv_style_set_bg_color(&style_flight_action_active, shaded_edge(flight_fill_active));
+    lv_style_set_border_width(&style_flight_action_active, palette.action_border_width);
+    lv_style_set_border_color(&style_flight_action_active, surrounding_reflection(flight_fill_active));
+    lv_style_set_shadow_width(&style_flight_action_active, 0);
+
+    lv_style_init(&style_flight_action_transition);
+    lv_style_set_bg_color(&style_flight_action_transition, shaded_edge(flight_fill_transition));
+    lv_style_set_border_width(&style_flight_action_transition, palette.action_border_width);
+    lv_style_set_border_color(&style_flight_action_transition, surrounding_reflection(flight_fill_transition));
+    lv_style_set_shadow_width(&style_flight_action_transition, 0);
+
+    lv_style_init(&style_flight_face);
+    lv_style_set_radius(&style_flight_face, LV_MAX(0, palette.action_radius - 4));
+    lv_style_set_bg_opa(&style_flight_face, LV_OPA_COVER);
+    lv_style_set_bg_color(&style_flight_face, flight_fill_default);
+    // The one-pixel inner seam is theme-derived but deliberately subdued. It
+    // reads as a fine assembly line rather than a second accent-colored frame.
+    lv_style_set_border_width(&style_flight_face, 1);
+    lv_style_set_border_color(&style_flight_face, reflected_edge(flight_fill_default));
+    lv_style_set_border_opa(&style_flight_face, LV_OPA_COVER);
+    lv_style_set_shadow_width(&style_flight_face, 0);
+
+    lv_style_init(&style_flight_face_pressed);
+    lv_style_set_bg_color(&style_flight_face_pressed, flight_fill_pressed);
+    lv_style_set_border_color(&style_flight_face_pressed, reflected_edge(flight_fill_pressed));
+    lv_style_set_border_opa(&style_flight_face_pressed, LV_OPA_COVER);
+
+    lv_style_init(&style_flight_face_active);
+    lv_style_set_bg_color(&style_flight_face_active, flight_fill_active);
+    lv_style_set_border_color(&style_flight_face_active, reflected_edge(flight_fill_active));
+    lv_style_set_border_opa(&style_flight_face_active, LV_OPA_COVER);
+
+    lv_style_init(&style_flight_face_active_pressed);
+    lv_style_set_bg_color(&style_flight_face_active_pressed, flight_fill_active_pressed);
+    lv_style_set_border_color(&style_flight_face_active_pressed, reflected_edge(flight_fill_active_pressed));
+    lv_style_set_border_opa(&style_flight_face_active_pressed, LV_OPA_COVER);
+
+    lv_style_init(&style_flight_face_transition);
+    lv_style_set_bg_color(&style_flight_face_transition, flight_fill_transition);
+    lv_style_set_border_color(&style_flight_face_transition, reflected_edge(flight_fill_transition));
+    lv_style_set_border_opa(&style_flight_face_transition, LV_OPA_COVER);
+
+    lv_style_init(&style_flight_bevel_leading);
+    lv_style_set_bg_opa(&style_flight_bevel_leading, LV_OPA_TRANSP);
+    lv_style_set_border_side(&style_flight_bevel_leading, LV_BORDER_SIDE_TOP | LV_BORDER_SIDE_LEFT);
+    lv_style_set_border_width(&style_flight_bevel_leading, 3);
+    lv_style_set_border_color(&style_flight_bevel_leading, reflected_edge(flight_fill_default));
+    lv_style_set_shadow_width(&style_flight_bevel_leading, 0);
+
+    lv_style_init(&style_flight_bevel_leading_pressed);
+    lv_style_set_border_color(&style_flight_bevel_leading_pressed, reflected_edge(flight_fill_pressed));
+
+    lv_style_init(&style_flight_bevel_leading_active);
+    lv_style_set_border_color(&style_flight_bevel_leading_active, reflected_edge(flight_fill_active));
+
+    lv_style_init(&style_flight_bevel_leading_active_pressed);
+    lv_style_set_border_color(&style_flight_bevel_leading_active_pressed, reflected_edge(flight_fill_active_pressed));
+
+    lv_style_init(&style_flight_bevel_leading_transition);
+    lv_style_set_border_color(&style_flight_bevel_leading_transition, reflected_edge(flight_fill_transition));
+
+    lv_style_init(&style_flight_bevel_trailing);
+    lv_style_set_bg_opa(&style_flight_bevel_trailing, LV_OPA_TRANSP);
+    lv_style_set_border_side(&style_flight_bevel_trailing, LV_BORDER_SIDE_BOTTOM | LV_BORDER_SIDE_RIGHT);
+    lv_style_set_border_width(&style_flight_bevel_trailing, 3);
+    lv_style_set_border_color(&style_flight_bevel_trailing, shaded_edge(flight_fill_default));
+    lv_style_set_shadow_width(&style_flight_bevel_trailing, 0);
+
+    lv_style_init(&style_flight_bevel_trailing_pressed);
+    lv_style_set_border_color(&style_flight_bevel_trailing_pressed, shaded_edge(flight_fill_pressed));
+
+    lv_style_init(&style_flight_bevel_trailing_active);
+    lv_style_set_border_color(&style_flight_bevel_trailing_active, shaded_edge(flight_fill_active));
+
+    lv_style_init(&style_flight_bevel_trailing_active_pressed);
+    lv_style_set_border_color(&style_flight_bevel_trailing_active_pressed, shaded_edge(flight_fill_active_pressed));
+
+    lv_style_init(&style_flight_bevel_trailing_transition);
+    lv_style_set_border_color(&style_flight_bevel_trailing_transition, shaded_edge(flight_fill_transition));
+
+    lv_style_init(&style_flight_state_ring);
+    lv_style_set_radius(&style_flight_state_ring, palette.action_radius);
+    lv_style_set_bg_opa(&style_flight_state_ring, LV_OPA_TRANSP);
+    lv_style_set_border_side(&style_flight_state_ring, LV_BORDER_SIDE_FULL);
+    lv_style_set_border_width(&style_flight_state_ring, kFlightStateRingWidth);
+    lv_style_set_border_color(&style_flight_state_ring, surrounding_reflection(flight_fill_default));
+    lv_style_set_shadow_width(&style_flight_state_ring, 0);
+
+    lv_style_init(&style_flight_state_ring_pressed);
+    lv_style_set_border_color(&style_flight_state_ring_pressed, surrounding_reflection(flight_fill_pressed));
+
+    lv_style_init(&style_flight_state_ring_active);
+    lv_style_set_border_color(&style_flight_state_ring_active, surrounding_reflection(flight_fill_active));
+
+    lv_style_init(&style_flight_state_ring_active_pressed);
+    lv_style_set_border_color(&style_flight_state_ring_active_pressed, surrounding_reflection(flight_fill_active_pressed));
+
+    lv_style_init(&style_flight_state_ring_transition);
+    lv_style_set_border_color(&style_flight_state_ring_transition, surrounding_reflection(flight_fill_transition));
 
     lv_style_init(&style_nav);
     lv_style_set_radius(&style_nav, palette.control_radius / 2);
@@ -300,6 +497,134 @@ void update_action_text(ActionRuntime &runtime)
         LV_STATE_DEFAULT);
 }
 
+void set_visual_state(lv_obj_t *object, lv_state_t state, bool enabled)
+{
+    if (object == nullptr) {
+        return;
+    }
+
+    if (enabled) {
+        lv_obj_add_state(object, state);
+    } else {
+        lv_obj_clear_state(object, state);
+    }
+}
+
+void sync_physical_button_layers(PhysicalButtonLayers &layers, lv_obj_t *button)
+{
+    if (button == nullptr || layers.face == nullptr || layers.state_ring == nullptr) {
+        return;
+    }
+
+    const bool checked = lv_obj_has_state(button, LV_STATE_CHECKED);
+    const bool transitioning = lv_obj_has_state(button, LV_STATE_USER_1);
+    for (lv_obj_t *layer : {layers.face, layers.leading_bevel, layers.trailing_bevel, layers.state_ring}) {
+        set_visual_state(layer, LV_STATE_CHECKED, checked);
+        set_visual_state(layer, LV_STATE_USER_1, transitioning);
+    }
+}
+
+void create_physical_button_layers(
+    lv_obj_t *button,
+    PhysicalButtonLayers &layers,
+    int width,
+    int height)
+{
+    constexpr int kBevelInset = 4;
+    const int inner_width = width - kBevelInset * 2;
+    const int inner_height = height - kBevelInset * 2;
+
+    layers.face = lv_obj_create(button);
+    lv_obj_set_pos(layers.face, kBevelInset, kBevelInset);
+    lv_obj_set_size(layers.face, inner_width, inner_height);
+    lv_obj_clear_flag(layers.face, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_pad_all(layers.face, 0, 0);
+    lv_obj_add_style(layers.face, &style_flight_face, LV_STATE_DEFAULT);
+    lv_obj_add_style(layers.face, &style_flight_face_active, LV_STATE_CHECKED);
+    lv_obj_add_style(layers.face, &style_flight_face_active_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
+    lv_obj_add_style(layers.face, &style_flight_face_transition, LV_STATE_USER_1);
+    lv_obj_add_style(layers.face, &style_flight_face_pressed, LV_STATE_PRESSED);
+
+    layers.leading_bevel = lv_obj_create(button);
+    lv_obj_set_pos(layers.leading_bevel, kBevelInset, kBevelInset);
+    lv_obj_set_size(layers.leading_bevel, inner_width, inner_height);
+    lv_obj_clear_flag(layers.leading_bevel, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(layers.leading_bevel, LV_MAX(0, theme().action_radius - kBevelInset), 0);
+    lv_obj_set_style_pad_all(layers.leading_bevel, 0, 0);
+    lv_obj_add_style(layers.leading_bevel, &style_flight_bevel_leading, LV_STATE_DEFAULT);
+    lv_obj_add_style(layers.leading_bevel, &style_flight_bevel_leading_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(layers.leading_bevel, &style_flight_bevel_leading_active, LV_STATE_CHECKED);
+    lv_obj_add_style(layers.leading_bevel, &style_flight_bevel_leading_active_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
+    lv_obj_add_style(layers.leading_bevel, &style_flight_bevel_leading_transition, LV_STATE_USER_1);
+
+    layers.trailing_bevel = lv_obj_create(button);
+    lv_obj_set_pos(layers.trailing_bevel, kBevelInset, kBevelInset);
+    lv_obj_set_size(layers.trailing_bevel, inner_width, inner_height);
+    lv_obj_clear_flag(layers.trailing_bevel, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(layers.trailing_bevel, LV_MAX(0, theme().action_radius - kBevelInset), 0);
+    lv_obj_set_style_pad_all(layers.trailing_bevel, 0, 0);
+    lv_obj_add_style(layers.trailing_bevel, &style_flight_bevel_trailing, LV_STATE_DEFAULT);
+    lv_obj_add_style(layers.trailing_bevel, &style_flight_bevel_trailing_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(layers.trailing_bevel, &style_flight_bevel_trailing_active, LV_STATE_CHECKED);
+    lv_obj_add_style(layers.trailing_bevel, &style_flight_bevel_trailing_active_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
+    lv_obj_add_style(layers.trailing_bevel, &style_flight_bevel_trailing_transition, LV_STATE_USER_1);
+
+    layers.state_ring = lv_obj_create(button);
+    lv_obj_set_pos(layers.state_ring, 0, 0);
+    lv_obj_set_size(layers.state_ring, width, height);
+    lv_obj_clear_flag(layers.state_ring, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_pad_all(layers.state_ring, 0, 0);
+    lv_obj_add_style(layers.state_ring, &style_flight_state_ring, LV_STATE_DEFAULT);
+    lv_obj_add_style(layers.state_ring, &style_flight_state_ring_active, LV_STATE_CHECKED);
+    lv_obj_add_style(layers.state_ring, &style_flight_state_ring_active_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
+    lv_obj_add_style(layers.state_ring, &style_flight_state_ring_transition, LV_STATE_USER_1);
+    lv_obj_add_style(layers.state_ring, &style_flight_state_ring_pressed, LV_STATE_PRESSED);
+}
+
+void physical_button_feedback_event_cb(lv_event_t *event)
+{
+    auto *layers = static_cast<PhysicalButtonLayers *>(lv_event_get_user_data(event));
+    if (layers == nullptr) {
+        return;
+    }
+
+    const lv_event_code_t code = lv_event_get_code(event);
+    if (code == LV_EVENT_PRESSED) {
+        for (lv_obj_t *layer : {layers->face, layers->leading_bevel, layers->trailing_bevel, layers->state_ring}) {
+            set_visual_state(layer, LV_STATE_PRESSED, true);
+        }
+    } else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
+        for (lv_obj_t *layer : {layers->face, layers->leading_bevel, layers->trailing_bevel, layers->state_ring}) {
+            set_visual_state(layer, LV_STATE_PRESSED, false);
+        }
+    } else {
+        return;
+    }
+
+    lv_obj_invalidate(lv_event_get_target(event));
+}
+
+void sync_flight_button_layers(ActionRuntime &runtime)
+{
+    sync_physical_button_layers(runtime.layers, runtime.button);
+}
+
+void sync_flight_button_layers(lv_obj_t *button)
+{
+    for (ActionRuntime &runtime : action_runtime) {
+        if (runtime.button == button) {
+            sync_flight_button_layers(runtime);
+            return;
+        }
+    }
+    for (MiningControlRuntime &runtime : mining_controls) {
+        if (runtime.button == button) {
+            sync_physical_button_layers(runtime.layers, runtime.button);
+            return;
+        }
+    }
+}
+
 void apply_active_state(ActionRuntime &runtime)
 {
     if (state_for(runtime).active) {
@@ -307,6 +632,7 @@ void apply_active_state(ActionRuntime &runtime)
     } else {
         lv_obj_clear_state(runtime.button, LV_STATE_CHECKED);
     }
+    sync_flight_button_layers(runtime);
     update_action_text(runtime);
 }
 
@@ -322,6 +648,7 @@ void apply_process_presentation(ActionRuntime &runtime)
     } else {
         lv_obj_clear_state(runtime.button, LV_STATE_USER_1);
     }
+    sync_flight_button_layers(runtime);
     // Request a full-button redraw after both fill and border properties have
     // changed, so they reach the display in the same refresh.
     lv_obj_invalidate(runtime.button);
@@ -337,6 +664,7 @@ void process_timer_cb(lv_timer_t *timer)
 
     if (state.process_elapsed_ms >= process.duration_ms) {
         lv_obj_clear_state(runtime->button, LV_STATE_USER_1);
+        sync_flight_button_layers(*runtime);
         state.processing = false;
         if (runtime->spec->behavior == ButtonBehavior::ProcessAndToggle) {
             state.active = !state.active;
@@ -389,6 +717,7 @@ void cancel_page_transition()
 {
     if (page_transition.source_button != nullptr) {
         lv_obj_clear_state(page_transition.source_button, LV_STATE_USER_1);
+        sync_flight_button_layers(page_transition.source_button);
     }
     if (page_transition.timer != nullptr) {
         lv_timer_del(page_transition.timer);
@@ -401,6 +730,7 @@ void page_transition_timer_cb(lv_timer_t *timer)
     page_transition.elapsed_ms += kPageTransitionPulseMs;
     if (page_transition.elapsed_ms >= kPageTransitionDurationMs) {
         lv_obj_clear_state(page_transition.source_button, LV_STATE_USER_1);
+        sync_flight_button_layers(page_transition.source_button);
         lv_obj_invalidate(page_transition.source_button);
         const PanelPage target = page_transition.target;
         page_transition.timer = nullptr;
@@ -417,6 +747,7 @@ void page_transition_timer_cb(lv_timer_t *timer)
     } else {
         lv_obj_clear_state(page_transition.source_button, LV_STATE_USER_1);
     }
+    sync_flight_button_layers(page_transition.source_button);
     lv_obj_invalidate(page_transition.source_button);
 }
 
@@ -431,6 +762,7 @@ void start_page_transition(PanelPage target, lv_obj_t *source_button)
     page_transition.elapsed_ms = 0;
     page_transition.source_button = source_button;
     lv_obj_add_state(source_button, LV_STATE_USER_1);
+    sync_flight_button_layers(source_button);
     lv_obj_invalidate(source_button);
     page_transition.timer = lv_timer_create(
         page_transition_timer_cb,
@@ -456,19 +788,8 @@ void rebuild_ui(void *)
     for (NavigationRuntime &runtime : navigation_runtime) {
         runtime = {};
     }
-    theme_picker_overlay = nullptr;
     lv_obj_clean(lv_scr_act());
     create_ui_impl();
-}
-
-void dismiss_theme_picker()
-{
-    if (theme_picker_overlay == nullptr) {
-        return;
-    }
-
-    lv_obj_del_async(theme_picker_overlay);
-    theme_picker_overlay = nullptr;
 }
 
 void theme_choice_event_cb(lv_event_t *event)
@@ -479,124 +800,7 @@ void theme_choice_event_cb(lv_event_t *event)
 
     const auto *selection = static_cast<const ThemeSelectionRuntime *>(lv_event_get_user_data(event));
     current_theme = selection->index;
-    // The screen rebuild removes the picker after this click event returns.
-    theme_picker_overlay = nullptr;
     lv_async_call(rebuild_ui, nullptr);
-}
-
-void create_theme_picker()
-{
-    if (theme_picker_overlay != nullptr) {
-        return;
-    }
-
-    const Theme &palette = theme();
-    lv_obj_t *screen = lv_scr_act();
-    theme_picker_overlay = lv_obj_create(screen);
-    lv_obj_set_size(theme_picker_overlay, kScreenWidth, 600);
-    lv_obj_set_pos(theme_picker_overlay, 0, 0);
-    lv_obj_clear_flag(theme_picker_overlay, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_radius(theme_picker_overlay, 0, 0);
-    lv_obj_set_style_bg_color(theme_picker_overlay, color(palette.screen), 0);
-    lv_obj_set_style_bg_opa(theme_picker_overlay, LV_OPA_90, 0);
-    lv_obj_set_style_border_width(theme_picker_overlay, 0, 0);
-    lv_obj_set_style_pad_all(theme_picker_overlay, 0, 0);
-
-    lv_obj_t *panel = lv_obj_create(theme_picker_overlay);
-    lv_obj_set_size(panel, 936, 420);
-    lv_obj_align(panel, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_radius(panel, palette.action_radius, 0);
-    lv_obj_set_style_bg_color(panel, color(palette.header), 0);
-    lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(panel, color(palette.primary), 0);
-    lv_obj_set_style_border_width(panel, 1, 0);
-    lv_obj_set_style_shadow_width(panel, 0, 0);
-    lv_obj_set_style_pad_all(panel, 0, 0);
-
-    lv_obj_t *title = lv_label_create(panel);
-    lv_label_set_text(title, "SELECT MANUFACTURER THEME");
-    lv_obj_set_pos(title, 24, 18);
-    lv_obj_set_style_text_color(title, color(palette.text), 0);
-    lv_obj_set_style_text_font(title, &sc_pad_font_jetbrains_mono_16, 0);
-
-    lv_obj_t *subtitle = lv_label_create(panel);
-    lv_label_set_text_fmt(subtitle, "CURRENT: %s", palette.name);
-    lv_obj_set_pos(subtitle, 24, 44);
-    lv_obj_set_style_text_color(subtitle, color(palette.muted_text), 0);
-    lv_obj_set_style_text_font(subtitle, &sc_pad_font_jetbrains_mono_12, 0);
-
-    lv_obj_t *close_button = lv_btn_create(panel);
-    lv_obj_set_size(close_button, 108, 30);
-    lv_obj_align(close_button, LV_ALIGN_TOP_RIGHT, -18, 15);
-    lv_obj_set_style_radius(close_button, palette.control_radius, 0);
-    lv_obj_set_style_bg_color(close_button, color(palette.surface), 0);
-    lv_obj_set_style_bg_opa(close_button, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(close_button, color(palette.border), 0);
-    lv_obj_set_style_border_width(close_button, 1, 0);
-    lv_obj_set_style_pad_all(close_button, 0, 0);
-    lv_obj_add_event_cb(
-        close_button,
-        [](lv_event_t *event) {
-            if (lv_event_get_code(event) == LV_EVENT_CLICKED) {
-                dismiss_theme_picker();
-            }
-        },
-        LV_EVENT_CLICKED,
-        nullptr);
-    lv_obj_t *close_label = lv_label_create(close_button);
-    lv_label_set_text(close_label, "X  CLOSE");
-    lv_obj_center(close_label);
-    lv_obj_set_style_text_color(close_label, color(palette.text), 0);
-    lv_obj_set_style_text_font(close_label, &sc_pad_font_jetbrains_mono_12, 0);
-
-    constexpr int kCardWidth = 208;
-    constexpr int kCardHeight = 136;
-    constexpr int kCardLeft = 28;
-    constexpr int kCardTop = 82;
-    constexpr int kCardGapX = 16;
-    constexpr int kCardGapY = 22;
-    for (int i = 0; i < kThemeCount; ++i) {
-        const int column = i % 4;
-        const int row = i / 4;
-        const Theme &candidate = kThemes[i];
-        ThemeSelectionRuntime &selection = theme_selection_runtime[i];
-        selection.index = static_cast<uint8_t>(i);
-
-        lv_obj_t *card = lv_btn_create(panel);
-        lv_obj_set_size(card, kCardWidth, kCardHeight);
-        const int card_left = row == 1 ? 140 : kCardLeft;
-        lv_obj_set_pos(card, card_left + column * (kCardWidth + kCardGapX),
-                       kCardTop + row * (kCardHeight + kCardGapY));
-        lv_obj_set_style_radius(card, candidate.action_radius, 0);
-        lv_obj_set_style_bg_color(card, color(candidate.logo_surface), 0);
-        lv_obj_set_style_bg_opa(card, LV_OPA_COVER, 0);
-        lv_obj_set_style_border_color(card, color(i == current_theme ? palette.primary : candidate.logo_border), 0);
-        lv_obj_set_style_border_width(card, i == current_theme ? 2 : 1, 0);
-        lv_obj_set_style_shadow_width(card, 0, 0);
-        lv_obj_set_style_pad_all(card, 0, 0);
-        lv_obj_set_style_bg_color(card, color(candidate.surface_pressed), LV_STATE_PRESSED);
-        lv_obj_add_event_cb(card, theme_choice_event_cb, LV_EVENT_CLICKED, &selection);
-
-        lv_obj_t *logo = lv_img_create(card);
-        lv_img_set_src(logo, candidate.logo);
-        lv_obj_align(logo, LV_ALIGN_CENTER, 0, -16);
-
-        lv_obj_t *card_label = lv_label_create(card);
-        lv_label_set_text(card_label, i == current_theme ? "ACTIVE" : "SELECT");
-        lv_obj_align(card_label, LV_ALIGN_BOTTOM_MID, 0, -12);
-        lv_obj_set_style_text_color(card_label, color(i == current_theme ? palette.primary : candidate.muted_text), 0);
-        lv_obj_set_style_text_font(card_label, &sc_pad_font_jetbrains_mono_12, 0);
-    }
-}
-
-void theme_event_cb(lv_event_t *event)
-{
-    if (lv_event_get_code(event) != LV_EVENT_CLICKED) {
-        return;
-    }
-
-    create_theme_picker();
 }
 
 void attach_mode_event_cb(lv_event_t *event)
@@ -669,6 +873,8 @@ const char *page_title_text(PanelPage page)
             return "SHIP";
         case PanelPage::Mining:
             return "MINING";
+        case PanelPage::Camera:
+            return "CAMERA";
         case PanelPage::System:
             return "SYSTEM";
     }
@@ -779,24 +985,6 @@ void create_header(lv_obj_t *screen)
         lv_obj_add_state(attach_mode_button, LV_STATE_CHECKED);
     }
 
-    theme_button = lv_btn_create(header);
-    lv_obj_set_size(theme_button, 170, 34);
-    lv_obj_align(theme_button, LV_ALIGN_RIGHT_MID, -332, 0);
-    lv_obj_set_style_radius(theme_button, palette.control_radius, LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(theme_button, color(palette.accent_surface), LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(theme_button, LV_OPA_COVER, LV_STATE_DEFAULT);
-    lv_obj_set_style_border_color(theme_button, color(palette.primary), LV_STATE_DEFAULT);
-    lv_obj_set_style_border_width(theme_button, 1, LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_width(theme_button, 0, LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(theme_button, color(palette.surface_pressed), LV_STATE_PRESSED);
-    lv_obj_add_event_cb(theme_button, theme_event_cb, LV_EVENT_CLICKED, nullptr);
-
-    theme_label = lv_label_create(theme_button);
-    lv_label_set_text(theme_label, "THEME");
-    lv_obj_center(theme_label);
-    lv_obj_set_style_text_color(theme_label, color(palette.text), LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(theme_label, &sc_pad_font_jetbrains_mono_12, LV_STATE_DEFAULT);
-
     lv_obj_t *status = lv_obj_create(header);
     lv_obj_set_size(status, 134, 34);
     lv_obj_align(status, LV_ALIGN_RIGHT_MID, -20, 0);
@@ -856,11 +1044,12 @@ void create_action_button(lv_obj_t *screen, int index)
         start_x + column * (button_width + horizontal_gap),
         start_y + row * (button_height + vertical_gap));
     lv_obj_set_size(button, button_width, button_height);
-    lv_obj_add_style(button, &style_action, LV_STATE_DEFAULT);
-
-    lv_obj_add_style(button, &style_action_active, LV_STATE_CHECKED);
-    lv_obj_add_style(button, &style_action_transition, LV_STATE_USER_1);
-    lv_obj_add_style(button, &style_action_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(button, &style_flight_action, LV_STATE_DEFAULT);
+    lv_obj_add_style(button, &style_flight_action_active, LV_STATE_CHECKED);
+    lv_obj_add_style(button, &style_flight_action_transition, LV_STATE_USER_1);
+    lv_obj_add_style(button, &style_flight_action_pressed, LV_STATE_PRESSED);
+    create_physical_button_layers(button, runtime.layers, button_width, button_height);
+    lv_obj_add_event_cb(button, physical_button_feedback_event_cb, LV_EVENT_ALL, &runtime.layers);
     lv_obj_add_event_cb(button, action_event_cb, LV_EVENT_CLICKED, &runtime);
 
     lv_obj_t *number = lv_label_create(button);
@@ -918,8 +1107,10 @@ void create_ship_control_button(
     runtime.button = button;
     lv_obj_set_pos(button, x, y);
     lv_obj_set_size(button, width, height);
-    lv_obj_add_style(button, &style_action, LV_STATE_DEFAULT);
-    lv_obj_add_style(button, &style_action_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(button, &style_flight_action, LV_STATE_DEFAULT);
+    lv_obj_add_style(button, &style_flight_action_pressed, LV_STATE_PRESSED);
+    create_physical_button_layers(button, runtime.layers, width, height);
+    lv_obj_add_event_cb(button, physical_button_feedback_event_cb, LV_EVENT_ALL, &runtime.layers);
     lv_obj_add_event_cb(
         button,
         [](lv_event_t *event) {
@@ -956,7 +1147,7 @@ void create_ship_page(lv_obj_t *page)
     create_ship_control_button(shields, 0, Command::ShieldUp, "UP +", kShieldColumnX[0], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
     create_ship_control_button(shields, 1, Command::ShieldFront, "FRONT +", kShieldColumnX[1], kShieldRowY[0], kShieldButtonWidth, kShieldButtonHeight);
     create_ship_control_button(shields, 2, Command::ShieldLeft, "LEFT +", kShieldColumnX[0], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
-    create_ship_control_button(shields, 3, Command::ResetShields, "RESET SHIELDS", kShieldColumnX[1], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
+    create_ship_control_button(shields, 3, Command::ResetShields, "RESET", kShieldColumnX[1], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
     create_ship_control_button(shields, 4, Command::ShieldRight, "RIGHT +", kShieldColumnX[2], kShieldRowY[1], kShieldButtonWidth, kShieldButtonHeight);
     create_ship_control_button(shields, 5, Command::ShieldRear, "REAR +", kShieldColumnX[1], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
     create_ship_control_button(shields, 6, Command::ShieldDown, "DOWN +", kShieldColumnX[2], kShieldRowY[2], kShieldButtonWidth, kShieldButtonHeight);
@@ -972,19 +1163,55 @@ void create_ship_page(lv_obj_t *page)
 
 void create_system_page(lv_obj_t *page)
 {
-#if SC_PAD_ENABLE_DYNAMIC_ROTATION
-    lv_obj_t *section = create_control_section(page, 24, "DISPLAY ORIENTATION");
-    lv_obj_set_size(section, 976, 424);
+    lv_obj_t *themes = create_control_section(page, 24, "MANUFACTURER THEME");
+    lv_obj_t *current = lv_label_create(themes);
+    lv_label_set_text_fmt(current, "CURRENT: %s", theme().short_name);
+    lv_obj_set_pos(current, 15, 44);
+    lv_obj_set_style_text_color(current, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(current, &sc_pad_font_jetbrains_mono_12, 0);
 
+    for (int i = 0; i < kThemeCount; ++i) {
+        const Theme &candidate = kThemes[i];
+        ThemeSelectionRuntime &selection = theme_selection_runtime[i];
+        selection.index = static_cast<uint8_t>(i);
+
+        lv_obj_t *choice = lv_btn_create(themes);
+        lv_obj_set_pos(choice, 15, 69 + i * 47);
+        lv_obj_set_size(choice, 449, 38);
+        lv_obj_set_style_radius(choice, candidate.control_radius, 0);
+        lv_obj_set_style_bg_color(choice, color(candidate.accent_surface), 0);
+        lv_obj_set_style_bg_opa(choice, LV_OPA_COVER, 0);
+        lv_obj_set_style_border_color(choice, color(candidate.primary), 0);
+        lv_obj_set_style_border_width(choice, i == current_theme ? 2 : 1, 0);
+        lv_obj_set_style_shadow_width(choice, 0, 0);
+        lv_obj_set_style_pad_all(choice, 0, 0);
+        lv_obj_set_style_bg_color(choice, color(candidate.surface_pressed), LV_STATE_PRESSED);
+        lv_obj_add_event_cb(choice, theme_choice_event_cb, LV_EVENT_CLICKED, &selection);
+
+        lv_obj_t *name = lv_label_create(choice);
+        lv_label_set_text(name, candidate.short_name);
+        lv_obj_align(name, LV_ALIGN_LEFT_MID, 14, 0);
+        lv_obj_set_style_text_color(name, color(candidate.text), 0);
+        lv_obj_set_style_text_font(name, &sc_pad_font_jetbrains_mono_16, 0);
+
+        lv_obj_t *state = lv_label_create(choice);
+        lv_label_set_text(state, i == current_theme ? "ACTIVE" : "SELECT");
+        lv_obj_align(state, LV_ALIGN_RIGHT_MID, -14, 0);
+        lv_obj_set_style_text_color(state, color(i == current_theme ? candidate.primary : candidate.muted_text), 0);
+        lv_obj_set_style_text_font(state, &sc_pad_font_jetbrains_mono_12, 0);
+    }
+
+    lv_obj_t *section = create_control_section(page, 521, "PANEL SETTINGS");
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
     lv_obj_t *description = lv_label_create(section);
-    lv_label_set_text(description, "ROTATES DISPLAY + TOUCH 180 DEG  //  SAVED AFTER RESTART");
+    lv_label_set_text(description, "ROTATES DISPLAY AND TOUCH 180 DEG\nSAVED AFTER RESTART");
     lv_obj_set_pos(description, 16, 51);
     lv_obj_set_style_text_color(description, color(theme().muted_text), 0);
     lv_obj_set_style_text_font(description, &sc_pad_font_jetbrains_mono_12, 0);
 
     lv_obj_t *orientation_button = lv_btn_create(section);
-    lv_obj_set_size(orientation_button, 608, 190);
-    lv_obj_align(orientation_button, LV_ALIGN_CENTER, 0, 35);
+    lv_obj_set_size(orientation_button, 449, 190);
+    lv_obj_align(orientation_button, LV_ALIGN_CENTER, 0, 45);
     lv_obj_add_style(orientation_button, &style_action, LV_STATE_DEFAULT);
     lv_obj_add_style(orientation_button, &style_action_pressed, LV_STATE_PRESSED);
     lv_obj_add_event_cb(
@@ -1008,14 +1235,11 @@ void create_system_page(lv_obj_t *page)
     lv_obj_t *button_detail = lv_label_create(orientation_button);
     lv_label_set_text(
         button_detail,
-        orientation_180 ? "CURRENT: 180 DEG  //  USB EDGE: RIGHT" : "CURRENT: 0 DEG  //  USB EDGE: LEFT");
+        orientation_180 ? "CURRENT: 180 DEG | USB EDGE: RIGHT" : "CURRENT: 0 DEG | USB EDGE: LEFT");
     lv_obj_align(button_detail, LV_ALIGN_CENTER, 0, 26);
     lv_obj_set_style_text_color(button_detail, color(theme().muted_text), 0);
     lv_obj_set_style_text_font(button_detail, &sc_pad_font_jetbrains_mono_12, 0);
 #else
-    lv_obj_t *section = create_control_section(page, 24, "SYSTEM");
-    lv_obj_set_size(section, 976, 424);
-
     lv_obj_t *status = lv_label_create(section);
     lv_label_set_text(status, "DISPLAY ORIENTATION FIXED");
     lv_obj_align(status, LV_ALIGN_CENTER, 0, -12);
@@ -1039,6 +1263,7 @@ void update_mining_presentation()
         } else {
             lv_obj_clear_state(button, LV_STATE_CHECKED);
         }
+        sync_physical_button_layers(mining_controls[2 + i].layers, button);
     }
 
     MiningControlRuntime &collect = mining_controls[5];
@@ -1048,6 +1273,7 @@ void update_mining_presentation()
     } else {
         lv_obj_clear_state(collect.button, LV_STATE_CHECKED);
     }
+    sync_physical_button_layers(collect.layers, collect.button);
 }
 
 void mining_control_event_cb(lv_event_t *event)
@@ -1111,10 +1337,12 @@ void create_mining_button(
     runtime.button = lv_btn_create(section);
     lv_obj_set_pos(runtime.button, x, y);
     lv_obj_set_size(runtime.button, width, height);
-    lv_obj_add_style(runtime.button, &style_action, LV_STATE_DEFAULT);
-    lv_obj_add_style(runtime.button, &style_action_active, LV_STATE_CHECKED);
-    lv_obj_add_style(runtime.button, &style_action_transition, LV_STATE_USER_1);
-    lv_obj_add_style(runtime.button, &style_action_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(runtime.button, &style_flight_action, LV_STATE_DEFAULT);
+    lv_obj_add_style(runtime.button, &style_flight_action_active, LV_STATE_CHECKED);
+    lv_obj_add_style(runtime.button, &style_flight_action_transition, LV_STATE_USER_1);
+    lv_obj_add_style(runtime.button, &style_flight_action_pressed, LV_STATE_PRESSED);
+    create_physical_button_layers(runtime.button, runtime.layers, width, height);
+    lv_obj_add_event_cb(runtime.button, physical_button_feedback_event_cb, LV_EVENT_ALL, &runtime.layers);
     lv_obj_add_event_cb(runtime.button, mining_control_event_cb, LV_EVENT_CLICKED, &runtime);
 
     runtime.label = lv_label_create(runtime.button);
@@ -1170,10 +1398,11 @@ void create_navigation(lv_obj_t *screen)
         lv_obj_t *nav_button = lv_btn_create(nav_bg);
         NavigationRuntime &runtime = navigation_runtime[i];
         runtime.button = nav_button;
-        runtime.available = i < 3 || i == 4;
+        runtime.available = true;
         runtime.page = i == 1 ? PanelPage::Ship
                                : (i == 2 ? PanelPage::Mining
-                                         : (i == 4 ? PanelPage::System : PanelPage::Flight));
+                                         : (i == 3 ? PanelPage::Camera
+                                                   : (i == 4 ? PanelPage::System : PanelPage::Flight)));
         lv_obj_set_size(nav_button, 192, 60);
         lv_obj_align(nav_button, LV_ALIGN_LEFT_MID, 12 + i * 200, 0);
         lv_obj_add_style(nav_button, &style_nav, LV_STATE_DEFAULT);
@@ -1212,6 +1441,8 @@ void create_ui_impl()
             break;
         case PanelPage::Mining:
             create_mining_page(page);
+            break;
+        case PanelPage::Camera:
             break;
         case PanelPage::System:
             create_system_page(page);

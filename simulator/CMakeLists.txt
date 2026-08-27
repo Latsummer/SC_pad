@@ -14,6 +14,7 @@ file(GLOB_RECURSE LVGL_SOURCES CONFIGURE_DEPENDS
 # Waveshare's bundled LVGL omits the examples directory, while LVGL's upstream
 # CMake file creates an examples target unconditionally. Build only the core
 # sources that both the firmware and simulator actually use.
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "/(demos|examples)/")
 add_library(lvgl STATIC ${LVGL_SOURCES})
 add_library(lvgl::lvgl ALIAS lvgl)
 target_include_directories(lvgl SYSTEM PUBLIC
