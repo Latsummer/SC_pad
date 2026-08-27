@@ -13,7 +13,9 @@
 static const char *TAG = "lv_port";                      // Tag for logging
 static SemaphoreHandle_t lvgl_mux;                       // LVGL mutex for synchronization
 static TaskHandle_t lvgl_task_handle = NULL;             // Handle for the LVGL task
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
 static bool lvgl_port_rotation_180 = false;
+#endif
 
 #if EXAMPLE_LVGL_PORT_ROTATION_DEGREE != 0
 // Function to get the next frame buffer for double buffering
@@ -548,7 +550,11 @@ esp_err_t lvgl_port_init(esp_lcd_panel_handle_t lcd_handle, esp_lcd_touch_handle
 
 void lvgl_port_set_rotation_180(bool enabled)
 {
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
     lvgl_port_rotation_180 = enabled;
+#else
+    (void)enabled;
+#endif
 }
 
 bool lvgl_port_lock(int timeout_ms)

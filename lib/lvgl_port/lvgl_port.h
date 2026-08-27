@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "esp_err.h"
 #include "esp_lcd_types.h"
+#include "sc_pad_config.h"
 #include "../lvgl/lvgl.h"
 
 #include "../rgb_lcd_port/rgb_lcd_port.h"    // Header for Waveshare RGB LCD driver
@@ -74,9 +75,13 @@
  *      - 270: 270 degree
  *
  */
-// Always compile the rotation-capable output path. The application selects
-// 0 or 180 degrees from its saved setting before lvgl_port_init().
+// Rotation needs an additional RGB output buffer because the rotated pixels
+// cannot be rendered directly into the panel's scanout order.
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
 #define EXAMPLE_LVGL_PORT_ROTATION_DEGREE  (180)
+#else
+#define EXAMPLE_LVGL_PORT_ROTATION_DEGREE  (0)
+#endif
 
 /**
  * Below configurations are automatically set according to the above configurations, users do not need to modify them.
@@ -127,7 +132,8 @@
  */
 esp_err_t lvgl_port_init(esp_lcd_panel_handle_t lcd_handle, esp_lcd_touch_handle_t tp_handle);
 
-// Select 0/180-degree RGB output rotation. Call before lvgl_port_init().
+// Select 0/180-degree RGB output rotation. This is a no-op unless
+// SC_PAD_ENABLE_DYNAMIC_ROTATION is enabled. Call before lvgl_port_init().
 void lvgl_port_set_rotation_180(bool enabled);
 
 /**

@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "sc_pad_config.h"
+
 namespace sc_pad {
 
 enum class Command : uint8_t {
