@@ -176,7 +176,9 @@ lv_style_t style_nav_active;
 // Attach ON permits HID output; Attach OFF keeps the on-screen model editable
 // without sending commands to the host.
 bool attach_mode = true;
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
 bool orientation_180 = false;
+#endif
 int current_theme = 0;
 PanelPage current_page = PanelPage::Flight;
 bool styles_initialized = false;
@@ -970,6 +972,7 @@ void create_ship_page(lv_obj_t *page)
 
 void create_system_page(lv_obj_t *page)
 {
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
     lv_obj_t *section = create_control_section(page, 24, "DISPLAY ORIENTATION");
     lv_obj_set_size(section, 976, 424);
 
@@ -1009,6 +1012,22 @@ void create_system_page(lv_obj_t *page)
     lv_obj_align(button_detail, LV_ALIGN_CENTER, 0, 26);
     lv_obj_set_style_text_color(button_detail, color(theme().muted_text), 0);
     lv_obj_set_style_text_font(button_detail, &sc_pad_font_jetbrains_mono_12, 0);
+#else
+    lv_obj_t *section = create_control_section(page, 24, "SYSTEM");
+    lv_obj_set_size(section, 976, 424);
+
+    lv_obj_t *status = lv_label_create(section);
+    lv_label_set_text(status, "DISPLAY ORIENTATION FIXED");
+    lv_obj_align(status, LV_ALIGN_CENTER, 0, -12);
+    lv_obj_set_style_text_color(status, color(theme().text), 0);
+    lv_obj_set_style_text_font(status, &sc_pad_font_jetbrains_mono_20, 0);
+
+    lv_obj_t *detail = lv_label_create(section);
+    lv_label_set_text(detail, "SYSTEM CONTROLS RESERVED");
+    lv_obj_align(detail, LV_ALIGN_CENTER, 0, 26);
+    lv_obj_set_style_text_color(detail, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(detail, &sc_pad_font_jetbrains_mono_12, 0);
+#endif
 }
 
 void update_mining_presentation()
@@ -1213,7 +1232,11 @@ void create_ui(CommandCallback callback, void *user_data)
 
 void set_orientation_180(bool enabled)
 {
+#if SC_PAD_ENABLE_DYNAMIC_ROTATION
     orientation_180 = enabled;
+#else
+    (void)enabled;
+#endif
 }
 
 void set_theme_index(int index)
