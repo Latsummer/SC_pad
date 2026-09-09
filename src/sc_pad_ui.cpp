@@ -510,6 +510,70 @@ void set_visual_state(lv_obj_t *object, lv_state_t state, bool enabled)
     }
 }
 
+// Each flash holds a bright ignition briefly, then eases back to its themed
+// highlight. Object-owned animations are removed by LVGL when a page is rebuilt.
+constexpr uint16_t kFlashPeakHoldMs = 120;
+constexpr uint16_t kFlashDecayMs = 180;
+constexpr uint8_t kFlashPeakWhiteMix = LV_OPA_70;
+
+lv_color_t flash_fill(int32_t white_mix)
+{
+    return lv_color_lighten(color(theme().progress_border), white_mix);
+}
+
+void flash_shell_cb(void *object, int32_t white_mix)
+{
+    auto *button = static_cast<lv_obj_t *>(object);
+    const lv_color_t fill = flash_fill(white_mix);
+    lv_obj_set_style_bg_color(button, lv_color_darken(fill, LV_OPA_60), LV_STATE_USER_1);
+    lv_obj_set_style_border_color(button, lv_color_darken(fill, LV_OPA_70), LV_STATE_USER_1);
+}
+
+void flash_face_cb(void *object, int32_t white_mix)
+{
+    auto *face = static_cast<lv_obj_t *>(object);
+    const lv_color_t fill = flash_fill(white_mix);
+    lv_obj_set_style_bg_color(face, fill, LV_STATE_USER_1);
+    lv_obj_set_style_border_color(face, lv_color_lighten(fill, LV_OPA_30), LV_STATE_USER_1);
+}
+
+void flash_leading_cb(void *object, int32_t white_mix)
+{
+    lv_obj_set_style_border_color(static_cast<lv_obj_t *>(object),
+                                 lv_color_lighten(flash_fill(white_mix), LV_OPA_30), LV_STATE_USER_1);
+}
+
+void flash_trailing_cb(void *object, int32_t white_mix)
+{
+    lv_obj_set_style_border_color(static_cast<lv_obj_t *>(object),
+                                 lv_color_darken(flash_fill(white_mix), LV_OPA_60), LV_STATE_USER_1);
+}
+
+void flash_ring_cb(void *object, int32_t white_mix)
+{
+    lv_obj_set_style_border_color(static_cast<lv_obj_t *>(object),
+                                 lv_color_darken(flash_fill(white_mix), LV_OPA_70), LV_STATE_USER_1);
+}
+
+void animate_flash(lv_obj_t *object, lv_anim_exec_xcb_t callback, bool enabled)
+{
+    lv_anim_del(object, callback);
+    if (!enabled) {
+        return;
+    }
+
+    lv_anim_t animation;
+    lv_anim_init(&animation);
+    lv_anim_set_var(&animation, object);
+    lv_anim_set_exec_cb(&animation, callback);
+    lv_anim_set_values(&animation, kFlashPeakWhiteMix, 0);
+    lv_anim_set_delay(&animation, kFlashPeakHoldMs);
+    lv_anim_set_time(&animation, kFlashDecayMs);
+    lv_anim_set_path_cb(&animation, lv_anim_path_ease_out);
+    lv_anim_set_early_apply(&animation, true);
+    lv_anim_start(&animation);
+}
+
 void sync_physical_button_layers(PhysicalButtonLayers &layers, lv_obj_t *button)
 {
     if (button == nullptr || layers.face == nullptr || layers.state_ring == nullptr) {
@@ -518,9 +582,25 @@ void sync_physical_button_layers(PhysicalButtonLayers &layers, lv_obj_t *button)
 
     const bool checked = lv_obj_has_state(button, LV_STATE_CHECKED);
     const bool transitioning = lv_obj_has_state(button, LV_STATE_USER_1);
+    const bool flash_changed = transitioning != lv_obj_has_state(layers.face, LV_STATE_USER_1);
     for (lv_obj_t *layer : {layers.face, layers.leading_bevel, layers.trailing_bevel, layers.state_ring}) {
         set_visual_state(layer, LV_STATE_CHECKED, checked);
         set_visual_state(layer, LV_STATE_USER_1, transitioning);
+    }
+    // Labels have their own colors, so mirror the flash state onto them.
+    // Their default theme colors remain intact for the unlit phase.
+    for (uint32_t i = 0; i < lv_obj_get_child_cnt(button); ++i) {
+        lv_obj_t *child = lv_obj_get_child(button, i);
+        if (lv_obj_check_type(child, &lv_label_class)) {
+            set_visual_state(child, LV_STATE_USER_1, transitioning);
+        }
+    }
+    if (flash_changed) {
+        animate_flash(button, flash_shell_cb, transitioning);
+        animate_flash(layers.face, flash_face_cb, transitioning);
+        animate_flash(layers.leading_bevel, flash_leading_cb, transitioning);
+        animate_flash(layers.trailing_bevel, flash_trailing_cb, transitioning);
+        animate_flash(layers.state_ring, flash_ring_cb, transitioning);
     }
 }
 
@@ -1056,11 +1136,13 @@ void create_action_button(lv_obj_t *screen, int index)
     lv_label_set_text(number, spec.number);
     lv_obj_set_pos(number, 15, 13);
     lv_obj_set_style_text_color(number, color(theme().primary), 0);
+    lv_obj_set_style_text_color(number, lv_color_black(), LV_STATE_USER_1);
     lv_obj_set_style_text_font(number, &sc_pad_font_jetbrains_mono_12, 0);
 
     runtime.label = lv_label_create(button);
     lv_obj_center(runtime.label);
     lv_obj_set_style_text_color(runtime.label, color(theme().text), 0);
+    lv_obj_set_style_text_color(runtime.label, lv_color_black(), LV_STATE_USER_1);
 
     if (state_for(runtime).processing) {
         resume_process(runtime);
@@ -1349,6 +1431,7 @@ void create_mining_button(
     lv_label_set_text(runtime.label, label);
     lv_obj_center(runtime.label);
     lv_obj_set_style_text_color(runtime.label, color(theme().text), 0);
+    lv_obj_set_style_text_color(runtime.label, lv_color_black(), LV_STATE_USER_1);
     lv_obj_set_style_text_font(
         runtime.label,
         primary ? &sc_pad_font_jetbrains_mono_20 : &sc_pad_font_jetbrains_mono_16,
