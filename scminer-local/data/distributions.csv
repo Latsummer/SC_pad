@@ -1,0 +1,496 @@
+location_id,location,system,mineral_id,mineral,mining_methods,abundance,display_percent,available
+arc-l1,ARC-L1,Stanton,aluminium,Aluminium,['ship'],12.36,12.0,True
+arc-l1,ARC-L1,Stanton,corundum,Corundum,['ship'],12.43,12.0,True
+arc-l1,ARC-L1,Stanton,hephaestanite,Hephaestanite,['ship'],12.36,12.0,True
+arc-l1,ARC-L1,Stanton,taranite,Taranite,['ship'],12.5,13.0,True
+arc-l1,ARC-L1,Stanton,tungsten,Tungsten,['ship'],19.79,20.0,True
+arc-l2,ARC-L2,Stanton,aluminium,Aluminium,['ship'],12.36,12.0,True
+arc-l2,ARC-L2,Stanton,corundum,Corundum,['ship'],12.43,12.0,True
+arc-l2,ARC-L2,Stanton,hephaestanite,Hephaestanite,['ship'],12.36,12.0,True
+arc-l2,ARC-L2,Stanton,taranite,Taranite,['ship'],12.5,13.0,True
+arc-l2,ARC-L2,Stanton,tungsten,Tungsten,['ship'],19.79,20.0,True
+arc-l3,ARC-L3,Stanton,agricium,Agricium,['ship'],9.02,9.0,True
+arc-l3,ARC-L3,Stanton,beryl,Beryl,['ship'],5.7,6.0,True
+arc-l3,ARC-L3,Stanton,copper,Copper,['ship'],5.63,6.0,True
+arc-l3,ARC-L3,Stanton,ice,Ice,['ship'],5.63,6.0,True
+arc-l3,ARC-L3,Stanton,iron,Iron,['ship'],5.66,6.0,True
+arc-l4,ARC-L4,Stanton,aluminium,Aluminium,['ship'],12.36,12.0,True
+arc-l4,ARC-L4,Stanton,corundum,Corundum,['ship'],12.43,12.0,True
+arc-l4,ARC-L4,Stanton,hephaestanite,Hephaestanite,['ship'],12.36,12.0,True
+arc-l4,ARC-L4,Stanton,taranite,Taranite,['ship'],12.5,13.0,True
+arc-l4,ARC-L4,Stanton,tungsten,Tungsten,['ship'],19.79,20.0,True
+arc-l5,ARC-L5,Stanton,aslarite,Aslarite,['ship'],16.07,16.0,True
+arc-l5,ARC-L5,Stanton,copper,Copper,['ship'],10.04,10.0,True
+arc-l5,ARC-L5,Stanton,gold,Gold,['ship'],10.15,10.0,True
+arc-l5,ARC-L5,Stanton,ice,Ice,['ship'],10.04,10.0,True
+arc-l5,ARC-L5,Stanton,iron,Iron,['ship'],10.09,10.0,True
+aaron-halo,Aaron Halo,Stanton,agricium,Agricium,['ship'],14.2,14.0,True
+aaron-halo,Aaron Halo,Stanton,aluminium,Aluminium,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,aslarite,Aslarite,['ship'],14.2,14.0,True
+aaron-halo,Aaron Halo,Stanton,beryl,Beryl,['ship'],18.0,18.0,True
+aaron-halo,Aaron Halo,Stanton,copper,Copper,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,corundum,Corundum,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,hephaestanite,Hephaestanite,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,ice,Ice,['ship'],10.4,10.0,True
+aaron-halo,Aaron Halo,Stanton,iron,Iron,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+aaron-halo,Aaron Halo,Stanton,silicon,Silicon,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,tin,Tin,['ship'],10.3,10.0,True
+aaron-halo,Aaron Halo,Stanton,titanium,Titanium,['ship'],14.2,14.0,True
+aberdeen,Aberdeen,Stanton,agricium,Agricium,['ship'],28.5,29.0,True
+aberdeen,Aberdeen,Stanton,aluminium,Aluminium,['ship'],29.8,30.0,True
+aberdeen,Aberdeen,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+aberdeen,Aberdeen,Stanton,aslarite,Aslarite,['ship'],28.5,29.0,True
+aberdeen,Aberdeen,Stanton,beradom,Beradom,['roc'],4.0,4.0,True
+aberdeen,Aberdeen,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+aberdeen,Aberdeen,Stanton,corundum,Corundum,['ship'],29.8,30.0,True
+aberdeen,Aberdeen,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+aberdeen,Aberdeen,Stanton,feynmaline,Feynmaline,['roc'],64.0,64.0,True
+aberdeen,Aberdeen,Stanton,glacosite,Glacosite,['roc'],32.0,32.0,True
+aberdeen,Aberdeen,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+aberdeen,Aberdeen,Stanton,ouratite,Ouratite,['ship'],10.0,10.0,True
+aberdeen,Aberdeen,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+aberdeen,Aberdeen,Stanton,titanium,Titanium,['ship'],28.5,29.0,True
+akiro-cluster,Akiro Cluster,Pyro,copper,Copper,['ship'],14.9,15.0,True
+akiro-cluster,Akiro Cluster,Pyro,hephaestanite,Hephaestanite,['ship'],14.9,15.0,True
+akiro-cluster,Akiro Cluster,Pyro,ice,Ice,['ship'],14.9,15.0,True
+akiro-cluster,Akiro Cluster,Pyro,iron,Iron,['ship'],14.8,15.0,True
+akiro-cluster,Akiro Cluster,Pyro,laranite,Laranite,['ship'],10.0,10.0,True
+akiro-cluster,Akiro Cluster,Pyro,riccite,Riccite,['ship'],10.0,10.0,True
+akiro-cluster,Akiro Cluster,Pyro,silicon,Silicon,['ship'],14.9,15.0,True
+akiro-cluster,Akiro Cluster,Pyro,stileron,Stileron,['ship'],2.0,2.0,True
+akiro-cluster,Akiro Cluster,Pyro,taranite,Taranite,['ship'],2.0,2.0,True
+akiro-cluster,Akiro Cluster,Pyro,tin,Tin,['ship'],14.9,15.0,True
+akiro-cluster,Akiro Cluster,Pyro,torite,Torite,['ship'],28.5,29.0,True
+arial,Arial,Stanton,agricium,Agricium,['ship'],10.0,10.0,True
+arial,Arial,Stanton,aluminium,Aluminium,['ship'],22.0,22.0,True
+arial,Arial,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+arial,Arial,Stanton,beradom,Beradom,['roc'],16.0,16.0,True
+arial,Arial,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+arial,Arial,Stanton,copper,Copper,['ship'],22.0,22.0,True
+arial,Arial,Stanton,corundum,Corundum,['ship'],22.0,22.0,True
+arial,Arial,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+arial,Arial,Stanton,feynmaline,Feynmaline,['roc'],52.0,52.0,True
+arial,Arial,Stanton,glacosite,Glacosite,['roc'],32.0,32.0,True
+arial,Arial,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+arial,Arial,Stanton,hephaestanite,Hephaestanite,['ship'],22.0,22.0,True
+arial,Arial,Stanton,ouratite,Ouratite,['ship'],10.0,10.0,True
+arial,Arial,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+arial,Arial,Stanton,quartz,Quartz,['ship'],22.0,22.0,True
+arial,Arial,Stanton,silicon,Silicon,['ship'],22.0,22.0,True
+arial,Arial,Stanton,tin,Tin,['ship'],22.0,22.0,True
+breaker-stations-interior,Breaker Stations Interior,Nyx,aphorite,Aphorite,"['roc', 'fps']",75.0,75.0,True
+breaker-stations-interior,Breaker Stations Interior,Nyx,sadaryx,Sadaryx,['fps'],25.0,25.0,True
+breaker-stations-large-geode,Breaker Stations Large Geode,Nyx,savrilium,Savrilium,['ship'],100.0,100.0,True
+breaker-stations-large-geode,Breaker Stations Large Geode,Nyx,torite,Torite,['ship'],100.0,100.0,True
+cru-l1,CRU-L1,Stanton,bexalite,Bexalite,['ship'],9.54,10.0,True
+cru-l1,CRU-L1,Stanton,copper,Copper,['ship'],9.43,9.0,True
+cru-l1,CRU-L1,Stanton,ice,Ice,['ship'],9.43,9.0,True
+cru-l1,CRU-L1,Stanton,iron,Iron,['ship'],9.49,9.0,True
+cru-l1,CRU-L1,Stanton,titanium,Titanium,['ship'],15.11,15.0,True
+cru-l2,CRU-L2,Stanton,bexalite,Bexalite,['ship'],9.54,10.0,True
+cru-l2,CRU-L2,Stanton,copper,Copper,['ship'],9.43,9.0,True
+cru-l2,CRU-L2,Stanton,ice,Ice,['ship'],9.43,9.0,True
+cru-l2,CRU-L2,Stanton,iron,Iron,['ship'],9.49,9.0,True
+cru-l2,CRU-L2,Stanton,titanium,Titanium,['ship'],15.11,15.0,True
+cru-l3,CRU-L3,Stanton,aluminium,Aluminium,['ship'],9.36,9.0,True
+cru-l3,CRU-L3,Stanton,corundum,Corundum,['ship'],9.36,9.0,True
+cru-l3,CRU-L3,Stanton,hephaestanite,Hephaestanite,['ship'],9.36,9.0,True
+cru-l3,CRU-L3,Stanton,torite,Torite,['ship'],11.17,11.0,True
+cru-l4,CRU-L4,Stanton,aslarite,Aslarite,['ship'],16.07,16.0,True
+cru-l4,CRU-L4,Stanton,copper,Copper,['ship'],10.04,10.0,True
+cru-l4,CRU-L4,Stanton,gold,Gold,['ship'],10.15,10.0,True
+cru-l4,CRU-L4,Stanton,ice,Ice,['ship'],10.04,10.0,True
+cru-l4,CRU-L4,Stanton,iron,Iron,['ship'],10.09,10.0,True
+cru-l5,CRU-L5,Stanton,agricium,Agricium,['ship'],9.02,9.0,True
+cru-l5,CRU-L5,Stanton,beryl,Beryl,['ship'],5.7,6.0,True
+cru-l5,CRU-L5,Stanton,copper,Copper,['ship'],5.63,6.0,True
+cru-l5,CRU-L5,Stanton,ice,Ice,['ship'],5.63,6.0,True
+cru-l5,CRU-L5,Stanton,iron,Iron,['ship'],5.66,6.0,True
+calliope,Calliope,Stanton,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+calliope,Calliope,Stanton,beradom,Beradom,['roc'],12.0,12.0,True
+calliope,Calliope,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+calliope,Calliope,Stanton,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+calliope,Calliope,Stanton,feynmaline,Feynmaline,['roc'],4.0,4.0,True
+calliope,Calliope,Stanton,glacosite,Glacosite,['roc'],84.0,84.0,True
+calliope,Calliope,Stanton,hephaestanite,Hephaestanite,['ship'],32.63,33.0,True
+calliope,Calliope,Stanton,ice,Ice,['ship'],32.63,33.0,True
+calliope,Calliope,Stanton,iron,Iron,['ship'],32.73,33.0,True
+calliope,Calliope,Stanton,janalite,Janalite,['fps'],2.0,2.0,True
+calliope,Calliope,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+calliope,Calliope,Stanton,quartz,Quartz,['ship'],32.63,33.0,True
+calliope,Calliope,Stanton,silicon,Silicon,['ship'],32.63,33.0,True
+cellin,Cellin,Stanton,agricium,Agricium,['ship'],28.5,29.0,True
+cellin,Cellin,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+cellin,Cellin,Stanton,aslarite,Aslarite,['ship'],28.5,29.0,True
+cellin,Cellin,Stanton,beradom,Beradom,['roc'],56.0,56.0,True
+cellin,Cellin,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+cellin,Cellin,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+cellin,Cellin,Stanton,feynmaline,Feynmaline,['roc'],12.0,12.0,True
+cellin,Cellin,Stanton,glacosite,Glacosite,['roc'],32.0,32.0,True
+cellin,Cellin,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+cellin,Cellin,Stanton,hephaestanite,Hephaestanite,['ship'],25.8,26.0,True
+cellin,Cellin,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+cellin,Cellin,Stanton,quartz,Quartz,['ship'],25.7,26.0,True
+cellin,Cellin,Stanton,silicon,Silicon,['ship'],25.8,26.0,True
+cellin,Cellin,Stanton,taranite,Taranite,['ship'],18.0,18.0,True
+cellin,Cellin,Stanton,titanium,Titanium,['ship'],28.5,29.0,True
+clio,Clio,Stanton,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+clio,Clio,Stanton,beradom,Beradom,['roc'],20.0,20.0,True
+clio,Clio,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+clio,Clio,Stanton,copper,Copper,['ship'],40.0,40.0,True
+clio,Clio,Stanton,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+clio,Clio,Stanton,feynmaline,Feynmaline,['roc'],12.0,12.0,True
+clio,Clio,Stanton,glacosite,Glacosite,['roc'],68.0,68.0,True
+clio,Clio,Stanton,ice,Ice,['ship'],40.0,40.0,True
+clio,Clio,Stanton,janalite,Janalite,['fps'],2.0,2.0,True
+clio,Clio,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+clio,Clio,Stanton,taranite,Taranite,['ship'],18.0,18.0,True
+clio,Clio,Stanton,tin,Tin,['ship'],40.0,40.0,True
+daymar,Daymar,Stanton,agricium,Agricium,['ship'],28.5,29.0,True
+daymar,Daymar,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+daymar,Daymar,Stanton,aslarite,Aslarite,['ship'],28.5,29.0,True
+daymar,Daymar,Stanton,beradom,Beradom,['roc'],48.0,48.0,True
+daymar,Daymar,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+daymar,Daymar,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+daymar,Daymar,Stanton,feynmaline,Feynmaline,['roc'],40.0,40.0,True
+daymar,Daymar,Stanton,glacosite,Glacosite,['roc'],12.0,12.0,True
+daymar,Daymar,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+daymar,Daymar,Stanton,hephaestanite,Hephaestanite,['ship'],34.8,35.0,True
+daymar,Daymar,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+daymar,Daymar,Stanton,quartz,Quartz,['ship'],34.7,35.0,True
+daymar,Daymar,Stanton,silicon,Silicon,['ship'],34.8,35.0,True
+daymar,Daymar,Stanton,titanium,Titanium,['ship'],28.5,29.0,True
+euterpe,Euterpe,Stanton,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+euterpe,Euterpe,Stanton,beradom,Beradom,['roc'],12.0,12.0,True
+euterpe,Euterpe,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+euterpe,Euterpe,Stanton,copper,Copper,['ship'],40.0,40.0,True
+euterpe,Euterpe,Stanton,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+euterpe,Euterpe,Stanton,feynmaline,Feynmaline,['roc'],0.0,0.0,False
+euterpe,Euterpe,Stanton,glacosite,Glacosite,['roc'],88.0,88.0,True
+euterpe,Euterpe,Stanton,ice,Ice,['ship'],40.0,40.0,True
+euterpe,Euterpe,Stanton,janalite,Janalite,['fps'],2.0,2.0,True
+euterpe,Euterpe,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+euterpe,Euterpe,Stanton,taranite,Taranite,['ship'],18.0,18.0,True
+euterpe,Euterpe,Stanton,tin,Tin,['ship'],40.0,40.0,True
+glaciem-ring,Glaciem Ring,Nyx,bexalite,Bexalite,['ship'],18.0,18.0,True
+glaciem-ring,Glaciem Ring,Nyx,borase,Borase,['ship'],18.0,18.0,True
+glaciem-ring,Glaciem Ring,Nyx,gold,Gold,['ship'],18.0,18.0,True
+glaciem-ring,Glaciem Ring,Nyx,ice,Ice,['ship'],20.75,21.0,True
+glaciem-ring,Glaciem Ring,Nyx,iron,Iron,['ship'],20.75,21.0,True
+glaciem-ring,Glaciem Ring,Nyx,lindinium,Lindinium,['ship'],10.0,10.0,True
+glaciem-ring,Glaciem Ring,Nyx,savrilium,Savrilium,['ship'],2.0,2.0,True
+glaciem-ring,Glaciem Ring,Nyx,torite,Torite,['ship'],28.5,29.0,True
+glaciem-ring,Glaciem Ring,Nyx,tungsten,Tungsten,['ship'],10.0,10.0,True
+hur-l1,HUR-L1,Stanton,aluminium,Aluminium,['ship'],8.29,8.0,True
+hur-l1,HUR-L1,Stanton,borase,Borase,['ship'],8.33,8.0,True
+hur-l1,HUR-L1,Stanton,corundum,Corundum,['ship'],8.24,8.0,True
+hur-l1,HUR-L1,Stanton,hephaestanite,Hephaestanite,['ship'],8.24,8.0,True
+hur-l1,HUR-L1,Stanton,laranite,Laranite,['ship'],13.19,13.0,True
+hur-l2,HUR-L2,Stanton,aluminium,Aluminium,['ship'],12.36,12.0,True
+hur-l2,HUR-L2,Stanton,corundum,Corundum,['ship'],12.43,12.0,True
+hur-l2,HUR-L2,Stanton,hephaestanite,Hephaestanite,['ship'],12.36,12.0,True
+hur-l2,HUR-L2,Stanton,taranite,Taranite,['ship'],12.5,13.0,True
+hur-l2,HUR-L2,Stanton,tungsten,Tungsten,['ship'],19.79,20.0,True
+hur-l3,HUR-L3,Stanton,bexalite,Bexalite,['ship'],9.54,10.0,True
+hur-l3,HUR-L3,Stanton,copper,Copper,['ship'],9.43,9.0,True
+hur-l3,HUR-L3,Stanton,ice,Ice,['ship'],9.43,9.0,True
+hur-l3,HUR-L3,Stanton,iron,Iron,['ship'],9.49,9.0,True
+hur-l3,HUR-L3,Stanton,titanium,Titanium,['ship'],15.11,15.0,True
+hur-l4,HUR-L4,Stanton,aluminium,Aluminium,['ship'],8.29,8.0,True
+hur-l4,HUR-L4,Stanton,borase,Borase,['ship'],8.33,8.0,True
+hur-l4,HUR-L4,Stanton,corundum,Corundum,['ship'],8.24,8.0,True
+hur-l4,HUR-L4,Stanton,hephaestanite,Hephaestanite,['ship'],8.24,8.0,True
+hur-l4,HUR-L4,Stanton,laranite,Laranite,['ship'],13.19,13.0,True
+hur-l5,HUR-L5,Stanton,aluminium,Aluminium,['ship'],9.36,9.0,True
+hur-l5,HUR-L5,Stanton,corundum,Corundum,['ship'],9.36,9.0,True
+hur-l5,HUR-L5,Stanton,hephaestanite,Hephaestanite,['ship'],9.36,9.0,True
+hur-l5,HUR-L5,Stanton,torite,Torite,['ship'],11.17,11.0,True
+hathor-caves,Hathor Caves,Stanton,aphorite,Aphorite,"['roc', 'fps']",30.16,30.0,True
+hathor-caves,Hathor Caves,Stanton,carinite,Carinite,['ship'],100.0,100.0,True
+hathor-caves,Hathor Caves,Stanton,dolivine,Dolivine,"['roc', 'fps']",18.26,18.0,True
+hathor-caves,Hathor Caves,Stanton,hadanite,Hadanite,"['roc', 'fps']",3.16,3.0,True
+hathor-caves,Hathor Caves,Stanton,jaclium,Jaclium,['fps'],19.47,19.0,True
+hathor-caves,Hathor Caves,Stanton,janalite,Janalite,['fps'],1.05,1.0,True
+hathor-caves,Hathor Caves,Stanton,saldynium,Saldynium,['fps'],15.79,16.0,True
+hurston,Hurston,Stanton,agricium,Agricium,['ship'],10.0,10.0,True
+hurston,Hurston,Stanton,aluminium,Aluminium,['ship'],44.0,44.0,True
+hurston,Hurston,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+hurston,Hurston,Stanton,beradom,Beradom,['roc'],64.0,64.0,True
+hurston,Hurston,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+hurston,Hurston,Stanton,copper,Copper,['ship'],44.0,44.0,True
+hurston,Hurston,Stanton,corundum,Corundum,['ship'],44.0,44.0,True
+hurston,Hurston,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+hurston,Hurston,Stanton,feynmaline,Feynmaline,['roc'],4.0,4.0,True
+hurston,Hurston,Stanton,glacosite,Glacosite,['roc'],32.0,32.0,True
+hurston,Hurston,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+hurston,Hurston,Stanton,ouratite,Ouratite,['ship'],10.0,10.0,True
+hurston,Hurston,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+hurston,Hurston,Stanton,tin,Tin,['ship'],44.0,44.0,True
+ita,Ita,Stanton,agricium,Agricium,['ship'],28.5,29.0,True
+ita,Ita,Stanton,aluminium,Aluminium,['ship'],34.7,35.0,True
+ita,Ita,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+ita,Ita,Stanton,aslarite,Aslarite,['ship'],28.5,29.0,True
+ita,Ita,Stanton,beradom,Beradom,['roc'],3.85,4.0,True
+ita,Ita,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+ita,Ita,Stanton,copper,Copper,['ship'],34.8,35.0,True
+ita,Ita,Stanton,corundum,Corundum,['ship'],34.7,35.0,True
+ita,Ita,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+ita,Ita,Stanton,feynmaline,Feynmaline,['roc'],26.92,27.0,True
+ita,Ita,Stanton,glacosite,Glacosite,['roc'],69.23,69.0,True
+ita,Ita,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+ita,Ita,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+ita,Ita,Stanton,tin,Tin,['ship'],34.8,35.0,True
+ita,Ita,Stanton,titanium,Titanium,['ship'],28.5,29.0,True
+keeger-belt,Keeger Belt,Nyx,aluminium,Aluminium,['ship'],20.75,21.0,True
+keeger-belt,Keeger Belt,Nyx,bexalite,Bexalite,['ship'],18.0,18.0,True
+keeger-belt,Keeger Belt,Nyx,borase,Borase,['ship'],18.0,18.0,True
+keeger-belt,Keeger Belt,Nyx,corundum,Corundum,['ship'],20.75,21.0,True
+keeger-belt,Keeger Belt,Nyx,gold,Gold,['ship'],18.0,18.0,True
+keeger-belt,Keeger Belt,Nyx,ice,Ice,['ship'],20.75,21.0,True
+keeger-belt,Keeger Belt,Nyx,lindinium,Lindinium,['ship'],10.0,10.0,True
+keeger-belt,Keeger Belt,Nyx,savrilium,Savrilium,['ship'],2.0,2.0,True
+keeger-belt,Keeger Belt,Nyx,torite,Torite,['ship'],28.5,29.0,True
+keeger-belt,Keeger Belt,Nyx,tungsten,Tungsten,['ship'],10.0,10.0,True
+lyria,Lyria,Stanton,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+lyria,Lyria,Stanton,beradom,Beradom,['roc'],48.0,48.0,True
+lyria,Lyria,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+lyria,Lyria,Stanton,copper,Copper,['ship'],34.77,35.0,True
+lyria,Lyria,Stanton,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+lyria,Lyria,Stanton,feynmaline,Feynmaline,['roc'],4.0,4.0,True
+lyria,Lyria,Stanton,glacosite,Glacosite,['roc'],48.0,48.0,True
+lyria,Lyria,Stanton,iron,Iron,['ship'],34.77,35.0,True
+lyria,Lyria,Stanton,janalite,Janalite,['fps'],2.0,2.0,True
+lyria,Lyria,Stanton,laranite,Laranite,['ship'],28.47,28.0,True
+lyria,Lyria,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+lyria,Lyria,Stanton,tin,Tin,['ship'],34.77,35.0,True
+lyria,Lyria,Stanton,tungsten,Tungsten,['ship'],28.47,28.0,True
+mic-l1,MIC-L1,Stanton,aluminium,Aluminium,['ship'],9.36,9.0,True
+mic-l1,MIC-L1,Stanton,corundum,Corundum,['ship'],9.36,9.0,True
+mic-l1,MIC-L1,Stanton,hephaestanite,Hephaestanite,['ship'],9.36,9.0,True
+mic-l1,MIC-L1,Stanton,torite,Torite,['ship'],11.17,11.0,True
+mic-l2,MIC-L2,Stanton,aluminium,Aluminium,['ship'],9.36,9.0,True
+mic-l2,MIC-L2,Stanton,corundum,Corundum,['ship'],9.36,9.0,True
+mic-l2,MIC-L2,Stanton,hephaestanite,Hephaestanite,['ship'],9.36,9.0,True
+mic-l2,MIC-L2,Stanton,torite,Torite,['ship'],11.17,11.0,True
+mic-l3,MIC-L3,Stanton,aslarite,Aslarite,['ship'],16.07,16.0,True
+mic-l3,MIC-L3,Stanton,copper,Copper,['ship'],10.04,10.0,True
+mic-l3,MIC-L3,Stanton,gold,Gold,['ship'],10.15,10.0,True
+mic-l3,MIC-L3,Stanton,ice,Ice,['ship'],10.04,10.0,True
+mic-l3,MIC-L3,Stanton,iron,Iron,['ship'],10.09,10.0,True
+mic-l4,MIC-L4,Stanton,agricium,Agricium,['ship'],9.02,9.0,True
+mic-l4,MIC-L4,Stanton,beryl,Beryl,['ship'],5.7,6.0,True
+mic-l4,MIC-L4,Stanton,copper,Copper,['ship'],5.63,6.0,True
+mic-l4,MIC-L4,Stanton,ice,Ice,['ship'],5.63,6.0,True
+mic-l4,MIC-L4,Stanton,iron,Iron,['ship'],5.66,6.0,True
+mic-l5,MIC-L5,Stanton,aluminium,Aluminium,['ship'],9.36,9.0,True
+mic-l5,MIC-L5,Stanton,corundum,Corundum,['ship'],9.36,9.0,True
+mic-l5,MIC-L5,Stanton,hephaestanite,Hephaestanite,['ship'],9.36,9.0,True
+mic-l5,MIC-L5,Stanton,torite,Torite,['ship'],11.17,11.0,True
+magda,Magda,Stanton,agricium,Agricium,['ship'],14.2,14.0,True
+magda,Magda,Stanton,aluminium,Aluminium,['ship'],34.8,35.0,True
+magda,Magda,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+magda,Magda,Stanton,aslarite,Aslarite,['ship'],14.2,14.0,True
+magda,Magda,Stanton,beradom,Beradom,['roc'],3.7,4.0,True
+magda,Magda,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+magda,Magda,Stanton,corundum,Corundum,['ship'],34.8,35.0,True
+magda,Magda,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+magda,Magda,Stanton,feynmaline,Feynmaline,['roc'],37.04,37.0,True
+magda,Magda,Stanton,glacosite,Glacosite,['roc'],59.26,59.0,True
+magda,Magda,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+magda,Magda,Stanton,iron,Iron,['ship'],34.8,35.0,True
+magda,Magda,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+magda,Magda,Stanton,titanium,Titanium,['ship'],14.2,14.0,True
+pyro-i,Pyro I,Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-i,Pyro I,Pyro,beradom,Beradom,['roc'],100.0,100.0,True
+pyro-i,Pyro I,Pyro,copper,Copper,['ship'],32.63,33.0,True
+pyro-i,Pyro I,Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-i,Pyro I,Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-i,Pyro I,Pyro,iron,Iron,['ship'],32.73,33.0,True
+pyro-i,Pyro I,Pyro,stileron,Stileron,['ship'],2.0,2.0,True
+pyro-i,Pyro I,Pyro,taranite,Taranite,['ship'],2.0,2.0,True
+pyro-i,Pyro I,Pyro,tin,Tin,['ship'],32.63,33.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,copper,Copper,['ship'],32.63,33.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,glacosite,Glacosite,['roc'],100.0,100.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,hephaestanite,Hephaestanite,['ship'],32.73,33.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,iron,Iron,['ship'],32.63,33.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,quartz,Quartz,['ship'],32.73,33.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,silicon,Silicon,['ship'],32.73,33.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,stileron,Stileron,['ship'],2.0,2.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,taranite,Taranite,['ship'],2.0,2.0,True
+pyro-ii-monox,Pyro II (Monox),Pyro,tin,Tin,['ship'],32.63,33.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,beradom,Beradom,['roc'],100.0,100.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,bexalite,Bexalite,['ship'],18.0,18.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,borase,Borase,['ship'],18.0,18.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,gold,Gold,['ship'],18.0,18.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,hephaestanite,Hephaestanite,['ship'],35.0,35.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,iron,Iron,['ship'],35.0,35.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,janalite,Janalite,['fps'],2.0,2.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,laranite,Laranite,['ship'],10.0,10.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,quartz,Quartz,['ship'],35.0,35.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,riccite,Riccite,['ship'],10.0,10.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,silicon,Silicon,['ship'],35.0,35.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,stileron,Stileron,['ship'],2.0,2.0,True
+pyro-iii-bloom,Pyro III (Bloom),Pyro,taranite,Taranite,['ship'],2.0,2.0,True
+pyro-iv,Pyro IV,Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-iv,Pyro IV,Pyro,bexalite,Bexalite,['ship'],18.02,18.0,True
+pyro-iv,Pyro IV,Pyro,borase,Borase,['ship'],18.02,18.0,True
+pyro-iv,Pyro IV,Pyro,copper,Copper,['ship'],25.73,26.0,True
+pyro-iv,Pyro IV,Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-iv,Pyro IV,Pyro,feynmaline,Feynmaline,['roc'],100.0,100.0,True
+pyro-iv,Pyro IV,Pyro,gold,Gold,['ship'],18.02,18.0,True
+pyro-iv,Pyro IV,Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-iv,Pyro IV,Pyro,iron,Iron,['ship'],25.73,26.0,True
+pyro-iv,Pyro IV,Pyro,laranite,Laranite,['ship'],28.53,29.0,True
+pyro-iv,Pyro IV,Pyro,stileron,Stileron,['ship'],2.0,2.0,True
+pyro-iv,Pyro IV,Pyro,taranite,Taranite,['ship'],2.0,2.0,True
+pyro-iv,Pyro IV,Pyro,tin,Tin,['ship'],25.73,26.0,True
+pyro-iv,Pyro IV,Pyro,tungsten,Tungsten,['ship'],28.53,29.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,bexalite,Bexalite,['ship'],18.0,18.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,borase,Borase,['ship'],18.0,18.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,copper,Copper,['ship'],36.0,36.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,feynmaline,Feynmaline,['roc'],100.0,100.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,gold,Gold,['ship'],18.0,18.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,hephaestanite,Hephaestanite,['ship'],36.0,36.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,laranite,Laranite,['ship'],10.0,10.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,riccite,Riccite,['ship'],10.0,10.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,silicon,Silicon,['ship'],36.0,36.0,True
+pyro-v-a-ignis,Pyro V-a (Ignis),Pyro,tin,Tin,['ship'],36.0,36.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,beradom,Beradom,['roc'],50.0,50.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,bexalite,Bexalite,['ship'],18.0,18.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,borase,Borase,['ship'],18.0,18.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,glacosite,Glacosite,['roc'],50.0,50.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,gold,Gold,['ship'],18.0,18.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,hephaestanite,Hephaestanite,['ship'],36.0,36.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,iron,Iron,['ship'],36.0,36.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,laranite,Laranite,['ship'],10.0,10.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,riccite,Riccite,['ship'],10.0,10.0,True
+pyro-v-b-vatra,Pyro V-b (Vatra),Pyro,silicon,Silicon,['ship'],36.0,36.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,bexalite,Bexalite,['ship'],18.0,18.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,borase,Borase,['ship'],18.0,18.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,glacosite,Glacosite,['roc'],100.0,100.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,gold,Gold,['ship'],18.0,18.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,iron,Iron,['ship'],43.5,44.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,laranite,Laranite,['ship'],28.5,29.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,riccite,Riccite,['ship'],10.0,10.0,True
+pyro-v-c-adir,Pyro V-c (Adir),Pyro,tungsten,Tungsten,['ship'],28.5,29.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,beradom,Beradom,['roc'],100.0,100.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,bexalite,Bexalite,['ship'],9.0,9.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,borase,Borase,['ship'],9.0,9.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,gold,Gold,['ship'],9.0,9.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,hephaestanite,Hephaestanite,['ship'],26.8,27.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,iron,Iron,['ship'],26.7,27.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,laranite,Laranite,['ship'],28.5,29.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,silicon,Silicon,['ship'],26.8,27.0,True
+pyro-v-d-fairo,Pyro V-d (Fairo),Pyro,tungsten,Tungsten,['ship'],28.5,29.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,agricium,Agricium,['ship'],28.5,29.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,aslarite,Aslarite,['ship'],28.5,29.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,bexalite,Bexalite,['ship'],9.0,9.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,borase,Borase,['ship'],9.0,9.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,feynmaline,Feynmaline,['roc'],100.0,100.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,gold,Gold,['ship'],9.0,9.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,hephaestanite,Hephaestanite,['ship'],26.7,27.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,iron,Iron,['ship'],26.8,27.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,janalite,Janalite,['fps'],2.0,2.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,quartz,Quartz,['ship'],26.7,27.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,silicon,Silicon,['ship'],26.7,27.0,True
+pyro-v-e-fuego,Pyro V-e (Fuego),Pyro,titanium,Titanium,['ship'],28.5,29.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,agricium,Agricium,['ship'],14.2,14.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,aslarite,Aslarite,['ship'],14.2,14.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,bexalite,Bexalite,['ship'],18.0,18.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,borase,Borase,['ship'],18.0,18.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,glacosite,Glacosite,['roc'],100.0,100.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,gold,Gold,['ship'],18.0,18.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,hephaestanite,Hephaestanite,['ship'],26.8,27.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,iron,Iron,['ship'],26.8,27.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,quartz,Quartz,['ship'],26.8,27.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,silicon,Silicon,['ship'],26.8,27.0,True
+pyro-v-f-vuur,Pyro V-f (Vuur),Pyro,titanium,Titanium,['ship'],14.2,14.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,agricium,Agricium,['ship'],14.2,14.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,aslarite,Aslarite,['ship'],14.2,14.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,bexalite,Bexalite,['ship'],18.0,18.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,borase,Borase,['ship'],18.0,18.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,copper,Copper,['ship'],20.8,21.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,feynmaline,Feynmaline,['roc'],100.0,100.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,gold,Gold,['ship'],18.0,18.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,ice,Ice,['ship'],20.8,21.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,janalite,Janalite,['fps'],2.0,2.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,laranite,Laranite,['ship'],10.0,10.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,riccite,Riccite,['ship'],10.0,10.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,stileron,Stileron,['ship'],2.0,2.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,taranite,Taranite,['ship'],2.0,2.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,tin,Tin,['ship'],20.8,21.0,True
+pyro-vi-terminus,Pyro VI (Terminus),Pyro,titanium,Titanium,['ship'],14.2,14.0,True
+wala,Wala,Stanton,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+wala,Wala,Stanton,beradom,Beradom,['roc'],56.0,56.0,True
+wala,Wala,Stanton,beryl,Beryl,['ship'],18.0,18.0,True
+wala,Wala,Stanton,copper,Copper,['ship'],25.8,26.0,True
+wala,Wala,Stanton,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+wala,Wala,Stanton,feynmaline,Feynmaline,['roc'],4.0,4.0,True
+wala,Wala,Stanton,glacosite,Glacosite,['roc'],40.0,40.0,True
+wala,Wala,Stanton,iron,Iron,['ship'],25.7,26.0,True
+wala,Wala,Stanton,janalite,Janalite,['fps'],2.0,2.0,True
+wala,Wala,Stanton,laranite,Laranite,['ship'],28.5,29.0,True
+wala,Wala,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+wala,Wala,Stanton,tin,Tin,['ship'],25.8,26.0,True
+wala,Wala,Stanton,tungsten,Tungsten,['ship'],28.5,29.0,True
+yela,Yela,Stanton,agricium,Agricium,['ship'],28.5,29.0,True
+yela,Yela,Stanton,aphorite,Aphorite,"['roc', 'fps']",58.6,59.0,True
+yela,Yela,Stanton,aslarite,Aslarite,['ship'],28.5,29.0,True
+yela,Yela,Stanton,beradom,Beradom,['roc'],24.0,24.0,True
+yela,Yela,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+yela,Yela,Stanton,dolivine,Dolivine,"['roc', 'fps']",35.4,35.0,True
+yela,Yela,Stanton,feynmaline,Feynmaline,['roc'],8.0,8.0,True
+yela,Yela,Stanton,glacosite,Glacosite,['roc'],68.0,68.0,True
+yela,Yela,Stanton,hadanite,Hadanite,"['roc', 'fps']",6.0,6.0,True
+yela,Yela,Stanton,hephaestanite,Hephaestanite,['ship'],25.8,26.0,True
+yela,Yela,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+yela,Yela,Stanton,quartz,Quartz,['ship'],25.7,26.0,True
+yela,Yela,Stanton,silicon,Silicon,['ship'],25.8,26.0,True
+yela,Yela,Stanton,taranite,Taranite,['ship'],18.0,18.0,True
+yela,Yela,Stanton,titanium,Titanium,['ship'],28.5,29.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,agricium,Agricium,['ship'],28.5,29.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,aslarite,Aslarite,['ship'],28.5,29.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,copper,Copper,['ship'],20.5,21.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,ice,Ice,['ship'],20.5,21.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,iron,Iron,['ship'],20.5,21.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,ouratite,Ouratite,['ship'],10.0,10.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,tin,Tin,['ship'],20.5,21.0,True
+yela-asteroid-belt,Yela Asteroid Belt,Stanton,titanium,Titanium,['ship'],28.5,29.0,True
+microtech,microTech,Stanton,aphorite,Aphorite,"['roc', 'fps']",61.1,61.0,True
+microtech,microTech,Stanton,beradom,Beradom,['roc'],28.0,28.0,True
+microtech,microTech,Stanton,beryl,Beryl,['ship'],2.0,2.0,True
+microtech,microTech,Stanton,dolivine,Dolivine,"['roc', 'fps']",36.9,37.0,True
+microtech,microTech,Stanton,feynmaline,Feynmaline,['roc'],4.0,4.0,True
+microtech,microTech,Stanton,glacosite,Glacosite,['roc'],68.0,68.0,True
+microtech,microTech,Stanton,hephaestanite,Hephaestanite,['ship'],32.7,33.0,True
+microtech,microTech,Stanton,ice,Ice,['ship'],32.7,33.0,True
+microtech,microTech,Stanton,iron,Iron,['ship'],32.6,33.0,True
+microtech,microTech,Stanton,janalite,Janalite,['fps'],2.0,2.0,True
+microtech,microTech,Stanton,quantainium,Quantainium,['ship'],2.0,2.0,True
+microtech,microTech,Stanton,quartz,Quartz,['ship'],32.7,33.0,True
+microtech,microTech,Stanton,silicon,Silicon,['ship'],32.7,33.0,True
