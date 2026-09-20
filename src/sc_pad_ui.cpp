@@ -4,6 +4,7 @@
 
 #include "lvgl.h"
 #include "sc_pad_theme.h"
+#include "sc_pad_neumorphic.h"
 
 LV_FONT_DECLARE(sc_pad_font_source_han_22)
 LV_FONT_DECLARE(sc_pad_font_jetbrains_mono_12)
@@ -229,6 +230,11 @@ lv_obj_t *attach_mode_label = nullptr;
 const Theme &theme()
 {
     return kThemes[current_theme];
+}
+
+bool use_neumorphic_ui()
+{
+    return true;
 }
 
 void init_styles()
@@ -557,6 +563,9 @@ void flash_ring_cb(void *object, int32_t white_mix)
 
 void animate_flash(lv_obj_t *object, lv_anim_exec_xcb_t callback, bool enabled)
 {
+    if (object == nullptr) {
+        return;
+    }
     lv_anim_del(object, callback);
     if (!enabled) {
         return;
@@ -576,7 +585,7 @@ void animate_flash(lv_obj_t *object, lv_anim_exec_xcb_t callback, bool enabled)
 
 void sync_physical_button_layers(PhysicalButtonLayers &layers, lv_obj_t *button)
 {
-    if (button == nullptr || layers.face == nullptr || layers.state_ring == nullptr) {
+    if (button == nullptr || layers.face == nullptr) {
         return;
     }
 
@@ -593,6 +602,9 @@ void sync_physical_button_layers(PhysicalButtonLayers &layers, lv_obj_t *button)
         lv_obj_t *child = lv_obj_get_child(button, i);
         if (lv_obj_check_type(child, &lv_label_class)) {
             set_visual_state(child, LV_STATE_USER_1, transitioning);
+            if (use_neumorphic_ui()) {
+                set_visual_state(child, LV_STATE_CHECKED, checked);
+            }
         }
     }
     if (flash_changed) {
@@ -610,6 +622,33 @@ void create_physical_button_layers(
     int width,
     int height)
 {
+    if (use_neumorphic_ui()) {
+        layers.face = lv_obj_create(button);
+        lv_obj_remove_style_all(layers.face);
+        lv_obj_set_pos(layers.face, 4, 4);
+        lv_obj_set_size(layers.face, width - 8, height - 8);
+        lv_obj_clear_flag(layers.face, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_style_bg_opa(layers.face, LV_OPA_COVER, 0);
+        // Share baked lighting masks across all twelve buttons. Color still
+        // comes from LVGL, so the existing flash animation remains live.
+        for (lv_state_t state : {LV_STATE_DEFAULT, LV_STATE_PRESSED, LV_STATE_CHECKED, LV_STATE_USER_1}) {
+            lv_obj_set_style_bg_opa(button, LV_OPA_TRANSP, state);
+            lv_obj_set_style_border_width(button, 0, state);
+            lv_obj_set_style_border_width(layers.face, 0, state);
+        }
+        lv_obj_set_style_bg_img_src(button, sc_pad_neu_image(width, height, SC_PAD_NEU_SHADOW), 0);
+        lv_obj_set_style_radius(layers.face, LV_MAX(8, theme().action_radius + 4), 0);
+        lv_obj_set_style_bg_color(layers.face, color(theme().surface), 0);
+        lv_obj_set_style_bg_color(layers.face, color(theme().surface_pressed), LV_STATE_PRESSED);
+        lv_obj_set_style_bg_color(layers.face, color(theme().local_state_surface), LV_STATE_CHECKED);
+        lv_obj_set_style_bg_color(layers.face, color(theme().surface_pressed), LV_STATE_CHECKED | LV_STATE_PRESSED);
+        lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_RAISED), 0);
+        lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_INSET), LV_STATE_PRESSED);
+        lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_INSET), LV_STATE_CHECKED);
+        lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_INSET), LV_STATE_USER_1);
+        return;
+    }
+
     constexpr int kBevelInset = 4;
     const int inner_width = width - kBevelInset * 2;
     const int inner_height = height - kBevelInset * 2;
@@ -659,6 +698,8 @@ void create_physical_button_layers(
     lv_obj_add_style(layers.state_ring, &style_flight_state_ring_active_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
     lv_obj_add_style(layers.state_ring, &style_flight_state_ring_transition, LV_STATE_USER_1);
     lv_obj_add_style(layers.state_ring, &style_flight_state_ring_pressed, LV_STATE_PRESSED);
+
+
 }
 
 void physical_button_feedback_event_cb(lv_event_t *event)
@@ -1011,6 +1052,10 @@ void create_header(lv_obj_t *screen)
     lv_obj_set_style_border_side(header, LV_BORDER_SIDE_BOTTOM, 0);
     lv_obj_set_style_border_width(header, 1, 0);
     lv_obj_set_style_border_color(header, color(palette.border), 0);
+    if (use_neumorphic_ui()) {
+        lv_obj_set_style_bg_grad_dir(header, LV_GRAD_DIR_NONE, 0);
+        lv_obj_set_style_border_color(header, color(palette.border), 0);
+    }
 
     // Several official marks are intentionally black. A compact, brand-tinted
     // plate keeps their native artwork legible without recoloring it.
@@ -1022,6 +1067,10 @@ void create_header(lv_obj_t *screen)
     lv_obj_set_style_bg_opa(logo_plate, LV_OPA_COVER, 0);
     lv_obj_set_style_border_color(logo_plate, color(palette.logo_border), 0);
     lv_obj_set_style_border_width(logo_plate, 1, 0);
+    if (use_neumorphic_ui()) {
+        lv_obj_set_style_border_color(logo_plate, color(palette.border), 0);
+        lv_obj_set_style_bg_color(logo_plate, color(palette.header), 0);
+    }
 
     lv_obj_t *accent = lv_obj_create(header);
     lv_obj_set_size(accent, 4, 38);
@@ -1144,6 +1193,11 @@ void create_action_button(lv_obj_t *screen, int index)
     lv_obj_set_style_text_color(runtime.label, color(theme().text), 0);
     lv_obj_set_style_text_color(runtime.label, lv_color_black(), LV_STATE_USER_1);
 
+    if (use_neumorphic_ui()) {
+        lv_obj_set_style_text_color(number, color(theme().local_state_text), LV_STATE_CHECKED);
+        lv_obj_set_style_text_color(runtime.label, color(theme().local_state_text), LV_STATE_CHECKED);
+    }
+
     if (state_for(runtime).processing) {
         resume_process(runtime);
     } else {
@@ -1164,6 +1218,13 @@ lv_obj_t *create_control_section(lv_obj_t *page, int x, const char *title)
     lv_obj_set_style_border_color(section, color(theme().border), 0);
     lv_obj_set_style_shadow_width(section, 0, 0);
     lv_obj_set_style_pad_all(section, 0, 0);
+    if (use_neumorphic_ui()) {
+        // Sections become shallow recessed wells; their controls provide the
+        // stronger relief, keeping the hierarchy readable on a small LCD.
+        lv_obj_set_style_bg_color(section, color(theme().screen), 0);
+        lv_obj_set_style_border_color(section, color(theme().border), 0);
+        lv_obj_set_style_border_width(section, 1, 0);
+    }
 
     lv_obj_t *heading = lv_label_create(section);
     lv_label_set_text(heading, title);
@@ -1211,6 +1272,7 @@ void create_ship_control_button(
     lv_label_set_text(button_label, label);
     lv_obj_center(button_label);
     lv_obj_set_style_text_color(button_label, color(theme().text), 0);
+    lv_obj_set_style_text_color(button_label, lv_color_black(), LV_STATE_USER_1);
     lv_obj_set_style_text_font(button_label, &sc_pad_font_jetbrains_mono_16, 0);
 }
 
@@ -1268,6 +1330,12 @@ void create_system_page(lv_obj_t *page)
         lv_obj_set_style_shadow_width(choice, 0, 0);
         lv_obj_set_style_pad_all(choice, 0, 0);
         lv_obj_set_style_bg_color(choice, color(candidate.surface_pressed), LV_STATE_PRESSED);
+        if (use_neumorphic_ui()) {
+            lv_obj_set_style_bg_color(choice, color(candidate.surface), 0);
+            lv_obj_set_style_bg_img_src(choice, sc_pad_neu_image(449, 38, SC_PAD_NEU_SHADOW), 0);
+            lv_obj_set_style_bg_img_src(choice, sc_pad_neu_image(441, 30, SC_PAD_NEU_INSET), LV_STATE_PRESSED);
+            lv_obj_set_style_border_color(choice, color(i == current_theme ? candidate.primary : candidate.border), 0);
+        }
         lv_obj_add_event_cb(choice, theme_choice_event_cb, LV_EVENT_CLICKED, &selection);
 
         lv_obj_t *name = lv_label_create(choice);
@@ -1296,6 +1364,9 @@ void create_system_page(lv_obj_t *page)
     lv_obj_align(orientation_button, LV_ALIGN_CENTER, 0, 45);
     lv_obj_add_style(orientation_button, &style_action, LV_STATE_DEFAULT);
     lv_obj_add_style(orientation_button, &style_action_pressed, LV_STATE_PRESSED);
+    if (use_neumorphic_ui()) {
+        lv_obj_set_style_bg_img_src(orientation_button, sc_pad_neu_image(449, 190, SC_PAD_NEU_SHADOW), 0);
+    }
     lv_obj_add_event_cb(
         orientation_button,
         [](lv_event_t *event) {
@@ -1432,6 +1503,7 @@ void create_mining_button(
     lv_obj_center(runtime.label);
     lv_obj_set_style_text_color(runtime.label, color(theme().text), 0);
     lv_obj_set_style_text_color(runtime.label, lv_color_black(), LV_STATE_USER_1);
+    lv_obj_set_style_text_color(runtime.label, color(theme().local_state_text), LV_STATE_CHECKED);
     lv_obj_set_style_text_font(
         runtime.label,
         primary ? &sc_pad_font_jetbrains_mono_20 : &sc_pad_font_jetbrains_mono_16,
@@ -1476,6 +1548,10 @@ void create_navigation(lv_obj_t *screen)
     // LVGL objects have default content padding. Remove it so navigation
     // buttons can be aligned against the full bar rather than drifting down.
     lv_obj_set_style_pad_all(nav_bg, 0, 0);
+    if (use_neumorphic_ui()) {
+        lv_obj_set_style_bg_color(nav_bg, color(palette.nav), 0);
+        lv_obj_set_style_border_color(nav_bg, color(palette.border), 0);
+    }
 
     for (int i = 0; i < 5; ++i) {
         lv_obj_t *nav_button = lv_btn_create(nav_bg);
@@ -1491,6 +1567,13 @@ void create_navigation(lv_obj_t *screen)
         lv_obj_add_style(nav_button, &style_nav, LV_STATE_DEFAULT);
         if (runtime.available && runtime.page == current_page) {
             lv_obj_add_style(nav_button, &style_nav_active, LV_STATE_DEFAULT);
+            if (use_neumorphic_ui()) {
+                lv_obj_set_style_radius(nav_button, 16, 0);
+                lv_obj_set_style_bg_color(nav_button, color(palette.accent_surface), 0);
+                lv_obj_set_style_bg_grad_dir(nav_button, LV_GRAD_DIR_NONE, 0);
+                lv_obj_set_style_border_color(nav_button, color(palette.border), 0);
+                lv_obj_set_style_text_color(nav_button, color(palette.primary), 0);
+            }
         }
         lv_obj_add_event_cb(nav_button, navigation_event_cb, LV_EVENT_CLICKED, &runtime);
 

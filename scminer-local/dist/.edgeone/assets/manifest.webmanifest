@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "矿物导航台 · SC Mining Atlas",
+  "short_name": "矿物导航台",
+  "description": "离线 Star Citizen 矿物、扫描特征与分布查询工具",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050b0d",
+  "theme_color": "#071114",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

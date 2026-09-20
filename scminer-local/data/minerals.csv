@@ -1,0 +1,38 @@
+id,name,mining_methods,tier,price,price_unit,scu_equivalent,base_signature,secondary_ore,tertiary_trace,instability,resistance,density
+agricium,Agricium,ship,uncommon,11000.0,aUEC/SCU,11000.0,3885,Aslarite,Titanium,Medium,High,High
+aluminium,Aluminium,ship,common,3800.0,aUEC/SCU,3800.0,4285,Corundum,,Very Low,Low,Low
+aphorite,Aphorite,roc|fps,common,152.0,aUEC/unit,152000.0,,,,Very Low,Low,Low
+aslarite,Aslarite,ship,uncommon,,aUEC/SCU,,3840,Silicon,Quartz,High,High,Low
+beradom,Beradom,roc,common,120.0,aUEC/unit,120000.0,,,,Very Low,Low,Low
+beryl,Beryl,ship,rare,4700.0,aUEC/SCU,4700.0,3540,,,Medium,High,Low
+bexalite,Bexalite,ship,rare,18000.0,aUEC/SCU,18000.0,3600,Gold,Borase,High,High,Medium
+borase,Borase,ship,rare,25000.0,aUEC/SCU,25000.0,3570,Bexalite,Gold,Very Low,Medium,Medium
+carinite,Carinite,ship,common,0.0,aUEC/SCU,0.0,,,,Medium,High,Low
+copper,Copper,ship,common,3700.0,aUEC/SCU,3700.0,4240,Tin,,Low,Low,High
+corundum,Corundum,ship,common,3700.0,aUEC/SCU,3700.0,4225,Aluminium,,Low,Medium,Medium
+dolivine,Dolivine,roc|fps,common,130.0,aUEC/unit,130000.0,,,,Very Low,Medium,Low
+feynmaline,Feynmaline,roc,common,220.0,aUEC/unit,220000.0,,,,Medium,Low,Low
+glacosite,Glacosite,roc,common,145.0,aUEC/unit,145000.0,,,,Very Low,Medium,Low
+gold,Gold,ship,rare,32000.0,aUEC/SCU,32000.0,3585,Bexalite,Borase,High,High,High
+hadanite,Hadanite,roc|fps,common,275.0,aUEC/unit,275000.0,,,,Medium,Low,Low
+hephaestanite,Hephaestanite,ship,common,4000.0,aUEC/SCU,4000.0,4180,Silicon,Quartz,Medium,Low,Medium
+ice,Ice,ship,common,5100.0,aUEC/SCU,5100.0,4300,,,Very Low,Low,Low
+iron,Iron,ship,common,3400.0,aUEC/SCU,3400.0,4270,,,Low,Low,High
+jaclium,Jaclium,fps,common,0.0,aUEC/unit,0.0,,,,Low,High,Low
+janalite,Janalite,fps,common,17640.0,aUEC/unit,17640000.0,,,,Medium,Medium,Low
+laranite,Laranite,ship,uncommon,9100.0,aUEC/SCU,9100.0,3825,Tungsten,,Medium,High,High
+lindinium,Lindinium,ship,epic,24000.0,aUEC/SCU,24000.0,3400,Tungsten,,Extreme,Extreme,High
+ouratite,Ouratite,ship,epic,,aUEC/SCU,,3370,Agricium,,High,High,Low
+quantainium,Quantainium,ship,legendary,200000.0,aUEC/SCU,200000.0,3170,Beryl,,Extreme,Extreme,High
+quartz,Quartz,ship,common,1700.0,aUEC/SCU,1700.0,4210,Hephaestanite,Silicon,Low,Low,Low
+riccite,Riccite,ship,epic,66000.0,aUEC/SCU,66000.0,3385,Laranite,,High,Extreme,Low
+sadaryx,Sadaryx,fps,common,0.0,aUEC/unit,0.0,,,,Medium,Low,Low
+saldynium,Saldynium,fps,common,0.0,aUEC/unit,0.0,,,,Low,Low,Low
+savrilium,Savrilium,ship,legendary,0.0,aUEC/SCU,0.0,3200,,,Extreme,Extreme,High
+silicon,Silicon,ship,common,2200.0,aUEC/SCU,2200.0,4255,Hephaestanite,Quartz,Low,Low,Low
+stileron,Stileron,ship,legendary,140000.0,aUEC/SCU,140000.0,3185,Taranite,,High,High,Medium
+taranite,Taranite,ship,rare,22000.0,aUEC/SCU,22000.0,3555,,,High,High,High
+tin,Tin,ship,common,4000.0,aUEC/SCU,4000.0,4195,Copper,,Very Low,Low,Medium
+titanium,Titanium,ship,uncommon,8300.0,aUEC/SCU,8300.0,3855,Agricium,Aslarite,Very Low,Medium,Medium
+torite,Torite,ship,uncommon,7900.0,aUEC/SCU,7900.0,3900,,,High,Medium,Low
+tungsten,Tungsten,ship,uncommon,10000.0,aUEC/SCU,10000.0,3870,Laranite,,Very Low,Low,High

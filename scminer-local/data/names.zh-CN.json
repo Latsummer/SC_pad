@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "locale": "zh-CN",
+  "display_format": "{zh} ({en})",
+  "fallback_when_zh_empty": "{en}",
+  "search_fields": [
+    "en",
+    "zh",
+    "aliases_en",
+    "aliases_zh"
+  ],
+  "minerals": {
+    "agricium": {
+      "en": "Agricium",
+      "zh": "艾格瑞金属",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "aluminium": {
+      "en": "Aluminium",
+      "zh": "铝",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "aphorite": {
+      "en": "Aphorite",
+      "zh": "紫钠水晶",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "aslarite": {
+      "en": "Aslarite",
+      "zh": "阿斯莱晶体",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "beradom": {
+      "en": "Beradom",
+      "zh": "冰蓝珀",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "beryl": {
+      "en": "Beryl",
+      "zh": "绿柱石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "bexalite": {
+      "en": "Bexalite",
+      "zh": "贝沙电气石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "borase": {
+      "en": "Borase",
+      "zh": "波射石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "carinite": {
+      "en": "Carinite",
+      "zh": "科力晶",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "copper": {
+      "en": "Copper",
+      "zh": "铜",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "corundum": {
+      "en": "Corundum",
+      "zh": "刚玉",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "dolivine": {
+      "en": "Dolivine",
+      "zh": "暗橄榄石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "feynmaline": {
+      "en": "Feynmaline",
+      "zh": "熵瞬晶",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "glacosite": {
+      "en": "Glacosite",
+      "zh": "冰原石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "gold": {
+      "en": "Gold",
+      "zh": "黄金",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hadanite": {
+      "en": "Hadanite",
+      "zh": "哈丹水晶",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hephaestanite": {
+      "en": "Hephaestanite",
+      "zh": "火神石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "ice": {
+      "en": "Ice",
+      "zh": "压缩冰",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "iron": {
+      "en": "Iron",
+      "zh": "铁",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "jaclium": {
+      "en": "Jaclium",
+      "zh": "杰金",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "janalite": {
+      "en": "Janalite",
+      "zh": "加纳石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "laranite": {
+      "en": "Laranite",
+      "zh": "砬兰石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "lindinium": {
+      "en": "Lindinium",
+      "zh": "林登金",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "ouratite": {
+      "en": "Ouratite",
+      "zh": "欧拉特烃",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "quantainium": {
+      "en": "Quantainium",
+      "zh": "量子矿",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "quartz": {
+      "en": "Quartz",
+      "zh": "石英",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "riccite": {
+      "en": "Riccite",
+      "zh": "钰石",
+      "aliases_en": [],
+      "aliases_zh": [
+        "里克石"
+      ]
+    },
+    "sadaryx": {
+      "en": "Sadaryx",
+      "zh": "萨达瑞晶体",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "saldynium": {
+      "en": "Saldynium",
+      "zh": "烁迪银",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "savrilium": {
+      "en": "Savrilium",
+      "zh": "萨维里金属",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "silicon": {
+      "en": "Silicon",
+      "zh": "硅",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "stileron": {
+      "en": "Stileron",
+      "zh": "稀钛铁",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "taranite": {
+      "en": "Taranite",
+      "zh": "塔兰导电石",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "tin": {
+      "en": "Tin",
+      "zh": "锡",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "titanium": {
+      "en": "Titanium",
+      "zh": "钛",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "torite": {
+      "en": "Torite",
+      "zh": "托瑞特金属",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "tungsten": {
+      "en": "Tungsten",
+      "zh": "钨",
+      "aliases_en": [],
+      "aliases_zh": []
+    }
+  },
+  "locations": {
+    "arc-l1": {
+      "en": "ARC-L1",
+      "zh": "弧-L1 广袤森林站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "arc-l2": {
+      "en": "ARC-L2",
+      "zh": "弧-L2 活力小径站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "arc-l3": {
+      "en": "ARC-L3",
+      "zh": "弧-L3 摩登快车站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "arc-l4": {
+      "en": "ARC-L4",
+      "zh": "弧-L4 黯淡幽谷站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "arc-l5": {
+      "en": "ARC-L5",
+      "zh": "弧-L5 黄色核心站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "aaron-halo": {
+      "en": "Aaron Halo",
+      "zh": "亚伦·哈洛",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "aberdeen": {
+      "en": "Aberdeen",
+      "zh": "阿伯丁",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "akiro-cluster": {
+      "en": "Akiro Cluster",
+      "zh": "",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "arial": {
+      "en": "Arial",
+      "zh": "艾瑞尔",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "breaker-stations-interior": {
+      "en": "Breaker Stations Interior",
+      "zh": "QV 碎岩站内部",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "breaker-stations-large-geode": {
+      "en": "Breaker Stations Large Geode",
+      "zh": "QV 碎岩站大晶洞",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "cru-l1": {
+      "en": "CRU-L1",
+      "zh": "十-L1 雄心伟梦站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "cru-l2": {
+      "en": "CRU-L2",
+      "zh": "十 CRU L2",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "cru-l3": {
+      "en": "CRU-L3",
+      "zh": "",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "cru-l4": {
+      "en": "CRU-L4",
+      "zh": "十-L4 轻浅田野站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "cru-l5": {
+      "en": "CRU-L5",
+      "zh": "十-L5 美丽峡谷站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "calliope": {
+      "en": "Calliope",
+      "zh": "卡利俄佩",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "cellin": {
+      "en": "Cellin",
+      "zh": "赛琳",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "clio": {
+      "en": "Clio",
+      "zh": "克利俄",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "daymar": {
+      "en": "Daymar",
+      "zh": "戴玛尔",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "euterpe": {
+      "en": "Euterpe",
+      "zh": "欧忒耳佩",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "glaciem-ring": {
+      "en": "Glaciem Ring",
+      "zh": "冰川环",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hur-l1": {
+      "en": "HUR-L1",
+      "zh": "赫-L1 绿色林地站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hur-l2": {
+      "en": "HUR-L2",
+      "zh": "赫-L2 坚贞梦想站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hur-l3": {
+      "en": "HUR-L3",
+      "zh": "赫-L3 雷霆快车站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hur-l4": {
+      "en": "HUR-L4",
+      "zh": "赫-L4 旋律领域站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hur-l5": {
+      "en": "HUR-L5",
+      "zh": "赫-L5 高速路线站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hathor-caves": {
+      "en": "Hathor Caves",
+      "zh": "哈索尔洞穴?",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "hurston": {
+      "en": "Hurston",
+      "zh": "赫斯顿",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "ita": {
+      "en": "Ita",
+      "zh": "依塔",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "keeger-belt": {
+      "en": "Keeger Belt",
+      "zh": "基格带",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "lyria": {
+      "en": "Lyria",
+      "zh": "莉瑞雅",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "mic-l1": {
+      "en": "MIC-L1",
+      "zh": "微-L1 浅边站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "mic-l2": {
+      "en": "MIC-L2",
+      "zh": "微-L2 长林站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "mic-l3": {
+      "en": "MIC-L3",
+      "zh": "微-L3 无尽漫游站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "mic-l4": {
+      "en": "MIC-L4",
+      "zh": "微-L4 红色十字路口站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "mic-l5": {
+      "en": "MIC-L5",
+      "zh": "微-L5 现代伊卡洛斯站",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "magda": {
+      "en": "Magda",
+      "zh": "玛格达",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-i": {
+      "en": "Pyro I",
+      "zh": "派罗 I",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-ii-monox": {
+      "en": "Pyro II (Monox)",
+      "zh": "派罗 II 殁氧星",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-iii-bloom": {
+      "en": "Pyro III (Bloom)",
+      "zh": "派罗 II 盛放星",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-iv": {
+      "en": "Pyro IV",
+      "zh": "派罗 IV",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-v-a-ignis": {
+      "en": "Pyro V-a (Ignis)",
+      "zh": "伊格尼斯",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-v-b-vatra": {
+      "en": "Pyro V-b (Vatra)",
+      "zh": "瓦塔拉",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-v-c-adir": {
+      "en": "Pyro V-c (Adir)",
+      "zh": "阿迪尔",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-v-d-fairo": {
+      "en": "Pyro V-d (Fairo)",
+      "zh": "法伊罗",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-v-e-fuego": {
+      "en": "Pyro V-e (Fuego)",
+      "zh": "弗果",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-v-f-vuur": {
+      "en": "Pyro V-f (Vuur)",
+      "zh": "伏尔",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "pyro-vi-terminus": {
+      "en": "Pyro VI (Terminus)",
+      "zh": "派罗 VI 端点星",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "wala": {
+      "en": "Wala",
+      "zh": "瓦菈",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "yela": {
+      "en": "Yela",
+      "zh": "耶拉",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "yela-asteroid-belt": {
+      "en": "Yela Asteroid Belt",
+      "zh": "",
+      "aliases_en": [],
+      "aliases_zh": []
+    },
+    "microtech": {
+      "en": "microTech",
+      "zh": "微科星",
+      "aliases_en": [],
+      "aliases_zh": []
+    }
+  }
+}
