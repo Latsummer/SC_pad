@@ -14,6 +14,7 @@
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
     <link rel="apple-touch-icon" href="icons/icon.svg">
     <link rel="stylesheet" href="styles.css">
+    <script src="theme.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -38,9 +39,9 @@
               <h1 id="workspaceTitle">今天要找什么矿？</h1>
             </div>
             <div class="mode-switch" role="tablist" aria-label="查询模式">
-              <button class="mode-button active" type="button" role="tab" aria-selected="true" data-mode="mineral">矿物与分布</button>
-              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="scan">扫描值反查</button>
-              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="blueprints">制造蓝图</button>
+              <button class="mode-button active" type="button" role="tab" aria-selected="true" data-mode="mineral"><span class="mode-label-long">矿物与分布</span><span class="mode-label-short">找矿</span></button>
+              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="scan"><span class="mode-label-long">扫描值反查</span><span class="mode-label-short">扫描</span></button>
+              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="blueprints"><span class="mode-label-long">制造蓝图</span><span class="mode-label-short">蓝图</span></button>
             </div>
           </div>
 
@@ -114,23 +115,37 @@
           </section>
 
           <section class="blueprint-controls panel" aria-label="蓝图筛选">
-            <div class="blueprint-search-wrap">
-              <label for="blueprintSearch">搜索蓝图名称</label>
-              <input id="blueprintSearch" type="search" placeholder="例如：探测器、推进器、牵引光束" autocomplete="off">
+            <div class="blueprint-primary-row">
+              <div class="blueprint-search-wrap">
+                <label for="blueprintSearch">搜索蓝图名称</label>
+                <input id="blueprintSearch" type="search" placeholder="例如：探测器、推进器、牵引光束" autocomplete="off">
+              </div>
+              <button id="openBlueprintFilters" class="filter-drawer-trigger" type="button" aria-controls="blueprintFilterDrawer" aria-expanded="false">筛选</button>
             </div>
-            <div class="material-picker">
-              <label for="materialSearch">按矿物筛选（可多选）</label>
-              <input id="materialSearch" type="search" placeholder="输入中文或英文矿物名" autocomplete="off" aria-controls="materialSuggestions" aria-expanded="false">
-              <div id="materialSuggestions" class="suggestions material-suggestions" hidden></div>
-              <div id="selectedMaterials" class="selected-minerals blueprint-chips"></div>
+            <div id="activeBlueprintFilters" class="active-blueprint-filters" aria-label="已启用的筛选条件"></div>
+            <button id="blueprintFilterBackdrop" class="filter-drawer-backdrop" type="button" aria-label="关闭筛选" tabindex="-1"></button>
+            <div id="blueprintFilterDrawer" class="blueprint-filter-drawer" role="dialog" aria-modal="true" aria-labelledby="blueprintFilterTitle">
+              <div class="filter-drawer-head">
+                <h2 id="blueprintFilterTitle">筛选条件</h2>
+                <button id="closeBlueprintFilters" type="button" aria-label="关闭筛选">×</button>
+              </div>
+              <div class="material-picker">
+                <label for="materialSearch">按矿物筛选（可多选）</label>
+                <input id="materialSearch" type="search" placeholder="输入中文或英文矿物名" autocomplete="off" aria-controls="materialSuggestions" aria-expanded="false">
+                <div id="materialSuggestions" class="suggestions material-suggestions" hidden></div>
+                <div id="selectedMaterials" class="selected-minerals blueprint-chips"></div>
+              </div>
+              <div class="blueprint-selects">
+                <label>制造大类<select id="typeFilter"><option value="all">全部大类</option></select></label>
+                <label>细分类型<select id="subtypeFilter"><option value="all">全部细分</option></select></label>
+                <label>材料槽位<select id="slotFilter"><option value="all">全部槽位</option></select></label>
+                <label>尺寸<select id="sizeFilter"><option value="all">全部尺寸</option></select></label>
+              </div>
+              <div class="filter-drawer-actions">
+                <button id="resetBlueprintFilters" class="text-button blueprint-reset" type="button">重置筛选</button>
+                <button id="applyBlueprintFilters" class="primary-button filter-apply" type="button">查看结果</button>
+              </div>
             </div>
-            <div class="blueprint-selects">
-              <label>制造大类<select id="typeFilter"><option value="all">全部大类</option></select></label>
-              <label>细分类型<select id="subtypeFilter"><option value="all">全部细分</option></select></label>
-              <label>材料槽位<select id="slotFilter"><option value="all">全部槽位</option></select></label>
-              <label>尺寸<select id="sizeFilter"><option value="all">全部尺寸</option></select></label>
-            </div>
-            <button id="resetBlueprintFilters" class="text-button blueprint-reset" type="button">重置筛选</button>
           </section>
 
           <section class="blueprint-results-section">
