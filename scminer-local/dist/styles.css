@@ -308,10 +308,10 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
 .blueprint-card h2 { margin: 4px 0 0; font-size: 1rem; line-height: 1.3; }
 .blueprint-card time { flex: none; padding-top: 2px; color: var(--gold); font: 11px var(--mono); white-space: nowrap; }
 .material-list { display: grid; gap: 5px; margin: 14px 0 0; padding: 0; list-style: none; }
-.material-list li { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) auto; gap: 7px; align-items: baseline; padding-top: 6px; border-top: 1px solid rgba(44,86,94,.5); font-size: 11px; }
+.material-list li { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) 72px; gap: 7px; align-items: baseline; padding-top: 6px; border-top: 1px solid rgba(44,86,94,.5); font-size: 11px; }
 .material-list span { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
 .material-list strong { overflow: hidden; color: #dce9e9; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.material-list em { color: var(--cyan); font: 11px var(--mono); font-style: normal; white-space: nowrap; }
+.material-list em { color: var(--cyan); font: 11px var(--mono); font-style: normal; text-align: right; white-space: nowrap; }
 .result-limit { grid-column: 1 / -1; margin: 6px 0; color: var(--muted); text-align: center; font-size: 13px; }
 .load-more-row { grid-column: 1 / -1; display: grid; place-items: center; gap: 10px; padding: 18px 0 4px; color: var(--muted); font: 12px var(--mono); }
 .load-more-row .secondary-button { min-width: min(320px, 100%); display: grid; place-content: center; gap: 2px; }
