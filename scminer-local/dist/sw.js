@@ -1,10 +1,15 @@
-const CACHE_NAME = "scminer-atlas-data-4ae558350362";
+const CACHE_NAME = "scminer-atlas-data-f72251435291";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./blueprints.html",
   "./styles.css",
   "./app.js",
+  "./blueprints.js",
   "./app-data.js",
+  "./blueprints-data.js",
+  "./blueprint-index.js",
+  "./blueprint-locale.js",
   "./manifest.webmanifest",
   "./icons/icon.svg"
 ];

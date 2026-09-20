@@ -27,3 +27,18 @@ python3 tools/update_scminer_locale.py \
 Run `make sync` from the repository root to refresh the dataset. The sync first reads and enforces the source site's current `robots.txt`, then makes serial, rate-limited requests only for allowed public pages and their necessary first-party static chunks. It never requests `/api/` or any account, authentication, contract, or guide path. Raw source snapshots for the latest sync are saved in `scminer-local/.sync-cache/latest/` together with request metadata.
 
 The extractor at `tools/extract_scminer_data.py` still performs no network requests; `make sync` is the separate, explicit network step that supplies it with snapshots.
+
+## SCMDB Fabricator blueprints
+
+`scmdb-blueprints.json` is created only from a user-exported, public rendered
+SCMDB Fabricator page. It contains recipes, material slots, quantities, and
+manufacturing time. It does not contain item-stat or quality-modifier rules.
+
+After saving a new public-page export under `scminer-local/imports/scmdb/`, run:
+
+```sh
+make blueprints-build
+```
+
+This imports the newest local capture and regenerates the browser payloads used
+by `blueprints.html`. It performs no SCMDB network request.

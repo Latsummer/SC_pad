@@ -22,9 +22,11 @@
           <span class="brand-mark" aria-hidden="true">◇</span>
           <span><strong>矿物导航台</strong><small>SC MINING ATLAS</small></span>
         </a>
-        <div class="dataset-meta">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span id="versionLabel">数据载入中</span>
+        <div class="topbar-actions">
+          <div class="dataset-meta">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="versionLabel">数据载入中</span>
+          </div>
         </div>
       </header>
 
@@ -38,6 +40,7 @@
             <div class="mode-switch" role="tablist" aria-label="查询模式">
               <button class="mode-button active" type="button" role="tab" aria-selected="true" data-mode="mineral">矿物与分布</button>
               <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="scan">扫描值反查</button>
+              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="blueprints">制造蓝图</button>
             </div>
           </div>
 
@@ -58,6 +61,7 @@
             <label for="scanInput">输入驾驶舱扫描信号</label>
             <div class="scan-entry">
               <input id="scanInput" type="number" min="1" inputmode="numeric" placeholder="例如：3585">
+              <button id="scanReset" class="secondary-button" type="button" disabled>重置</button>
               <button id="scanButton" class="primary-button" type="button">识别矿石</button>
             </div>
             <p>输入后实时识别，也可点击按钮或按回车手动查询。计算规则：单块特征值 × 同类矿石数量；信号冲突时会列出全部候选。</p>
@@ -101,12 +105,49 @@
             </div>
           </div>
         </section>
+
+        <section id="blueprintWorkspace" class="blueprint-page" hidden>
+          <section class="blueprint-hero" aria-labelledby="blueprintTitle">
+            <p class="eyebrow">OFFLINE FABRICATOR INDEX</p>
+            <h1 id="blueprintTitle">制造什么，<em>需要哪些矿？</em></h1>
+            <p>按蓝图、材料、槽位和尺寸筛选。材料多选时，结果必须同时包含所有选中的材料。</p>
+          </section>
+
+          <section class="blueprint-controls panel" aria-label="蓝图筛选">
+            <div class="blueprint-search-wrap">
+              <label for="blueprintSearch">搜索蓝图名称</label>
+              <input id="blueprintSearch" type="search" placeholder="例如：探测器、推进器、牵引光束" autocomplete="off">
+            </div>
+            <div class="material-picker">
+              <label for="materialSearch">按矿物筛选（可多选）</label>
+              <input id="materialSearch" type="search" placeholder="输入中文或英文矿物名" autocomplete="off" aria-controls="materialSuggestions" aria-expanded="false">
+              <div id="materialSuggestions" class="suggestions material-suggestions" hidden></div>
+              <div id="selectedMaterials" class="selected-minerals blueprint-chips"></div>
+            </div>
+            <div class="blueprint-selects">
+              <label>制造大类<select id="typeFilter"><option value="all">全部大类</option></select></label>
+              <label>细分类型<select id="subtypeFilter"><option value="all">全部细分</option></select></label>
+              <label>材料槽位<select id="slotFilter"><option value="all">全部槽位</option></select></label>
+              <label>尺寸<select id="sizeFilter"><option value="all">全部尺寸</option></select></label>
+            </div>
+            <button id="resetBlueprintFilters" class="text-button blueprint-reset" type="button">重置筛选</button>
+          </section>
+
+          <section class="blueprint-results-section">
+            <div id="blueprintSummary" class="summary-bar"></div>
+            <div id="blueprintResults" class="blueprint-results"></div>
+          </section>
+        </section>
       </main>
 
     </div>
 
     <script src="app-data.js"></script>
+    <script src="blueprint-index.js"></script>
+    <script src="blueprints-data.js"></script>
+    <script src="blueprint-locale.js"></script>
     <script src="app.js"></script>
+    <script src="blueprints.js"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {}));

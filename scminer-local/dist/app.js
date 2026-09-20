@@ -11,7 +11,7 @@
   const mineralById = new Map(data.minerals.map((item) => [item.id, item]));
   const locationById = new Map(data.locations.map((item) => [item.id, item]));
   const state = {
-    mode: "mineral",
+    mode: new URLSearchParams(location.search).get("mode") === "blueprints" ? "blueprints" : "mineral",
     selected: [],
     system: "all",
     method: "all",
@@ -25,6 +25,7 @@
     scanControls: document.querySelector("#scanControls"),
     mineralWorkspace: document.querySelector("#mineralWorkspace"),
     scanWorkspace: document.querySelector("#scanWorkspace"),
+    blueprintWorkspace: document.querySelector("#blueprintWorkspace"),
     search: document.querySelector("#mineralSearch"),
     dropdownToggle: document.querySelector("#mineralDropdownToggle"),
     suggestions: document.querySelector("#suggestions"),
@@ -77,13 +78,16 @@
       button.classList.toggle("active", active);
       button.setAttribute("aria-selected", String(active));
     });
+    const mineral = mode === "mineral";
     const scan = mode === "scan";
-    els.mineralControls.hidden = scan;
+    const blueprints = mode === "blueprints";
+    els.mineralControls.hidden = !mineral;
     els.scanControls.hidden = !scan;
-    els.mineralWorkspace.hidden = scan;
+    els.mineralWorkspace.hidden = !mineral;
     els.scanWorkspace.hidden = !scan;
+    els.blueprintWorkspace.hidden = !blueprints;
     if (scan) els.scanInput.focus();
-    else els.search.focus();
+    else if (mineral) els.search.focus();
   }
 
   function addMineral(id) {
@@ -236,6 +240,10 @@
         .filter((association) => association.mineral_id === mineral.id)
         .map((association) => ({ source: item, association }))
     );
+    const blueprintCount = window.SCMDB_BLUEPRINT_INDEX?.byMineral?.[mineral.id] || 0;
+    const blueprintLink = blueprintCount
+      ? `<a class="blueprint-jump" href="index.html?mode=blueprints&material=${encodeURIComponent(mineral.id)}">可用于制造 ${blueprintCount} 个蓝图 <span aria-hidden="true">→</span></a>`
+      : '<span class="blueprint-jump muted">当前导入蓝图中未发现该矿物</span>';
     const signatures = mineral.scan.supported_by_signature_scanner
       ? `<div class="association-block"><h3>岩石数量与扫描信号</h3><div class="signature-strip">${mineral.scan.cluster_signatures.map((value, index) => `<div class="signature-cell"><span>${index + 1} 块</span><strong>${formatNumber(value, 0)}</strong></div>`).join("")}</div></div>`
       : "";
@@ -248,6 +256,7 @@
         <div class="stat"><span>不稳定性</span><strong>${escapeHtml(mineral.properties.instability)}</strong></div>
         <div class="stat"><span>抗性 / 密度</span><strong>${escapeHtml(mineral.properties.resistance)} / ${escapeHtml(mineral.properties.density)}</strong></div>
       </div>
+      <div class="blueprint-link-row">${blueprintLink}</div>
       <div class="association-block">
         <h3>还能从哪些主矿获得当前矿物</h3>
         <p class="association-copy">挖取以下主矿时，也有机会获得 <strong>${escapeHtml(displayName(mineral.id))}</strong>：</p>
@@ -294,14 +303,21 @@
     const cards = candidates.map((row, index) => {
       const mineral = mineralById.get(row.mineral_id);
       const delta = observed - row.signature;
+      const price = mineral.price.amount === null || mineral.price.amount === undefined
+        ? "暂无价格"
+        : `${formatNumber(mineral.price.amount, 0)} ${mineral.price.unit}`;
+      const blueprintCount = window.SCMDB_BLUEPRINT_INDEX?.byMineral?.[mineral.id] || 0;
+      const blueprintAction = blueprintCount
+        ? `<a class="text-button" href="index.html?mode=blueprints&material=${encodeURIComponent(mineral.id)}">反查可制造的 ${blueprintCount} 个蓝图 →</a>`
+        : '<span class="candidate-empty">当前导入蓝图中未发现该矿物</span>';
       return `<article class="candidate" style="--enter-index:${index}">
         <div class="candidate-top"><h3>${escapeHtml(displayName(row.mineral_id))}</h3><span class="candidate-count">${row.rock_count} 块</span></div>
         <div class="candidate-meta">
           <div>单块特征<strong>${formatNumber(row.unit_signature, 0)}</strong></div>
-          <div>目标信号<strong>${formatNumber(row.signature, 0)}</strong></div>
+          <div>基础价格<strong>${escapeHtml(price)}</strong></div>
           <div>${exact.length ? "匹配状态" : "信号差值"}<strong>${exact.length ? "精确" : `${delta > 0 ? "+" : ""}${formatNumber(delta, 0)}`}</strong></div>
         </div>
-        <button type="button" class="text-button" data-open-mineral="${mineral.id}">查看价格和分布 →</button>
+        ${blueprintAction}
       </article>`;
     }).join("");
     els.scanResults.innerHTML = `<div class="scan-result-header"><div><p>OBSERVED SIGNATURE</p><h2>${formatNumber(observed, 0)}</h2></div><span class="match-badge ${exact.length ? "" : "nearest"}">${exact.length ? `${exact.length} 个精确候选` : "未精确命中 · 显示最近候选"}</span></div><div class="candidate-grid">${cards}</div>`;
@@ -356,16 +372,10 @@
   });
   els.scanButton.addEventListener("click", renderScan);
   els.scanInput.addEventListener("keydown", (event) => { if (event.key === "Enter") renderScan(); });
-  els.scanResults.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-open-mineral]");
-    if (!button) return;
-    state.selected = [button.dataset.openMineral];
-    setMode("mineral");
-    renderMineralMode();
-  });
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".search-wrap")) closeSuggestions();
   });
 
   renderMineralMode();
+  setMode(state.mode);
 })();
