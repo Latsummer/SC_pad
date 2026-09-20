@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="description" content="离线 Star Citizen 矿物、扫描特征与分布查询工具">
     <meta name="theme-color" content="#071114">
     <meta name="mobile-web-app-capable" content="yes">
@@ -58,6 +58,7 @@
             <label for="scanInput">输入驾驶舱扫描信号</label>
             <div class="scan-entry">
               <input id="scanInput" type="number" min="1" inputmode="numeric" placeholder="例如：3585">
+              <button id="scanReset" class="secondary-button" type="button" disabled>重置</button>
               <button id="scanButton" class="primary-button" type="button">识别矿石</button>
             </div>
             <p>输入后实时识别，也可点击按钮或按回车手动查询。计算规则：单块特征值 × 同类矿石数量；信号冲突时会列出全部候选。</p>
@@ -102,6 +103,7 @@
           </div>
         </section>
       </main>
+
     </div>
 
     <script src="app-data.js"></script>

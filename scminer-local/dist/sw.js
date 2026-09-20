@@ -1,4 +1,4 @@
-const CACHE_NAME = "scminer-atlas-v1";
+const CACHE_NAME = "scminer-atlas-data-4ae558350362";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -24,11 +24,17 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-      if (new URL(event.request.url).origin !== self.location.origin) return response;
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-      return response;
-    }))
+    fetch(event.request)
+      .then((response) => {
+        if (new URL(event.request.url).origin === self.location.origin && response.ok) {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        if (event.request.mode === "navigate") return caches.match("./index.html");
+        return Response.error();
+      }))
   );
 });

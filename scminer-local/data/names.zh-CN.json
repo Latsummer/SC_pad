@@ -134,7 +134,9 @@
       "en": "Janalite",
       "zh": "贾纳莱特",
       "aliases_en": [],
-      "aliases_zh": ["贾纳石?"]
+      "aliases_zh": [
+        "贾纳石?"
+      ]
     },
     "laranite": {
       "en": "Laranite",
@@ -170,7 +172,9 @@
       "en": "Riccite",
       "zh": "钰石",
       "aliases_en": [],
-      "aliases_zh": ["里克石"]
+      "aliases_zh": [
+        "里克石"
+      ]
     },
     "sadaryx": {
       "en": "Sadaryx",

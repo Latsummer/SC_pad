@@ -36,6 +36,7 @@
     details: document.querySelector("#mineralDetails"),
     reset: document.querySelector("#resetFilters"),
     scanInput: document.querySelector("#scanInput"),
+    scanReset: document.querySelector("#scanReset"),
     scanButton: document.querySelector("#scanButton"),
     scanResults: document.querySelector("#scanResults"),
   };
@@ -276,6 +277,7 @@
 
   function renderScan() {
     const rawValue = els.scanInput.value.trim();
+    els.scanReset.disabled = !rawValue;
     if (!rawValue) {
       els.scanResults.innerHTML = '<div class="empty-state"><span class="empty-glyph">◎</span><h2>等待扫描信号</h2><p>输入一个正整数，即可实时反推出可能的矿石种类和岩石数量。</p></div>';
       return;
@@ -347,6 +349,11 @@
     if (button) addMineral(button.dataset.add);
   });
   els.scanInput.addEventListener("input", renderScan);
+  els.scanReset.addEventListener("click", () => {
+    els.scanInput.value = "";
+    renderScan();
+    els.scanInput.focus();
+  });
   els.scanButton.addEventListener("click", renderScan);
   els.scanInput.addEventListener("keydown", (event) => { if (event.key === "Enter") renderScan(); });
   els.scanResults.addEventListener("click", (event) => {

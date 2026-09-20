@@ -24,4 +24,6 @@ python3 tools/update_scminer_locale.py \
   --output scminer-local/data/names.zh-CN.json
 ```
 
-The source site's public pages were fetched once and processed locally. The extractor at `tools/extract_scminer_data.py` performs no network requests, so future refreshes can use cached source files and remain explicit.
+Run `make sync` from the repository root to refresh the dataset. The sync first reads and enforces the source site's current `robots.txt`, then makes serial, rate-limited requests only for allowed public pages and their necessary first-party static chunks. It never requests `/api/` or any account, authentication, contract, or guide path. Raw source snapshots for the latest sync are saved in `scminer-local/.sync-cache/latest/` together with request metadata.
+
+The extractor at `tools/extract_scminer_data.py` still performs no network requests; `make sync` is the separate, explicit network step that supplies it with snapshots.

@@ -19,6 +19,7 @@
 }
 
 * { box-sizing: border-box; }
+html, body { max-width: 100%; overflow-x: clip; }
 
 body {
   margin: 0;
@@ -48,7 +49,7 @@ button, input { font: inherit; }
 button { color: inherit; }
 button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-.app-shell { width: min(1540px, 100%); margin: 0 auto; padding: 0 24px 48px; animation: page-in .55s cubic-bezier(.2,.8,.2,1) both; }
+.app-shell { width: min(1540px, 100%); margin: 0 auto; padding: 0 24px max(48px, env(safe-area-inset-bottom)); animation: page-in .55s cubic-bezier(.2,.8,.2,1) both; }
 
 .topbar {
   min-height: 76px;
@@ -78,7 +79,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   background: linear-gradient(135deg, rgba(14, 34, 39, .97), rgba(7, 17, 20, .98) 58%, rgba(9, 29, 33, .95));
   box-shadow: 0 24px 68px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.05), 0 0 0 1px rgba(39,215,231,.04);
 }
-.command-deck::before { content: ""; position: absolute; right: -80px; bottom: -110px; width: 330px; height: 330px; border: 1px solid rgba(39,215,231,.16); border-radius: 50%; box-shadow: 0 0 0 28px rgba(39,215,231,.025), 0 0 0 56px rgba(39,215,231,.018); pointer-events: none; }
+.command-deck::before { content: ""; position: absolute; right: 10px; bottom: -110px; width: 330px; height: 330px; border: 1px solid rgba(39,215,231,.16); border-radius: 50%; box-shadow: 0 0 0 28px rgba(39,215,231,.025), 0 0 0 56px rgba(39,215,231,.018); pointer-events: none; }
 .command-deck::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(var(--cyan), transparent 75%); box-shadow: 0 0 14px rgba(39,215,231,.65); }
 
 .deck-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
@@ -239,14 +240,18 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
 }
 
 @media (max-width: 760px) {
-  .app-shell { padding: 0 14px 30px; }
+  body { min-width: 0; }
+  .app-shell { width: 100%; min-width: 0; margin: 0; padding: 0 max(14px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
   .topbar { min-height: 66px; }
   .dataset-meta { display: none; }
-  .command-deck { margin-top: 18px; padding: 18px; }
+  .command-deck { width: 100%; min-width: 0; margin-top: 18px; padding: 18px; }
+  .command-deck::before { display: none; }
   .deck-heading, .mineral-controls { display: grid; grid-template-columns: 1fr; }
-  .mode-switch { width: 100%; margin-top: 8px; }
-  .mode-button { flex: 1; }
-  .workspace-grid { grid-template-columns: 1fr; }
+  .mode-switch { width: 100%; min-width: 0; margin-top: 8px; }
+  .mode-button { min-width: 0; flex: 1; }
+  .scan-controls, .scan-workspace, .workspace-grid, .results-column, .detail-column { width: 100%; min-width: 0; max-width: 100%; }
+  .scan-workspace { margin-inline: 0; }
+  .workspace-grid { grid-template-columns: minmax(0, 1fr); }
   .filter-panel { position: static; }
   .filter-panel fieldset { display: inline-block; vertical-align: top; width: 49%; }
   .detail-column { grid-template-columns: 1fr; }
