@@ -60,3 +60,4 @@ dkms.conf
 # SCMINER sync snapshots and local Python bytecode
 scminer-local/.sync-cache/
 tools/__pycache__/
+.edgeone

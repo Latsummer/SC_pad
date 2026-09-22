@@ -20,6 +20,7 @@
 
   const els = {
     version: document.querySelector("#versionLabel"),
+    workspaceTitle: document.querySelector("#workspaceTitle"),
     modeButtons: [...document.querySelectorAll(".mode-button")],
     mineralControls: document.querySelector("#mineralControls"),
     scanControls: document.querySelector("#scanControls"),
@@ -73,6 +74,8 @@
 
   function setMode(mode) {
     state.mode = mode;
+    document.body.dataset.mode = mode;
+    els.workspaceTitle.textContent = { mineral: "今天要找什么矿？", scan: "输入扫描信号", blueprints: "查询制造蓝图" }[mode];
     els.modeButtons.forEach((button) => {
       const active = button.dataset.mode === mode;
       button.classList.toggle("active", active);
@@ -257,17 +260,20 @@
         <div class="stat"><span>抗性 / 密度</span><strong>${escapeHtml(mineral.properties.resistance)} / ${escapeHtml(mineral.properties.density)}</strong></div>
       </div>
       <div class="blueprint-link-row">${blueprintLink}</div>
-      <div class="association-block">
-        <h3>还能从哪些主矿获得当前矿物</h3>
-        <p class="association-copy">挖取以下主矿时，也有机会获得 <strong>${escapeHtml(displayName(mineral.id))}</strong>：</p>
-        ${reverse.length ? `<div class="association-list">${reverse.map(reverseAssociationButton).join("")}</div>` : '<span class="association-empty">没有记录为其他矿物的伴生矿</span>'}
+      <button class="detail-toggle" type="button" data-toggle-details aria-expanded="false">展开完整详情 <span aria-hidden="true">⌄</span></button>
+      <div class="detail-secondary">
+        <div class="association-block">
+          <h3>还能从哪些主矿获得当前矿物</h3>
+          <p class="association-copy">挖取以下主矿时，也有机会获得 <strong>${escapeHtml(displayName(mineral.id))}</strong>：</p>
+          ${reverse.length ? `<div class="association-list">${reverse.map(reverseAssociationButton).join("")}</div>` : '<span class="association-empty">没有记录为其他矿物的伴生矿</span>'}
+        </div>
+        <div class="association-block">
+          <h3>当前矿物会伴生什么</h3>
+          <p class="association-copy">以 <strong>${escapeHtml(displayName(mineral.id))}</strong> 为主矿挖取时，可能同时获得：</p>
+          ${associations.length ? `<div class="association-list">${associations.map(associatedButton).join("")}</div>` : '<span class="association-empty">没有已记录的伴生矿物</span>'}
+        </div>
+        ${signatures}
       </div>
-      <div class="association-block">
-        <h3>当前矿物会伴生什么</h3>
-        <p class="association-copy">以 <strong>${escapeHtml(displayName(mineral.id))}</strong> 为主矿挖取时，可能同时获得：</p>
-        ${associations.length ? `<div class="association-list">${associations.map(associatedButton).join("")}</div>` : '<span class="association-empty">没有已记录的伴生矿物</span>'}
-      </div>
-      ${signatures}
     </article>`;
   }
 
@@ -361,6 +367,14 @@
   });
   els.reset.addEventListener("click", () => { state.system = "all"; state.method = "all"; renderMineralMode(); });
   els.details.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-toggle-details]");
+    if (toggle) {
+      const card = toggle.closest(".detail-card");
+      const expanded = card.classList.toggle("expanded");
+      toggle.setAttribute("aria-expanded", String(expanded));
+      toggle.firstChild.textContent = expanded ? "收起完整详情 " : "展开完整详情 ";
+      return;
+    }
     const button = event.target.closest("[data-add]");
     if (button) addMineral(button.dataset.add);
   });
