@@ -42,6 +42,14 @@ constexpr KeyBinding kBindings[static_cast<uint8_t>(Command::Count)] = {
     {InputMode::Tap, {Key::M, Key::None, Key::None}, kTapHoldMs, "M"},
     // This command is handled by the firmware itself and never reaches HID.
     {InputMode::Tap, {Key::None, Key::None, Key::None}, 0, "LOCAL"},
+    // Anti-idle pulses. Short taps are enough to reset the inactivity timer.
+    {InputMode::Tap, {Key::Space, Key::None, Key::None}, kTapHoldMs, "SPACE"},
+    {InputMode::Tap, {Key::Q, Key::None, Key::None}, kTapHoldMs, "Q"},
+    {InputMode::Tap, {Key::E, Key::None, Key::None}, kTapHoldMs, "E"},
+    {InputMode::Tap, {Key::W, Key::None, Key::None}, kTapHoldMs, "W"},
+    {InputMode::Tap, {Key::A, Key::None, Key::None}, kTapHoldMs, "A"},
+    {InputMode::Tap, {Key::S, Key::None, Key::None}, kTapHoldMs, "S"},
+    {InputMode::Tap, {Key::D, Key::None, Key::None}, kTapHoldMs, "D"},
 };
 
 constexpr KeyBinding kUnbound = {

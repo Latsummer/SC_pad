@@ -66,6 +66,8 @@ uint8_t hid_key(sc_pad::Key key)
     switch (key) {
         case sc_pad::Key::Slash:
             return '/';
+        case sc_pad::Key::Space:
+            return ' ';
         case sc_pad::Key::F2:
             return KEY_F2;
         case sc_pad::Key::F5:

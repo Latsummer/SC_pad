@@ -44,7 +44,7 @@ enum class PanelPage : uint8_t {
     Flight,
     Ship,
     Mining,
-    Camera,
+    AntiAfk,
     System,
 };
 
@@ -131,6 +131,52 @@ struct ShipControlRuntime {
     PhysicalButtonLayers layers;
 };
 
+enum class AfkControl : uint8_t {
+    MasterToggle,
+    Interval1Min,
+    Interval5Min,
+    Interval10Min,
+    KeySpace,
+    KeyQ,
+    KeyE,
+    KeyW,
+    KeyA,
+    KeyS,
+    KeyD,
+    TestFire,
+};
+
+struct AfkControlRuntime {
+    AfkControl control = AfkControl::MasterToggle;
+    lv_obj_t *button = nullptr;
+    lv_obj_t *label = nullptr;
+    PhysicalButtonLayers layers;
+};
+
+// Panel-local anti-idle state. Survives page rebuilds so the guard keeps
+// running while the operator browses other pages.
+struct AfkState {
+    bool enabled = false;
+    // 0 = up to 1 min, 1 = up to 5 min, 2 = up to 10 min.
+    int interval_index = 1;
+    // SPACE, Q, E, W, A, S, D.
+    bool key_pool[7] = {true, true, true, true, true, true, true};
+};
+
+// Maps the AFK GUARD key pool order (SPACE, Q, E, W, A, S, D) to commands.
+constexpr Command kAfkKeyCommands[7] = {
+    Command::AfkSpace, Command::AfkQ, Command::AfkE, Command::AfkW,
+    Command::AfkA, Command::AfkS, Command::AfkD,
+};
+
+// Random fire delay per interval preset, [min, max] milliseconds. Ranges are
+// deliberately asymmetric so the cadence never looks periodic.
+constexpr uint32_t kAfkIntervalRanges[3][2] = {
+    {30ul * 1000, 60ul * 1000},
+    {2ul * 60 * 1000, 5ul * 60 * 1000},
+    {5ul * 60 * 1000, 10ul * 60 * 1000},
+};
+
 struct PageTransition {
     bool active = false;
     PanelPage target = PanelPage::Flight;
@@ -165,7 +211,7 @@ const ActionSpec kActions[kActionCount] = {
     {Command::ExitSeat, "12", "离席", nullptr, ButtonBehavior::Request, &kExitSeatProcess},
 };
 
-const char *kNavLabels[] = {"FLIGHT", "SHIP", "MINING", "CAMERA", "SYSTEM"};
+const char *kNavLabels[] = {"FLIGHT", "SHIP", "MINING", "ANTI-AFK", "SYSTEM"};
 
 CommandCallback command_callback = nullptr;
 void *command_user_data = nullptr;
@@ -176,6 +222,20 @@ ThemeSelectionRuntime theme_selection_runtime[kThemeCount];
 MiningState mining_state;
 MiningControlRuntime mining_controls[7];
 ShipControlRuntime ship_controls[11];
+AfkControlRuntime afk_controls[12];
+AfkState afk_state;
+lv_obj_t *afk_status_label = nullptr;
+lv_obj_t *afk_master_detail = nullptr;
+lv_obj_t *afk_next_label = nullptr;
+// The scheduler timer outlives page rebuilds: it only writes to
+// afk_next_label behind a null check and never touches freed objects.
+lv_timer_t *afk_timer = nullptr;
+uint32_t afk_next_fire_ms = 0;
+uint32_t afk_rng_state = 0;
+// Header pill mirroring the guard state on every page.
+lv_obj_t *afk_indicator = nullptr;
+lv_obj_t *afk_indicator_dot = nullptr;
+lv_obj_t *afk_indicator_label = nullptr;
 PageTransition page_transition;
 
 ActionState &state_for(ActionRuntime &runtime)
@@ -237,6 +297,68 @@ bool use_neumorphic_ui()
     return true;
 }
 
+int channel_luminance(uint32_t rgb)
+{
+    const uint32_t r = (rgb >> 16) & 0xFF;
+    const uint32_t g = (rgb >> 8) & 0xFF;
+    const uint32_t b = rgb & 0xFF;
+    return static_cast<int>((r * 299 + g * 587 + b * 114) / 1000);
+}
+
+// Brand primaries are picked for logos and print, not for 12 px labels. Blend
+// the accent toward white on dark surfaces (toward black on light ones) until
+// it clears a minimum luminance gap, keeping every theme's numbers, headings
+// and indicators readable without hand-tuning each palette.
+lv_color_t accent_on(uint32_t background_rgb)
+{
+    int r = static_cast<int>((theme().primary >> 16) & 0xFF);
+    int g = static_cast<int>((theme().primary >> 8) & 0xFF);
+    int b = static_cast<int>(theme().primary & 0xFF);
+    const int background_luminance = channel_luminance(background_rgb);
+    const int target = background_luminance < 128 ? 255 : 0;
+    for (int step = 0; step < 6; ++step) {
+        int gap = channel_luminance(
+                      (static_cast<uint32_t>(r) << 16) |
+                      (static_cast<uint32_t>(g) << 8) |
+                      static_cast<uint32_t>(b)) -
+                  background_luminance;
+        if (gap < 0) {
+            gap = -gap;
+        }
+        if (gap >= 110) {
+            break;
+        }
+        r += (target - r) / 4;
+        g += (target - g) / 4;
+        b += (target - b) / 4;
+    }
+    return color((static_cast<uint32_t>(r) << 16) |
+                 (static_cast<uint32_t>(g) << 8) |
+                 static_cast<uint32_t>(b));
+}
+
+// Checked fills stay in the theme family but gain some primary, so the active
+// state reads as lit rather than muddy on the darker palettes.
+lv_color_t active_fill()
+{
+    return lv_color_mix(color(theme().primary), color(theme().local_state_surface), 64);
+}
+
+// Baked lighting masks are pure black/white. On light surfaces a
+// full-strength black drop shadow reads as dirt, so fade the shadow layer
+// instead of re-baking per-theme masks. The white highlight half of the mask
+// is invisible on light surfaces anyway, so fading costs nothing there.
+lv_opa_t shadow_mask_opa()
+{
+    return channel_luminance(theme().screen) > 128 ? LV_OPA_40 : LV_OPA_COVER;
+}
+
+void set_shadow_mask(lv_obj_t *object, int width, int height)
+{
+    lv_obj_set_style_bg_img_src(object, sc_pad_neu_image(width, height, SC_PAD_NEU_SHADOW), 0);
+    lv_obj_set_style_bg_img_opa(object, shadow_mask_opa(), 0);
+}
+
 void init_styles()
 {
     const Theme &palette = theme();
@@ -295,7 +417,7 @@ void init_styles()
 
     // This is a panel-local state, never a claim about the in-game state.
     lv_style_init(&style_action_active);
-    lv_style_set_bg_color(&style_action_active, color(palette.local_state_surface));
+    lv_style_set_bg_color(&style_action_active, active_fill());
     lv_style_set_border_color(&style_action_active, color(palette.border));
     lv_style_set_border_width(&style_action_active, palette.action_border_width);
     lv_style_set_shadow_width(&style_action_active, 0);
@@ -317,7 +439,7 @@ void init_styles()
     constexpr int kFlightStateRingWidth = 3;
     const lv_color_t flight_fill_default = color(palette.surface);
     const lv_color_t flight_fill_pressed = lv_color_darken(flight_fill_default, LV_OPA_20);
-    const lv_color_t flight_fill_active = color(palette.local_state_surface);
+    const lv_color_t flight_fill_active = active_fill();
     const lv_color_t flight_fill_active_pressed = lv_color_darken(flight_fill_active, LV_OPA_20);
     const lv_color_t flight_fill_transition = color(palette.progress_border);
     const auto reflected_edge = [](lv_color_t fill) {
@@ -636,11 +758,11 @@ void create_physical_button_layers(
             lv_obj_set_style_border_width(button, 0, state);
             lv_obj_set_style_border_width(layers.face, 0, state);
         }
-        lv_obj_set_style_bg_img_src(button, sc_pad_neu_image(width, height, SC_PAD_NEU_SHADOW), 0);
+        set_shadow_mask(button, width, height);
         lv_obj_set_style_radius(layers.face, LV_MAX(8, theme().action_radius + 4), 0);
         lv_obj_set_style_bg_color(layers.face, color(theme().surface), 0);
         lv_obj_set_style_bg_color(layers.face, color(theme().surface_pressed), LV_STATE_PRESSED);
-        lv_obj_set_style_bg_color(layers.face, color(theme().local_state_surface), LV_STATE_CHECKED);
+        lv_obj_set_style_bg_color(layers.face, active_fill(), LV_STATE_CHECKED);
         lv_obj_set_style_bg_color(layers.face, color(theme().surface_pressed), LV_STATE_CHECKED | LV_STATE_PRESSED);
         lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_RAISED), 0);
         lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_INSET), LV_STATE_PRESSED);
@@ -906,6 +1028,15 @@ void rebuild_ui(void *)
     for (ShipControlRuntime &runtime : ship_controls) {
         runtime = {};
     }
+    for (AfkControlRuntime &runtime : afk_controls) {
+        runtime = {};
+    }
+    afk_status_label = nullptr;
+    afk_master_detail = nullptr;
+    afk_next_label = nullptr;
+    afk_indicator = nullptr;
+    afk_indicator_dot = nullptr;
+    afk_indicator_label = nullptr;
     for (NavigationRuntime &runtime : navigation_runtime) {
         runtime = {};
     }
@@ -934,7 +1065,7 @@ void attach_mode_event_cb(lv_event_t *event)
     if (attach_mode) {
         lv_obj_add_state(attach_mode_button, LV_STATE_CHECKED);
         lv_label_set_text(attach_mode_label, "ATTACH ON");
-        lv_obj_set_style_text_color(attach_mode_label, color(theme().primary), LV_STATE_DEFAULT);
+        lv_obj_set_style_text_color(attach_mode_label, accent_on(theme().accent_surface), LV_STATE_DEFAULT);
     } else {
         lv_obj_clear_state(attach_mode_button, LV_STATE_CHECKED);
         lv_label_set_text(attach_mode_label, "ATTACH OFF");
@@ -994,8 +1125,8 @@ const char *page_title_text(PanelPage page)
             return "SHIP";
         case PanelPage::Mining:
             return "MINING";
-        case PanelPage::Camera:
-            return "CAMERA";
+        case PanelPage::AntiAfk:
+            return "ANTI-AFK";
         case PanelPage::System:
             return "SYSTEM";
     }
@@ -1039,6 +1170,8 @@ lv_obj_t *create_content_page(lv_obj_t *screen)
     return page;
 }
 
+void update_afk_indicator();
+
 void create_header(lv_obj_t *screen)
 {
     const Theme &palette = theme();
@@ -1068,15 +1201,16 @@ void create_header(lv_obj_t *screen)
     lv_obj_set_style_border_color(logo_plate, color(palette.logo_border), 0);
     lv_obj_set_style_border_width(logo_plate, 1, 0);
     if (use_neumorphic_ui()) {
+        // Keep the brand-tinted plate: several official marks are black
+        // artwork and vanish if the plate collapses into the header color.
         lv_obj_set_style_border_color(logo_plate, color(palette.border), 0);
-        lv_obj_set_style_bg_color(logo_plate, color(palette.header), 0);
     }
 
     lv_obj_t *accent = lv_obj_create(header);
     lv_obj_set_size(accent, 4, 38);
     lv_obj_align(accent, LV_ALIGN_LEFT_MID, 158, 0);
     lv_obj_set_style_radius(accent, 2, 0);
-    lv_obj_set_style_bg_color(accent, color(palette.primary), 0);
+    lv_obj_set_style_bg_color(accent, accent_on(palette.header), 0);
     lv_obj_set_style_bg_opa(accent, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(accent, 0, 0);
 
@@ -1085,6 +1219,29 @@ void create_header(lv_obj_t *screen)
     lv_obj_align(page_title, LV_ALIGN_LEFT_MID, 178, 0);
     lv_obj_set_style_text_color(page_title, color(palette.text), 0);
     lv_obj_set_style_text_font(page_title, &sc_pad_font_jetbrains_mono_16, 0);
+
+    // Guard-state pill next to the title, visible from every page.
+    afk_indicator = lv_obj_create(header);
+    lv_obj_set_size(afk_indicator, 96, 34);
+    lv_obj_align(afk_indicator, LV_ALIGN_LEFT_MID, 330, 0);
+    lv_obj_clear_flag(afk_indicator, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_radius(afk_indicator, palette.control_radius, 0);
+    lv_obj_set_style_bg_opa(afk_indicator, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(afk_indicator, 1, 0);
+    lv_obj_set_style_shadow_width(afk_indicator, 0, 0);
+    lv_obj_set_style_pad_all(afk_indicator, 0, 0);
+
+    afk_indicator_dot = lv_obj_create(afk_indicator);
+    lv_obj_set_pos(afk_indicator_dot, 14, 14);
+    lv_obj_set_size(afk_indicator_dot, 6, 6);
+    lv_obj_set_style_radius(afk_indicator_dot, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_opa(afk_indicator_dot, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(afk_indicator_dot, 0, 0);
+
+    afk_indicator_label = lv_label_create(afk_indicator);
+    lv_obj_align(afk_indicator_label, LV_ALIGN_CENTER, 6, 0);
+    lv_obj_set_style_text_font(afk_indicator_label, &sc_pad_font_jetbrains_mono_12, 0);
+    update_afk_indicator();
 
     lv_obj_t *logo = lv_img_create(header);
     lv_img_set_src(logo, palette.logo);
@@ -1108,7 +1265,7 @@ void create_header(lv_obj_t *screen)
     attach_mode_label = lv_label_create(attach_mode_button);
     lv_label_set_text(attach_mode_label, attach_mode ? "ATTACH ON" : "ATTACH OFF");
     lv_obj_center(attach_mode_label);
-    lv_obj_set_style_text_color(attach_mode_label, color(attach_mode ? palette.primary : palette.text), LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(attach_mode_label, attach_mode ? accent_on(palette.accent_surface) : color(palette.text), LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(attach_mode_label, &sc_pad_font_jetbrains_mono_12, LV_STATE_DEFAULT);
     if (attach_mode) {
         lv_obj_add_state(attach_mode_button, LV_STATE_CHECKED);
@@ -1184,7 +1341,7 @@ void create_action_button(lv_obj_t *screen, int index)
     lv_obj_t *number = lv_label_create(button);
     lv_label_set_text(number, spec.number);
     lv_obj_set_pos(number, 15, 13);
-    lv_obj_set_style_text_color(number, color(theme().primary), 0);
+    lv_obj_set_style_text_color(number, accent_on(theme().surface), 0);
     lv_obj_set_style_text_color(number, lv_color_black(), LV_STATE_USER_1);
     lv_obj_set_style_text_font(number, &sc_pad_font_jetbrains_mono_12, 0);
 
@@ -1229,7 +1386,7 @@ lv_obj_t *create_control_section(lv_obj_t *page, int x, const char *title)
     lv_obj_t *heading = lv_label_create(section);
     lv_label_set_text(heading, title);
     lv_obj_set_pos(heading, 16, 17);
-    lv_obj_set_style_text_color(heading, color(theme().primary), 0);
+    lv_obj_set_style_text_color(heading, accent_on(theme().screen), 0);
     lv_obj_set_style_text_font(heading, &sc_pad_font_jetbrains_mono_12, 0);
     return section;
 }
@@ -1332,7 +1489,7 @@ void create_system_page(lv_obj_t *page)
         lv_obj_set_style_bg_color(choice, color(candidate.surface_pressed), LV_STATE_PRESSED);
         if (use_neumorphic_ui()) {
             lv_obj_set_style_bg_color(choice, color(candidate.surface), 0);
-            lv_obj_set_style_bg_img_src(choice, sc_pad_neu_image(449, 38, SC_PAD_NEU_SHADOW), 0);
+            set_shadow_mask(choice, 449, 38);
             lv_obj_set_style_bg_img_src(choice, sc_pad_neu_image(441, 30, SC_PAD_NEU_INSET), LV_STATE_PRESSED);
             lv_obj_set_style_border_color(choice, color(i == current_theme ? candidate.primary : candidate.border), 0);
         }
@@ -1365,7 +1522,7 @@ void create_system_page(lv_obj_t *page)
     lv_obj_add_style(orientation_button, &style_action, LV_STATE_DEFAULT);
     lv_obj_add_style(orientation_button, &style_action_pressed, LV_STATE_PRESSED);
     if (use_neumorphic_ui()) {
-        lv_obj_set_style_bg_img_src(orientation_button, sc_pad_neu_image(449, 190, SC_PAD_NEU_SHADOW), 0);
+        set_shadow_mask(orientation_button, 449, 190);
     }
     lv_obj_add_event_cb(
         orientation_button,
@@ -1532,6 +1689,303 @@ void create_mining_page(lv_obj_t *page)
     update_mining_presentation();
 }
 
+uint32_t afk_random()
+{
+    // xorshift32, seeded from the boot tick and stirred by every AFK control
+    // press. The goal is a non-obvious cadence, not cryptographic quality.
+    if (afk_rng_state == 0) {
+        afk_rng_state = lv_tick_get() ^ 0x9E3779B9u;
+        if (afk_rng_state == 0) {
+            afk_rng_state = 0x2545F491u;
+        }
+    }
+    afk_rng_state ^= afk_rng_state << 13;
+    afk_rng_state ^= afk_rng_state >> 17;
+    afk_rng_state ^= afk_rng_state << 5;
+    return afk_rng_state;
+}
+
+bool afk_pool_empty()
+{
+    for (bool key_enabled : afk_state.key_pool) {
+        if (key_enabled) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void schedule_afk_fire()
+{
+    const auto &range = kAfkIntervalRanges[afk_state.interval_index];
+    const uint32_t span = range[1] - range[0] + 1;
+    afk_next_fire_ms = lv_tick_get() + range[0] + afk_random() % span;
+}
+
+void afk_fire_random_key()
+{
+    if (afk_pool_empty()) {
+        return;
+    }
+    uint8_t pick = static_cast<uint8_t>(afk_random() % 7);
+    while (!afk_state.key_pool[pick]) {
+        pick = static_cast<uint8_t>((pick + 1) % 7);
+    }
+    if (attach_mode) {
+        send_command(kAfkKeyCommands[pick]);
+    }
+}
+
+void update_afk_countdown()
+{
+    if (afk_next_label == nullptr) {
+        return;
+    }
+    if (!afk_state.enabled) {
+        lv_label_set_text(afk_next_label, "NEXT KEY IN --:--");
+        return;
+    }
+    if (afk_pool_empty()) {
+        lv_label_set_text(afk_next_label, "KEY POOL EMPTY");
+        return;
+    }
+    int32_t remaining_ms = static_cast<int32_t>(afk_next_fire_ms - lv_tick_get());
+    if (remaining_ms < 0) {
+        remaining_ms = 0;
+    }
+    const uint32_t total_s = (static_cast<uint32_t>(remaining_ms) + 999) / 1000;
+    lv_label_set_text_fmt(
+        afk_next_label,
+        "NEXT KEY IN %u:%02u",
+        static_cast<unsigned>(total_s / 60),
+        static_cast<unsigned>(total_s % 60));
+}
+
+void afk_timer_cb(lv_timer_t *)
+{
+    if (!afk_state.enabled) {
+        return;
+    }
+    if (!afk_pool_empty() &&
+        static_cast<int32_t>(lv_tick_get() - afk_next_fire_ms) >= 0) {
+        afk_fire_random_key();
+        schedule_afk_fire();
+    }
+    update_afk_countdown();
+}
+
+void set_afk_enabled(bool enabled)
+{
+    afk_state.enabled = enabled;
+    if (enabled) {
+        schedule_afk_fire();
+        if (afk_timer == nullptr) {
+            afk_timer = lv_timer_create(afk_timer_cb, 1000, nullptr);
+        }
+    } else if (afk_timer != nullptr) {
+        lv_timer_del(afk_timer);
+        afk_timer = nullptr;
+    }
+}
+
+// Mirrors the guard state into the header pill. Safe to call on any page: the
+// header is rebuilt with the page, so the pointers are null-checked.
+void update_afk_indicator()
+{
+    if (afk_indicator == nullptr) {
+        return;
+    }
+    const Theme &palette = theme();
+    const bool on = afk_state.enabled;
+    const lv_color_t accent = accent_on(palette.accent_surface);
+    lv_obj_set_style_bg_color(afk_indicator, color(on ? palette.accent_surface : palette.surface), 0);
+    lv_obj_set_style_border_color(afk_indicator, on ? accent : color(palette.border), 0);
+    lv_obj_set_style_bg_color(afk_indicator_dot, on ? accent : color(palette.muted_text), 0);
+    lv_obj_set_style_text_color(afk_indicator_label, on ? accent : color(palette.muted_text), 0);
+    lv_label_set_text(afk_indicator_label, on ? "AFK ON" : "AFK");
+}
+
+void update_afk_presentation()
+{
+    AfkControlRuntime &master = afk_controls[0];
+    lv_label_set_text(master.label, afk_state.enabled ? "AFK GUARD ON" : "AFK GUARD OFF");
+    set_visual_state(master.button, LV_STATE_CHECKED, afk_state.enabled);
+    sync_physical_button_layers(master.layers, master.button);
+
+    if (afk_master_detail != nullptr) {
+        lv_label_set_text(
+            afk_master_detail,
+            afk_state.enabled ? "RANDOM KEY EVERY FEW MINUTES" : "TAP TO START ANTI-IDLE");
+    }
+    if (afk_status_label != nullptr) {
+        lv_label_set_text(afk_status_label, afk_state.enabled ? "STATUS: ACTIVE" : "STATUS: STANDBY");
+    }
+    update_afk_countdown();
+
+    for (int i = 0; i < 3; ++i) {
+        AfkControlRuntime &runtime = afk_controls[1 + i];
+        set_visual_state(runtime.button, LV_STATE_CHECKED, afk_state.interval_index == i);
+        sync_physical_button_layers(runtime.layers, runtime.button);
+    }
+    for (int i = 0; i < 7; ++i) {
+        AfkControlRuntime &runtime = afk_controls[4 + i];
+        set_visual_state(runtime.button, LV_STATE_CHECKED, afk_state.key_pool[i]);
+        sync_physical_button_layers(runtime.layers, runtime.button);
+    }
+    update_afk_indicator();
+}
+
+void afk_control_event_cb(lv_event_t *event)
+{
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) {
+        return;
+    }
+
+    auto *runtime = static_cast<AfkControlRuntime *>(lv_event_get_user_data(event));
+    if (runtime == nullptr || page_transition.active) {
+        return;
+    }
+
+    afk_rng_state ^= lv_tick_get();
+    switch (runtime->control) {
+        case AfkControl::MasterToggle:
+            set_afk_enabled(!afk_state.enabled);
+            break;
+        case AfkControl::Interval1Min:
+            afk_state.interval_index = 0;
+            if (afk_state.enabled) {
+                schedule_afk_fire();
+            }
+            break;
+        case AfkControl::Interval5Min:
+            afk_state.interval_index = 1;
+            if (afk_state.enabled) {
+                schedule_afk_fire();
+            }
+            break;
+        case AfkControl::Interval10Min:
+            afk_state.interval_index = 2;
+            if (afk_state.enabled) {
+                schedule_afk_fire();
+            }
+            break;
+        case AfkControl::TestFire:
+            // One immediate pulse from the pool, to verify the host receives
+            // the anti-idle keys without waiting for the next interval.
+            afk_fire_random_key();
+            break;
+        default: {
+            const int key_index =
+                static_cast<int>(runtime->control) - static_cast<int>(AfkControl::KeySpace);
+            afk_state.key_pool[key_index] = !afk_state.key_pool[key_index];
+            break;
+        }
+    }
+
+    update_afk_presentation();
+}
+
+void create_afk_button(
+    lv_obj_t *section,
+    int index,
+    AfkControl control,
+    const char *label,
+    int x,
+    int y,
+    int width,
+    int height,
+    bool primary = false)
+{
+    AfkControlRuntime &runtime = afk_controls[index];
+    runtime.control = control;
+    runtime.button = lv_btn_create(section);
+    lv_obj_set_pos(runtime.button, x, y);
+    lv_obj_set_size(runtime.button, width, height);
+    lv_obj_add_style(runtime.button, &style_flight_action, LV_STATE_DEFAULT);
+    lv_obj_add_style(runtime.button, &style_flight_action_active, LV_STATE_CHECKED);
+    lv_obj_add_style(runtime.button, &style_flight_action_transition, LV_STATE_USER_1);
+    lv_obj_add_style(runtime.button, &style_flight_action_pressed, LV_STATE_PRESSED);
+    create_physical_button_layers(runtime.button, runtime.layers, width, height);
+    lv_obj_add_event_cb(runtime.button, physical_button_feedback_event_cb, LV_EVENT_ALL, &runtime.layers);
+    lv_obj_add_event_cb(runtime.button, afk_control_event_cb, LV_EVENT_CLICKED, &runtime);
+
+    runtime.label = lv_label_create(runtime.button);
+    lv_label_set_text(runtime.label, label);
+    lv_obj_center(runtime.label);
+    lv_obj_set_style_text_color(runtime.label, color(theme().text), 0);
+    lv_obj_set_style_text_color(runtime.label, lv_color_black(), LV_STATE_USER_1);
+    lv_obj_set_style_text_color(runtime.label, color(theme().local_state_text), LV_STATE_CHECKED);
+    lv_obj_set_style_text_font(
+        runtime.label,
+        primary ? &sc_pad_font_jetbrains_mono_20 : &sc_pad_font_jetbrains_mono_16,
+        0);
+}
+
+void create_afk_section_label(lv_obj_t *section, const char *text, int x, int y)
+{
+    lv_obj_t *label = lv_label_create(section);
+    lv_label_set_text(label, text);
+    lv_obj_set_pos(label, x, y);
+    lv_obj_set_style_text_color(label, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(label, &sc_pad_font_jetbrains_mono_12, 0);
+}
+
+void create_antiafk_page(lv_obj_t *page)
+{
+    lv_obj_t *guard = create_control_section(page, 24, "AFK GUARD");
+
+    afk_status_label = lv_label_create(guard);
+    lv_obj_set_pos(afk_status_label, 16, 51);
+    lv_obj_set_style_text_color(afk_status_label, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(afk_status_label, &sc_pad_font_jetbrains_mono_12, 0);
+
+    create_afk_button(guard, 0, AfkControl::MasterToggle, "AFK GUARD OFF", 15, 65, 449, 190, true);
+    lv_obj_align(afk_controls[0].label, LV_ALIGN_CENTER, 0, -14);
+
+    afk_master_detail = lv_label_create(afk_controls[0].button);
+    lv_obj_align(afk_master_detail, LV_ALIGN_CENTER, 0, 44);
+    lv_obj_set_style_text_color(afk_master_detail, color(theme().muted_text), 0);
+    lv_obj_set_style_text_color(afk_master_detail, color(theme().local_state_text), LV_STATE_CHECKED);
+    lv_obj_set_style_text_color(afk_master_detail, lv_color_black(), LV_STATE_USER_1);
+    lv_obj_set_style_text_font(afk_master_detail, &sc_pad_font_jetbrains_mono_12, 0);
+
+    afk_next_label = lv_label_create(guard);
+    lv_obj_set_pos(afk_next_label, 16, 270);
+    lv_obj_set_style_text_color(afk_next_label, color(theme().muted_text), 0);
+    lv_obj_set_style_text_font(afk_next_label, &sc_pad_font_jetbrains_mono_12, 0);
+
+    create_afk_button(guard, 11, AfkControl::TestFire, "TEST FIRE", 15, 300, 449, 56);
+
+    lv_obj_t *settings = create_control_section(page, 521, "INTERVAL & KEY POOL");
+    create_afk_section_label(settings, "RANDOM INTERVAL, UP TO", 16, 51);
+    constexpr int kIntervalWidth = 143;
+    constexpr int kIntervalGap = 10;
+    create_afk_button(settings, 1, AfkControl::Interval1Min, "1 MIN", 15, 69, kIntervalWidth, 56);
+    create_afk_button(settings, 2, AfkControl::Interval5Min, "5 MIN", 15 + (kIntervalWidth + kIntervalGap), 69, kIntervalWidth, 56);
+    create_afk_button(settings, 3, AfkControl::Interval10Min, "10 MIN", 15 + 2 * (kIntervalWidth + kIntervalGap), 69, kIntervalWidth, 56);
+
+    create_afk_section_label(settings, "KEY POOL", 16, 150);
+    constexpr int kChipWidth = 104;
+    constexpr int kChipHeight = 64;
+    constexpr int kChipGap = 7;
+    constexpr int kChipColumnX[] = {15, 126, 237, 348};
+    create_afk_button(settings, 4, AfkControl::KeySpace, "SPACE", kChipColumnX[0], 170, kChipWidth, kChipHeight);
+    create_afk_button(settings, 5, AfkControl::KeyQ, "Q", kChipColumnX[1], 170, kChipWidth, kChipHeight);
+    create_afk_button(settings, 6, AfkControl::KeyE, "E", kChipColumnX[2], 170, kChipWidth, kChipHeight);
+    create_afk_button(settings, 7, AfkControl::KeyW, "W", kChipColumnX[3], 170, kChipWidth, kChipHeight);
+    create_afk_button(settings, 8, AfkControl::KeyA, "A", kChipColumnX[0], 170 + kChipHeight + kChipGap, kChipWidth, kChipHeight);
+    create_afk_button(settings, 9, AfkControl::KeyS, "S", kChipColumnX[1], 170 + kChipHeight + kChipGap, kChipWidth, kChipHeight);
+    create_afk_button(settings, 10, AfkControl::KeyD, "D", kChipColumnX[2], 170 + kChipHeight + kChipGap, kChipWidth, kChipHeight);
+
+    create_afk_section_label(
+        settings,
+        "ONE RANDOM KEY FROM THE POOL\nIS SENT EACH INTERVAL",
+        16,
+        336);
+
+    update_afk_presentation();
+}
+
 void create_navigation(lv_obj_t *screen)
 {
     const Theme &palette = theme();
@@ -1560,7 +2014,7 @@ void create_navigation(lv_obj_t *screen)
         runtime.available = true;
         runtime.page = i == 1 ? PanelPage::Ship
                                : (i == 2 ? PanelPage::Mining
-                                         : (i == 3 ? PanelPage::Camera
+                                         : (i == 3 ? PanelPage::AntiAfk
                                                    : (i == 4 ? PanelPage::System : PanelPage::Flight)));
         lv_obj_set_size(nav_button, 192, 60);
         lv_obj_align(nav_button, LV_ALIGN_LEFT_MID, 12 + i * 200, 0);
@@ -1572,7 +2026,7 @@ void create_navigation(lv_obj_t *screen)
                 lv_obj_set_style_bg_color(nav_button, color(palette.accent_surface), 0);
                 lv_obj_set_style_bg_grad_dir(nav_button, LV_GRAD_DIR_NONE, 0);
                 lv_obj_set_style_border_color(nav_button, color(palette.border), 0);
-                lv_obj_set_style_text_color(nav_button, color(palette.primary), 0);
+                lv_obj_set_style_text_color(nav_button, accent_on(palette.accent_surface), 0);
             }
         }
         lv_obj_add_event_cb(nav_button, navigation_event_cb, LV_EVENT_CLICKED, &runtime);
@@ -1608,7 +2062,8 @@ void create_ui_impl()
         case PanelPage::Mining:
             create_mining_page(page);
             break;
-        case PanelPage::Camera:
+        case PanelPage::AntiAfk:
+            create_antiafk_page(page);
             break;
         case PanelPage::System:
             create_system_page(page);
