@@ -297,6 +297,68 @@ bool use_neumorphic_ui()
     return true;
 }
 
+int channel_luminance(uint32_t rgb)
+{
+    const uint32_t r = (rgb >> 16) & 0xFF;
+    const uint32_t g = (rgb >> 8) & 0xFF;
+    const uint32_t b = rgb & 0xFF;
+    return static_cast<int>((r * 299 + g * 587 + b * 114) / 1000);
+}
+
+// Brand primaries are picked for logos and print, not for 12 px labels. Blend
+// the accent toward white on dark surfaces (toward black on light ones) until
+// it clears a minimum luminance gap, keeping every theme's numbers, headings
+// and indicators readable without hand-tuning each palette.
+lv_color_t accent_on(uint32_t background_rgb)
+{
+    int r = static_cast<int>((theme().primary >> 16) & 0xFF);
+    int g = static_cast<int>((theme().primary >> 8) & 0xFF);
+    int b = static_cast<int>(theme().primary & 0xFF);
+    const int background_luminance = channel_luminance(background_rgb);
+    const int target = background_luminance < 128 ? 255 : 0;
+    for (int step = 0; step < 6; ++step) {
+        int gap = channel_luminance(
+                      (static_cast<uint32_t>(r) << 16) |
+                      (static_cast<uint32_t>(g) << 8) |
+                      static_cast<uint32_t>(b)) -
+                  background_luminance;
+        if (gap < 0) {
+            gap = -gap;
+        }
+        if (gap >= 110) {
+            break;
+        }
+        r += (target - r) / 4;
+        g += (target - g) / 4;
+        b += (target - b) / 4;
+    }
+    return color((static_cast<uint32_t>(r) << 16) |
+                 (static_cast<uint32_t>(g) << 8) |
+                 static_cast<uint32_t>(b));
+}
+
+// Checked fills stay in the theme family but gain some primary, so the active
+// state reads as lit rather than muddy on the darker palettes.
+lv_color_t active_fill()
+{
+    return lv_color_mix(color(theme().primary), color(theme().local_state_surface), 64);
+}
+
+// Baked lighting masks are pure black/white. On light surfaces a
+// full-strength black drop shadow reads as dirt, so fade the shadow layer
+// instead of re-baking per-theme masks. The white highlight half of the mask
+// is invisible on light surfaces anyway, so fading costs nothing there.
+lv_opa_t shadow_mask_opa()
+{
+    return channel_luminance(theme().screen) > 128 ? LV_OPA_40 : LV_OPA_COVER;
+}
+
+void set_shadow_mask(lv_obj_t *object, int width, int height)
+{
+    lv_obj_set_style_bg_img_src(object, sc_pad_neu_image(width, height, SC_PAD_NEU_SHADOW), 0);
+    lv_obj_set_style_bg_img_opa(object, shadow_mask_opa(), 0);
+}
+
 void init_styles()
 {
     const Theme &palette = theme();
@@ -355,7 +417,7 @@ void init_styles()
 
     // This is a panel-local state, never a claim about the in-game state.
     lv_style_init(&style_action_active);
-    lv_style_set_bg_color(&style_action_active, color(palette.local_state_surface));
+    lv_style_set_bg_color(&style_action_active, active_fill());
     lv_style_set_border_color(&style_action_active, color(palette.border));
     lv_style_set_border_width(&style_action_active, palette.action_border_width);
     lv_style_set_shadow_width(&style_action_active, 0);
@@ -377,7 +439,7 @@ void init_styles()
     constexpr int kFlightStateRingWidth = 3;
     const lv_color_t flight_fill_default = color(palette.surface);
     const lv_color_t flight_fill_pressed = lv_color_darken(flight_fill_default, LV_OPA_20);
-    const lv_color_t flight_fill_active = color(palette.local_state_surface);
+    const lv_color_t flight_fill_active = active_fill();
     const lv_color_t flight_fill_active_pressed = lv_color_darken(flight_fill_active, LV_OPA_20);
     const lv_color_t flight_fill_transition = color(palette.progress_border);
     const auto reflected_edge = [](lv_color_t fill) {
@@ -696,11 +758,11 @@ void create_physical_button_layers(
             lv_obj_set_style_border_width(button, 0, state);
             lv_obj_set_style_border_width(layers.face, 0, state);
         }
-        lv_obj_set_style_bg_img_src(button, sc_pad_neu_image(width, height, SC_PAD_NEU_SHADOW), 0);
+        set_shadow_mask(button, width, height);
         lv_obj_set_style_radius(layers.face, LV_MAX(8, theme().action_radius + 4), 0);
         lv_obj_set_style_bg_color(layers.face, color(theme().surface), 0);
         lv_obj_set_style_bg_color(layers.face, color(theme().surface_pressed), LV_STATE_PRESSED);
-        lv_obj_set_style_bg_color(layers.face, color(theme().local_state_surface), LV_STATE_CHECKED);
+        lv_obj_set_style_bg_color(layers.face, active_fill(), LV_STATE_CHECKED);
         lv_obj_set_style_bg_color(layers.face, color(theme().surface_pressed), LV_STATE_CHECKED | LV_STATE_PRESSED);
         lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_RAISED), 0);
         lv_obj_set_style_bg_img_src(layers.face, sc_pad_neu_image(width - 8, height - 8, SC_PAD_NEU_INSET), LV_STATE_PRESSED);
@@ -1003,7 +1065,7 @@ void attach_mode_event_cb(lv_event_t *event)
     if (attach_mode) {
         lv_obj_add_state(attach_mode_button, LV_STATE_CHECKED);
         lv_label_set_text(attach_mode_label, "ATTACH ON");
-        lv_obj_set_style_text_color(attach_mode_label, color(theme().primary), LV_STATE_DEFAULT);
+        lv_obj_set_style_text_color(attach_mode_label, accent_on(theme().accent_surface), LV_STATE_DEFAULT);
     } else {
         lv_obj_clear_state(attach_mode_button, LV_STATE_CHECKED);
         lv_label_set_text(attach_mode_label, "ATTACH OFF");
@@ -1139,15 +1201,16 @@ void create_header(lv_obj_t *screen)
     lv_obj_set_style_border_color(logo_plate, color(palette.logo_border), 0);
     lv_obj_set_style_border_width(logo_plate, 1, 0);
     if (use_neumorphic_ui()) {
+        // Keep the brand-tinted plate: several official marks are black
+        // artwork and vanish if the plate collapses into the header color.
         lv_obj_set_style_border_color(logo_plate, color(palette.border), 0);
-        lv_obj_set_style_bg_color(logo_plate, color(palette.header), 0);
     }
 
     lv_obj_t *accent = lv_obj_create(header);
     lv_obj_set_size(accent, 4, 38);
     lv_obj_align(accent, LV_ALIGN_LEFT_MID, 158, 0);
     lv_obj_set_style_radius(accent, 2, 0);
-    lv_obj_set_style_bg_color(accent, color(palette.primary), 0);
+    lv_obj_set_style_bg_color(accent, accent_on(palette.header), 0);
     lv_obj_set_style_bg_opa(accent, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(accent, 0, 0);
 
@@ -1202,7 +1265,7 @@ void create_header(lv_obj_t *screen)
     attach_mode_label = lv_label_create(attach_mode_button);
     lv_label_set_text(attach_mode_label, attach_mode ? "ATTACH ON" : "ATTACH OFF");
     lv_obj_center(attach_mode_label);
-    lv_obj_set_style_text_color(attach_mode_label, color(attach_mode ? palette.primary : palette.text), LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(attach_mode_label, attach_mode ? accent_on(palette.accent_surface) : color(palette.text), LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(attach_mode_label, &sc_pad_font_jetbrains_mono_12, LV_STATE_DEFAULT);
     if (attach_mode) {
         lv_obj_add_state(attach_mode_button, LV_STATE_CHECKED);
@@ -1278,7 +1341,7 @@ void create_action_button(lv_obj_t *screen, int index)
     lv_obj_t *number = lv_label_create(button);
     lv_label_set_text(number, spec.number);
     lv_obj_set_pos(number, 15, 13);
-    lv_obj_set_style_text_color(number, color(theme().primary), 0);
+    lv_obj_set_style_text_color(number, accent_on(theme().surface), 0);
     lv_obj_set_style_text_color(number, lv_color_black(), LV_STATE_USER_1);
     lv_obj_set_style_text_font(number, &sc_pad_font_jetbrains_mono_12, 0);
 
@@ -1323,7 +1386,7 @@ lv_obj_t *create_control_section(lv_obj_t *page, int x, const char *title)
     lv_obj_t *heading = lv_label_create(section);
     lv_label_set_text(heading, title);
     lv_obj_set_pos(heading, 16, 17);
-    lv_obj_set_style_text_color(heading, color(theme().primary), 0);
+    lv_obj_set_style_text_color(heading, accent_on(theme().screen), 0);
     lv_obj_set_style_text_font(heading, &sc_pad_font_jetbrains_mono_12, 0);
     return section;
 }
@@ -1426,7 +1489,7 @@ void create_system_page(lv_obj_t *page)
         lv_obj_set_style_bg_color(choice, color(candidate.surface_pressed), LV_STATE_PRESSED);
         if (use_neumorphic_ui()) {
             lv_obj_set_style_bg_color(choice, color(candidate.surface), 0);
-            lv_obj_set_style_bg_img_src(choice, sc_pad_neu_image(449, 38, SC_PAD_NEU_SHADOW), 0);
+            set_shadow_mask(choice, 449, 38);
             lv_obj_set_style_bg_img_src(choice, sc_pad_neu_image(441, 30, SC_PAD_NEU_INSET), LV_STATE_PRESSED);
             lv_obj_set_style_border_color(choice, color(i == current_theme ? candidate.primary : candidate.border), 0);
         }
@@ -1459,7 +1522,7 @@ void create_system_page(lv_obj_t *page)
     lv_obj_add_style(orientation_button, &style_action, LV_STATE_DEFAULT);
     lv_obj_add_style(orientation_button, &style_action_pressed, LV_STATE_PRESSED);
     if (use_neumorphic_ui()) {
-        lv_obj_set_style_bg_img_src(orientation_button, sc_pad_neu_image(449, 190, SC_PAD_NEU_SHADOW), 0);
+        set_shadow_mask(orientation_button, 449, 190);
     }
     lv_obj_add_event_cb(
         orientation_button,
@@ -1734,10 +1797,11 @@ void update_afk_indicator()
     }
     const Theme &palette = theme();
     const bool on = afk_state.enabled;
+    const lv_color_t accent = accent_on(palette.accent_surface);
     lv_obj_set_style_bg_color(afk_indicator, color(on ? palette.accent_surface : palette.surface), 0);
-    lv_obj_set_style_border_color(afk_indicator, color(on ? palette.primary : palette.border), 0);
-    lv_obj_set_style_bg_color(afk_indicator_dot, color(on ? palette.primary : palette.muted_text), 0);
-    lv_obj_set_style_text_color(afk_indicator_label, color(on ? palette.primary : palette.muted_text), 0);
+    lv_obj_set_style_border_color(afk_indicator, on ? accent : color(palette.border), 0);
+    lv_obj_set_style_bg_color(afk_indicator_dot, on ? accent : color(palette.muted_text), 0);
+    lv_obj_set_style_text_color(afk_indicator_label, on ? accent : color(palette.muted_text), 0);
     lv_label_set_text(afk_indicator_label, on ? "AFK ON" : "AFK");
 }
 
@@ -1962,7 +2026,7 @@ void create_navigation(lv_obj_t *screen)
                 lv_obj_set_style_bg_color(nav_button, color(palette.accent_surface), 0);
                 lv_obj_set_style_bg_grad_dir(nav_button, LV_GRAD_DIR_NONE, 0);
                 lv_obj_set_style_border_color(nav_button, color(palette.border), 0);
-                lv_obj_set_style_text_color(nav_button, color(palette.primary), 0);
+                lv_obj_set_style_text_color(nav_button, accent_on(palette.accent_surface), 0);
             }
         }
         lv_obj_add_event_cb(nav_button, navigation_event_cb, LV_EVENT_CLICKED, &runtime);
