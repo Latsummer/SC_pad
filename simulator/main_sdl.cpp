@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -97,6 +100,7 @@ void print_command(sc_pad::Command command, void *)
         "POWER ENGINES", "POWER SHIELDS", "RESET POWER",
         "LASER POWER -", "LASER POWER +", "MINING MODULE 1", "MINING MODULE 2",
         "MINING MODULE 3", "COLLECT MODE", "EXIT MINING", "TOGGLE ORIENTATION",
+        "AFK SPACE", "AFK Q", "AFK E", "AFK W", "AFK A", "AFK S", "AFK D",
     };
     const auto index = static_cast<std::size_t>(command);
     const sc_pad::KeyBinding &binding = sc_pad::key_binding_for(command);
@@ -167,9 +171,60 @@ int main()
 
     sc_pad::create_ui(print_command);
 
+    // Optional scripted preview for UI iteration: SC_PAD_SIM_PAGE=<0-4>
+    // activates a navigation tab, SC_PAD_SIM_CLICK=<x>,<y>[;<x>,<y>] taps up
+    // to four controls afterwards, SC_PAD_SIM_SHOT=<path.bmp> saves one frame
+    // and quits. All are no-ops when unset.
+    const char *shot_path = std::getenv("SC_PAD_SIM_SHOT");
+    const char *page_env = std::getenv("SC_PAD_SIM_PAGE");
+    const int scripted_page = page_env != nullptr ? std::atoi(page_env) : -1;
+    const int scripted_x = 108 + 200 * scripted_page;
+    const int scripted_y = 554;
+    int click_x[4] = {-1, -1, -1, -1};
+    int click_y[4] = {-1, -1, -1, -1};
+    int click_count = 0;
+    const char *click_env = std::getenv("SC_PAD_SIM_CLICK");
+    if (click_env != nullptr) {
+        const char *cursor = click_env;
+        while (click_count < 4 &&
+               std::sscanf(cursor, "%d,%d", &click_x[click_count], &click_y[click_count]) == 2) {
+            ++click_count;
+            const char *separator = std::strchr(cursor, ';');
+            if (separator == nullptr) {
+                break;
+            }
+            cursor = separator + 1;
+        }
+    }
+    int frame = 0;
+
     uint32_t previous_tick = SDL_GetTicks();
     while (running) {
         handle_events();
+
+        if (scripted_page >= 0 && scripted_page <= 4) {
+            if (frame == 5) {
+                pointer_position = {
+                    static_cast<lv_coord_t>(scripted_x),
+                    static_cast<lv_coord_t>(scripted_y),
+                };
+                pointer_down = true;
+            } else if (frame == 10) {
+                pointer_down = false;
+            }
+        }
+        for (int i = 0; i < click_count; ++i) {
+            const int down_frame = 20 + 20 * i;
+            if (frame == down_frame) {
+                pointer_position = {
+                    static_cast<lv_coord_t>(click_x[i]),
+                    static_cast<lv_coord_t>(click_y[i]),
+                };
+                pointer_down = true;
+            } else if (frame == down_frame + 5) {
+                pointer_down = false;
+            }
+        }
 
         const uint32_t current_tick = SDL_GetTicks();
         lv_tick_inc(current_tick - previous_tick);
@@ -183,6 +238,18 @@ int main()
             SDL_RenderPresent(renderer);
             frame_dirty = false;
         }
+
+        if (shot_path != nullptr && frame == 260) {
+            SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+                framebuffer.data(), kWidth, kHeight, 32,
+                kWidth * sizeof(uint32_t), SDL_PIXELFORMAT_ARGB8888);
+            if (surface != nullptr) {
+                SDL_SaveBMP(surface, shot_path);
+                SDL_FreeSurface(surface);
+            }
+            running = false;
+        }
+        ++frame;
 
         SDL_Delay(5);
     }

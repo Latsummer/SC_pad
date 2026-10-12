@@ -47,6 +47,7 @@ enum class Key : uint8_t {
     Y,
     Z,
     Slash,
+    Space,
     F2,
     F5,
     F6,
