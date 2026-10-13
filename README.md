@@ -77,3 +77,23 @@ platformio.ini                PlatformIO 构建配置
 ## 硬件注意事项
 
 ESP32-S3 的 GPIO19/20 在该开发板上由 USB 和 CAN 共用。当前程序通过 IO 扩展器选择 USB，因此运行本示例时不能同时使用板载 CAN。
+
+## GitHub → Gitee 同步
+
+GitHub 的 `main` 是开发主线，Gitee 的同名分支作为代码副本。工作流
+`.github/workflows/sync-gitee.yml` 在 GitHub `main` 有新提交时自动运行，也可在
+Actions 的 **Sync main to Gitee** 中手动运行（选择 `main`）。
+
+首次启用：
+
+1. 在 Gitee 创建属于 `latsummer`、具备目标仓库 Git 推送权限的个人访问 Token。
+2. 在 GitHub 仓库 **Settings → Secrets and variables → Actions** 新增
+   Repository secret，名称为 `GITEE_TOKEN`，值为该 Token。不要写入仓库或日志。
+3. 工作流合入 `main` 后运行同步，确认 Gitee 的 `main` 已生成。
+4. 在 Gitee 仓库设置中将默认分支由 `master` 改为 `main`。不再需要的旧
+   `master` 可随后手动删除；如 `main` 有保护规则，需允许同步凭据推送。
+
+目标地址固定为 `https://gitee.com/latsummer/sc_pad.git`，无需修改两边仓库名。
+同步会强制覆盖 Gitee `main`，请在 GitHub 开发；Gitee 独有提交不会保留在该分支。
+仅同步 `main` 的 Git 历史，不同步其他分支、标签、Issue、PR、Wiki 或仓库设置。
+默认分支切换和旧分支删除不会由工作流自动执行。

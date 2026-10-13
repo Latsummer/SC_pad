@@ -1,0 +1,50 @@
+name: Sync main to Gitee
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-gitee-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Sync GitHub main to Gitee main
+        shell: bash
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GIT_TERMINAL_PROMPT: '0'
+        run: |
+          set -euo pipefail
+          if [[ -z "$GITEE_TOKEN" ]]; then
+            echo '::error::Configure the repository Actions secret GITEE_TOKEN before syncing.'
+            exit 1
+          fi
+
+          sync_dir="$(mktemp -d)"
+          trap 'rm -rf "$sync_dir"' EXIT
+          git clone --bare --single-branch --branch main \
+            https://github.com/Latsummer/SC_pad.git "$sync_dir/repo.git"
+
+          cat > "$sync_dir/askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) printf '%s\n' 'latsummer' ;;
+            *Password*) printf '%s\n' "$GITEE_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$sync_dir/askpass"
+          export GIT_ASKPASS="$sync_dir/askpass"
+          git -C "$sync_dir/repo.git" push --force \
+            https://gitee.com/latsummer/sc_pad.git \
+            refs/heads/main:refs/heads/main
