@@ -97,3 +97,24 @@ Actions 的 **Sync main to Gitee** 中手动运行（选择 `main`）。
 同步会强制覆盖 Gitee `main`，请在 GitHub 开发；Gitee 独有提交不会保留在该分支。
 仅同步 `main` 的 Git 历史，不同步其他分支、标签、Issue、PR、Wiki 或仓库设置。
 默认分支切换和旧分支删除不会由工作流自动执行。
+
+## PR 检查与矿物站部署
+
+`PR checks` 在提交或更新目标为 `main` 的 PR 时运行，也支持手动触发。
+它检查 Python/JavaScript 语法、蓝图和材料数量、未解析条目、槽位翻译，
+并在临时目录重建发布数据，确认生成文件与提交内容一致；不访问数据来源网站。
+本地可运行 `python3 tools/check_scminer_site.py` 复现数据检查。
+此工作流不包含固件编译或真实浏览器交互测试。
+
+`Deploy mining site` 在 `main` 的 `scminer-local/dist/`、站点 Makefile、
+部署工作流或数据检查脚本有变更时自动部署。纯文档、固件和 Erkul 脚本改动
+不会触发部署。也可在 Actions 中选择此工作流，点击 **Run workflow** 并选择
+`main`；部署始终检出运行时最新的 `main`，不允许从其他分支发布正式站点。
+
+需要在 Repository secrets 添加 `EDGEONE_API_TOKEN`（EdgeOne 控制台创建的
+API Token）；缺少该 Secret 时部署会失败并提示配置。CLI 固定为已在本机
+验证的 `edgeone@1.6.40`，目标为 `scminer`、`overseas`、正式环境。
+部署前检查生成数据一致性，正式部署任务串行执行。
+
+如果希望仅手动部署，从 `.github/workflows/deploy-edgeone.yml` 的 `on` 中移除
+`push` 配置，保留 `workflow_dispatch` 即可。
