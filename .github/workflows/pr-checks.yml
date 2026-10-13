@@ -38,4 +38,31 @@ jobs:
             node --check "$file"
           done
       - name: Validate site data and generated files
+        id: site_check
         run: python3 tools/check_scminer_site.py
+      - name: Check blueprint translation regressions
+        run: python3 tools/test_scmdb_locale.py
+      - name: 展示中文翻译报告
+        if: always()
+        env:
+          CHECK_RESULT: ${{ steps.site_check.outcome }}
+        run: |
+          report=scminer-local/data/scmdb-blueprints.translation-report.md
+          if [ -f "$report" ]; then
+            if [ "$CHECK_RESULT" = success ]; then
+              printf '数据与翻译一致性校验：通过。\n\n' >> "$GITHUB_STEP_SUMMARY"
+            else
+              printf '数据与翻译一致性校验未通过或未执行；以下为本次提交中的报告，可能需要重新生成。\n\n' >> "$GITHUB_STEP_SUMMARY"
+            fi
+            cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '未找到中文翻译报告，请重新导入蓝图快照生成报告。\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: 上传中文翻译报告附件
+        if: always() && hashFiles('scminer-local/data/scmdb-blueprints.translation-report.md') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: blueprint-translation-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: scminer-local/data/scmdb-blueprints.translation-report.md
+          if-no-files-found: error
+          retention-days: 30

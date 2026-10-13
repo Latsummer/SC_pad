@@ -71,7 +71,7 @@
     els.activeFilters.hidden = !tags.length;
   }
   function renderResults() {
-    const filtered = catalog.blueprints.filter((item) => matches(item)).sort((a,b) => a.craft_time_seconds - b.craft_time_seconds || a.name.localeCompare(b.name, "zh-CN"));
+    const filtered = catalog.blueprints.filter((item) => matches(item)).sort((a,b) => a.craft_time_seconds - b.craft_time_seconds || (a.name_zh || a.name).localeCompare(b.name_zh || b.name, "zh-CN"));
     const activeCount = state.selected.length + [state.type, state.subtype, state.slot, state.size].filter((value) => value !== "all").length;
     if (els.openFilters) els.openFilters.textContent = activeCount ? `筛选 ${activeCount}` : "筛选";
     if (els.applyFilters) els.applyFilters.textContent = `查看 ${filtered.length.toLocaleString("zh-CN")} 条结果`;

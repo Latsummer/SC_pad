@@ -48,7 +48,8 @@ python3 tools/build_blueprint_site_data.py
 ```
 
 - 导入前核对格式、来源、采集时间、卡片数量、未解析条目和槽位翻译；也可用 `--output /tmp/检查文件.json` 先验证。
-- 当前导入器原样把页面标题写入 `name` 与 `name_zh`，`name_en` 为空，**不会自动翻译**。英文导出会覆盖中文展示，必须先检查名称语言。
+- 导入器使用本地 `data/scmdb-locale.zh-CN.json` 翻译表与 `blueprint-name-overrides.zh-CN.json` 补充表，分别保存 `name_en`、`name_zh`，`name` 保留捕获标题。缺失和歧义保留英文并记录在规范数据的 `translation_report`；中文导出保留其中文标题，仅在唯一匹配时补英文。
+- 翻译表和补充表版本必须匹配矿物数据版本；这不能证明无版本字段的捕获快照使用了同一游戏版本，导出时仍需人工确认。更新翻译表后重新导入并构建，执行 `python3 tools/check_scminer_site.py` 和 `python3 tools/test_scmdb_locale.py`。
 - 社区翻译参考 `https://github.com/Walkersifolia/SCMDB_zh_cn`。在 SCMDB Fabricator URL 附加 `lang=https://raw.githubusercontent.com/Walkersifolia/SCMDB_zh_cn/main/lang-zh_CN-live.json` 可加载中文；确认翻译文件和页面游戏版本相同，再采集。
 - 不以捕获数量证明完整性；比较不同语言快照时，名称可能合并或变化，应核对配方和材料，保留原始快照。
 - 新槽位先补中文表再构建。`--expected-count` 的默认值是历史参考值，不是最新总数保证。

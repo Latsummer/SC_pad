@@ -13,6 +13,7 @@ import re
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from scmdb_locale import BlueprintTranslator, LOCALE, OVERRIDES, report_markdown
 
 
 CONTROL_LINES = {"☐", "●", "⚙️ —", "🛒", "DEFAULT"}
@@ -119,6 +120,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("scminer-local/data/scmdb-blueprints.json"))
     parser.add_argument("--locale", type=Path, default=Path("scminer-local/data/names.zh-CN.json"))
     parser.add_argument("--expected-count", type=int, default=1607)
+    parser.add_argument("--translations", type=Path, default=LOCALE)
+    parser.add_argument("--name-overrides", type=Path, default=OVERRIDES)
     args = parser.parse_args()
 
     if args.input is None:
@@ -131,6 +134,9 @@ def main() -> None:
         raise SystemExit("Unsupported capture format; export again using the SCMDB public-page helper.")
 
     lookup = mineral_lookup(args.locale)
+    version = json.loads(Path('scminer-local/data/scminer-data.json').read_text())['game_data_version']
+    translator = BlueprintTranslator(args.translations, args.name_overrides, version)
+    translation_results = []
     blueprints = []
     errors = []
     for index, card in enumerate(capture.get("cards", []), start=1):
@@ -141,6 +147,7 @@ def main() -> None:
             continue
         for material in blueprint["materials"]:
             material["mineral"] = lookup.get(material["name"].casefold())
+        translation_results.append(translator.translate(blueprint))
         blueprints.append(blueprint)
 
     slot_counts = Counter(material["slot"] for item in blueprints for material in item["materials"])
@@ -167,11 +174,15 @@ def main() -> None:
         "slot_counts": dict(sorted(slot_counts.items())),
         "blueprints": blueprints,
         "unparsed_cards": errors,
+        "translation_report": translator.report(translation_results),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Imported {len(blueprints)} blueprints and {material_count} material slots to {args.output}")
-    print(f"Matched {known_mineral_count} slots to the mining mineral locale; unparsed cards: {len(errors)}")
+    report_path = args.output.with_suffix('.translation-report.md')
+    report_path.write_text(report_markdown(output['translation_report']), encoding='utf-8')
+    print(f"已导入 {len(blueprints)} 条蓝图、{material_count} 个材料槽位：{args.output}")
+    print(f"已关联矿物的槽位：{known_mineral_count}；未解析卡片：{len(errors)}")
+    print(f"中文翻译检查报告：{report_path}；待核对条目：{len(output['translation_report']['issues'])}")
 
 
 if __name__ == "__main__":
