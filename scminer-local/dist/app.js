@@ -89,8 +89,14 @@
     els.mineralWorkspace.hidden = !mineral;
     els.scanWorkspace.hidden = !scan;
     els.blueprintWorkspace.hidden = !blueprints;
-    if (scan) els.scanInput.focus();
-    else if (mineral) els.search.focus();
+    if (!matchMedia("(max-width: 760px)").matches) {
+      if (scan) els.scanInput.focus();
+      else if (mineral) els.search.focus();
+    }
+    const workspace = scan ? els.scanWorkspace : blueprints ? els.blueprintWorkspace : els.mineralWorkspace;
+    workspace.classList.remove("workspace-enter");
+    void workspace.offsetWidth;
+    workspace.classList.add("workspace-enter");
   }
 
   function addMineral(id) {
@@ -144,7 +150,7 @@
 
   function renderSelected() {
     if (!state.selected.length) {
-      els.selected.innerHTML = '<span class="selection-hint">尚未选择矿物，可从左侧下拉框中多选</span>';
+      els.selected.innerHTML = '<span class="selection-hint">选择一种或多种矿物，查看共同分布</span>';
       return;
     }
     els.selected.innerHTML = state.selected.map((id) => `
@@ -152,6 +158,9 @@
         ${escapeHtml(displayName(id))}
         <button type="button" data-remove="${id}" aria-label="移除 ${escapeHtml(displayName(id))}">×</button>
       </span>`).join("");
+    const params = new URLSearchParams({ mode: "blueprints" });
+    state.selected.forEach((id) => params.append("material", id));
+    els.selected.innerHTML += `<a class="selected-blueprint-link" href="index.html?${params.toString()}">用这些矿制造 <span aria-hidden="true">→</span></a>`;
   }
 
   function renderFilters() {
@@ -260,7 +269,7 @@
         <div class="stat"><span>抗性 / 密度</span><strong>${escapeHtml(mineral.properties.resistance)} / ${escapeHtml(mineral.properties.density)}</strong></div>
       </div>
       <div class="blueprint-link-row">${blueprintLink}</div>
-      <button class="detail-toggle" type="button" data-toggle-details aria-expanded="false">展开完整详情 <span aria-hidden="true">⌄</span></button>
+      <button class="detail-toggle" type="button" data-toggle-details aria-expanded="false">展开完整详情 <span aria-hidden="true"><svg class="ui-chevron" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg></span></button>
       <div class="detail-secondary">
         <div class="association-block">
           <h3>还能从哪些主矿获得当前矿物</h3>
@@ -384,7 +393,13 @@
     renderScan();
     els.scanInput.focus();
   });
-  els.scanButton.addEventListener("click", renderScan);
+  els.scanButton.addEventListener("click", () => {
+    renderScan();
+    const panel = document.querySelector("#scanResults");
+    panel.classList.remove("scan-pulse");
+    void panel.offsetWidth;
+    panel.classList.add("scan-pulse");
+  });
   els.scanInput.addEventListener("keydown", (event) => { if (event.key === "Enter") renderScan(); });
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".search-wrap")) closeSuggestions();

@@ -2,8 +2,10 @@
   "use strict";
 
   const STORAGE_KEY = "scminer-theme";
+  const DEFAULT_THEME = "field-workbench";
   const themes = [
-    { id: "deep-space", name: "深空青", description: "默认的冷色矿业终端", color: "#27d7e7", themeColor: "#071114" },
+    { id: "field-workbench", name: "工业工作台", description: "石墨灰与琥珀色的随身查询工具", color: "#e8af54", themeColor: "#17191c" },
+    { id: "deep-space", name: "深空青", description: "冷色矿业终端", color: "#27d7e7", themeColor: "#071114" },
     { id: "industrial-amber", name: "工业琥珀", description: "暖灰底的柔和设备界面", color: "#d29a4a", themeColor: "#0a0907" },
   ];
 
@@ -12,7 +14,7 @@
   }
 
   function applyTheme(id, persist = true) {
-    const theme = themes.find((item) => item.id === id) || themes[0];
+    const theme = themes.find((item) => item.id === id) || themes.find((item) => item.id === DEFAULT_THEME);
     document.documentElement.dataset.theme = theme.id;
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.themeColor);
     if (persist) {
@@ -28,7 +30,7 @@
     return theme;
   }
 
-  applyTheme(savedTheme() || themes[0].id, false);
+  applyTheme(savedTheme() || DEFAULT_THEME, false);
 
   function mountPicker() {
     const actions = document.querySelector(".topbar-actions");

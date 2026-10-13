@@ -450,3 +450,70 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
   .abundance-row { grid-template-columns: 100px 1fr 52px; }
   .signature-strip { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Field workbench: compact surfaces, readable data and thumb navigation. */
+html[data-theme="field-workbench"] {
+ --bg:#17191c;--surface:#1c1e22;--surface-2:#24262a;--surface-3:#2a2d31;
+ --deck-bg:#1c1e22;--card-bg:#222428;--card-bg-raised:#292c30;--input-bg:#24262a;
+ --popup-bg:#24262a;--drawer-bg:#222428;--drawer-solid:#222428;
+ --line:#34373d;--line-bright:#41444b;--text:#eeeee9;--muted:#a1a7af;
+ --cyan:#e8af54;--cyan-rgb:232,175,84;--cyan-strong:#ebba70;--cyan-hover:#f1ca90;--cyan-soft:#e8af5415;
+ --gold:#d7bd8f;--green:#a7c6a7;--radius:9px;
+}
+html[data-theme="field-workbench"] body{background:var(--bg)}
+html[data-theme="field-workbench"] body::before,html[data-theme="field-workbench"] body::after{display:none}
+html[data-theme="field-workbench"] .brand-mark,html[data-theme="field-workbench"] .status-dot{box-shadow:none;text-shadow:none}
+html[data-theme="field-workbench"] .topbar{border-color:var(--line)}
+html[data-theme="field-workbench"] .command-deck{box-shadow:none;border-color:var(--line);padding:20px;margin:20px 0}
+html[data-theme="field-workbench"] .command-deck::before,html[data-theme="field-workbench"] .command-deck::after,html[data-theme="field-workbench"] .filter-panel::before{display:none}
+html[data-theme="field-workbench"] .eyebrow{display:none}
+html[data-theme="field-workbench"] h1{font-size:1.5rem;letter-spacing:0}
+html[data-theme="field-workbench"] .panel,html[data-theme="field-workbench"] .detail-card,html[data-theme="field-workbench"] .location-card,html[data-theme="field-workbench"] .blueprint-card{box-shadow:none;border-color:var(--line)}
+html[data-theme="field-workbench"] .mode-switch{background:var(--surface-2);border-color:var(--line);box-shadow:none}
+html[data-theme="field-workbench"] .mode-button.active,html[data-theme="field-workbench"] .primary-button{background:var(--cyan);color:#251e14;box-shadow:none}
+html[data-theme="field-workbench"] .mineral-chip{border-radius:7px;background:var(--cyan-soft);border-color:#e8af5440;box-shadow:none}
+html[data-theme="field-workbench"] .filter-button.active{background:var(--cyan-soft);border-color:#e8af5460}
+html[data-theme="field-workbench"] .secondary-button{border-color:var(--line-bright);background:var(--surface-2)}
+html[data-theme="field-workbench"] .location-card:hover,html[data-theme="field-workbench"] .blueprint-card:hover,html[data-theme="field-workbench"] .candidate:hover{border-color:#e8af5470;transform:translateY(-1px);box-shadow:none}
+html[data-theme="field-workbench"] .blueprint-hero{padding:8px 2px 18px}
+html[data-theme="field-workbench"] .blueprint-hero h1{font-size:1.5rem}
+html[data-theme="field-workbench"] .meter{background:#3a3d43}
+html[data-theme="field-workbench"] .meter span{background:var(--cyan)}
+html[data-theme="field-workbench"] .stat{background:var(--surface-2);border-color:var(--line)}
+html[data-theme="field-workbench"] .material-list li{border-color:var(--line)}
+html[data-theme="field-workbench"] .location-card,html[data-theme="field-workbench"] .blueprint-card{animation-duration:180ms;animation-delay:0ms}
+.mode-icon{display:none}.mode-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px}
+.ui-chevron{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.detail-toggle{align-items:center}.detail-toggle span{display:inline-flex;align-items:center}
+.workspace-enter{animation:workbench-in 180ms ease-out}.scan-results{position:relative;overflow:hidden}
+.scan-pulse::after{content:"";position:absolute;pointer-events:none;left:0;right:0;top:0;height:2px;background:var(--cyan);animation:workbench-scan 450ms ease-out forwards}
+@keyframes workbench-in{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes workbench-scan{from{top:0;opacity:.8}to{top:100%;opacity:0}}
+@media(min-width:1121px){html[data-theme="field-workbench"] .workspace-grid{grid-template-columns:190px minmax(0,1fr) 320px}}
+@media(max-width:760px){
+ .app-shell{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+ .mode-switch{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;margin:0;padding:7px 8px calc(7px + env(safe-area-inset-bottom));border-radius:0;border:0;border-top:1px solid var(--line);background:var(--surface);box-shadow:0 -8px 24px #0002;gap:4px}
+ .mode-button{position:relative;flex-direction:column;gap:4px;min-height:52px;padding:5px 8px;background:none!important;box-shadow:none!important;color:var(--muted);font-size:11px;font-weight:500}
+ .mode-button.active{color:var(--cyan)!important}.mode-button::before{content:"";position:absolute;top:-7px;left:20%;right:20%;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform 180ms ease}
+ .mode-button.active::before{transform:scaleX(1)}.mode-icon{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+ .deck-heading{display:block}.deck-heading h1{display:none}.command-deck .mineral-controls,.command-deck .scan-controls{margin-top:0}
+ html[data-theme="field-workbench"] .command-deck{padding:0;border:0;background:none;margin:16px 0 12px}
+ body[data-mode="blueprints"] .command-deck{margin:0;padding:0;border:0;min-height:0}
+ .search-wrap>label{font-size:12px}.search-box{min-height:48px}
+ .detail-column{order:2}.filter-panel{gap:10px}.filter-button{min-height:44px}.filter-panel fieldset{margin:0}
+ .summary-bar{min-height:40px;margin-bottom:8px}.location-card{padding:14px}.location-head h3{font-size:15px;line-height:1.45}.location-meta{font-size:10px;line-height:1.5}.balance-score{font-size:20px}
+ .abundance-row{font-size:12px;grid-template-columns:minmax(90px,.8fr) 1fr 45px;gap:8px}
+ html[data-theme="field-workbench"] .detail-card .blueprint-jump:not(.muted){background:var(--cyan-soft);color:var(--cyan);border-color:#e8af5440;min-height:44px;font-size:13px}
+ .blueprint-selects select{font-size:12px}.blueprint-card h2{font-size:15px}.filter-drawer-trigger{min-height:44px}
+ .mineral-chip button{width:32px;height:32px}.blueprint-chips .mineral-chip button{width:30px;height:30px}
+}
+@media(prefers-reduced-motion:reduce){.workspace-enter,.scan-pulse::after{animation:none}.mode-button::before{transition:none}}
+.selected-blueprint-link{display:inline-flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:9px 13px;border:1px solid var(--line-bright);border-radius:7px;color:var(--cyan);font-size:13px;text-decoration:none;background:var(--cyan-soft)}
+@media(max-width:760px){.selected-blueprint-link{margin-left:auto}.selected-minerals{gap:6px}.selected-minerals .selection-hint{font-size:12px}}
+
+/* Integrated mineral picker action; retain a generous touch target. */
+.search-box .dropdown-toggle{flex-shrink:0;display:grid;place-items:center;width:48px;height:48px;min-width:48px;padding:0;margin:0;border:0;border-radius:6px;background:transparent;color:var(--muted);box-shadow:none}
+.search-box .dropdown-toggle span{display:flex;align-items:center;justify-content:center;line-height:1}
+.search-box .dropdown-toggle .ui-chevron{width:19px;height:19px}
+.search-box .dropdown-toggle:hover,.search-box .dropdown-toggle.open{color:var(--cyan);background:var(--cyan-soft)}
+.search-box .dropdown-toggle:focus-visible{outline:2px solid var(--cyan);outline-offset:-4px}
