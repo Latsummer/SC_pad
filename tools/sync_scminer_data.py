@@ -24,6 +24,8 @@ from typing import Iterable
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 from urllib import robotparser
+from urllib.error import URLError
+from http.client import HTTPException
 
 
 BASE_URL = "https://scminer.rocks/"
@@ -33,12 +35,14 @@ DATA_PAGES = ("data/mineral-directory", "data/ore-by-location")
 
 
 class PoliteFetcher:
-    def __init__(self, base_url: str, delay_seconds: float, user_agent: str) -> None:
+    def __init__(self, base_url: str, delay_seconds: float, user_agent: str, timeout_seconds: float = 180) -> None:
         self.base_url = base_url.rstrip("/") + "/"
         self.delay_seconds = max(1.0, delay_seconds)
         self.user_agent = user_agent
         self.last_request_at = 0.0
         self.robots = robotparser.RobotFileParser()
+        self.use_curl = False
+        self.timeout_seconds = timeout_seconds
 
     def check_robots(self) -> str:
         robots_url = urljoin(self.base_url, "robots.txt")
@@ -58,10 +62,35 @@ class PoliteFetcher:
             if wait_seconds > 0:
                 time.sleep(wait_seconds)
         request = Request(url, headers={"User-Agent": self.user_agent, "Accept": "text/html,application/javascript,*/*;q=0.8"})
-        with urlopen(request, timeout=45) as response:
-            body = response.read()
-        self.last_request_at = time.monotonic()
+        print(f"Fetching {url}", flush=True)
+        try:
+            if self.use_curl:
+                return self._curl_request(url)
+            with urlopen(request, timeout=self.timeout_seconds) as response:
+                body = response.read()
+        except (URLError, HTTPException, TimeoutError) as error:
+            if shutil.which("curl") is None:
+                raise
+            self.use_curl = True
+            print(f"Python request failed ({error}); retrying with curl", flush=True)
+            time.sleep(self.delay_seconds)
+            body = self._curl_request(url)
+        finally:
+            self.last_request_at = time.monotonic()
         return body
+
+    def _curl_request(self, url: str) -> bytes:
+        try:
+            return subprocess.run(
+                ["curl", "--fail", "--silent", "--show-error", "--location", "--http1.1", "--compressed",
+                 "--connect-timeout", "60", "--max-time", str(self.timeout_seconds),
+                 "--retry", "2", "--retry-delay", str(int(self.delay_seconds + 1)),
+                 "--user-agent", self.user_agent,
+                 "--header", "Accept: text/html,application/javascript,*/*;q=0.8", url],
+                check=True, capture_output=True,
+            ).stdout
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(f"curl request failed for {url}: {error.stderr.decode(errors='replace').strip()}") from error
 
 
 def first_party_chunk_urls(html: str, base_url: str) -> list[str]:
@@ -119,7 +148,11 @@ def main() -> None:
     parser.add_argument("--delay", type=float, default=2.0, help="minimum seconds between requests; values below 1 become 1")
     parser.add_argument("--cache-dir", type=Path, default=repo_root / "scminer-local" / ".sync-cache")
     parser.add_argument("--dry-run", action="store_true", help="validate sources and extraction without replacing app data")
+    parser.add_argument("--transport", choices=("auto", "curl"), default="auto", help="use curl directly when Python networking is unreliable")
+    parser.add_argument("--timeout", type=float, default=180, help="request timeout in seconds (default: 180)")
     args = parser.parse_args()
+    if args.timeout <= 0:
+        parser.error("--timeout must be greater than zero")
 
     site_root = repo_root / "scminer-local"
     data_dir = site_root / "data"
@@ -128,7 +161,8 @@ def main() -> None:
     cache_dir = args.cache_dir.resolve()
     snapshots_dir = cache_dir / "latest"
 
-    fetcher = PoliteFetcher(args.base_url, args.delay, USER_AGENT)
+    fetcher = PoliteFetcher(args.base_url, args.delay, USER_AGENT, args.timeout)
+    fetcher.use_curl = args.transport == "curl"
     robots_text = fetcher.check_robots()
     page_urls = [urljoin(fetcher.base_url, page) for page in DATA_PAGES]
     for page_url in page_urls:

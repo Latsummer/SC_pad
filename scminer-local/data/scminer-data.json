@@ -5,11 +5,11 @@
     "mineral_directory": "https://scminer.rocks/data/mineral-directory",
     "ore_by_location": "https://scminer.rocks/data/ore-by-location",
     "signature_scanner": "https://scminer.rocks/data/signature-scanner",
-    "retrieved_at": "2026-09-20T03:37:13.043156+00:00",
+    "retrieved_at": "2026-10-13T09:25:46.878809+00:00",
     "robots_policy_observed": "Public pages allowed; /api/ excluded"
   },
-  "game_data_version": "4.10.1-live.12660092",
-  "source_updated_at": "2026-09-16T20:43:31.648Z",
+  "game_data_version": "4.10.2-live.12881860",
+  "source_updated_at": "2026-10-09T16:20:51.859Z",
   "notes": {
     "abundance": "Source telemetry used for ranking; display_percent is the rounded value shown on the location page.",
     "price": "Static SCMINER server-base price, not live UEX pricing.",

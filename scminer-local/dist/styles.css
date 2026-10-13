@@ -364,12 +364,14 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
 @media (max-width: 760px) {
   body { min-width: 0; }
   .app-shell { width: 100%; min-width: 0; margin: 0; padding: 0 max(14px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
-  .topbar { min-height: 56px; }
+  .topbar { min-height: 56px; flex-wrap: wrap; gap: 10px; padding: 12px 0; }
   .brand { gap: 9px; }
   .brand-mark { font-size: 1.7rem; }
   .brand small { font-size: 10px; }
-  .dataset-meta { display: none; }
-  .topbar-actions { gap: 0; }
+  .dataset-meta { min-width: 0; flex: 1; font-size: 11px; line-height: 1.5; }
+  .dataset-meta .status-dot { flex-shrink: 0; }
+  #versionLabel { overflow-wrap: anywhere; }
+  .topbar-actions { width: 100%; justify-content: space-between; gap: 12px; }
   .theme-picker-menu { position: fixed; top: 64px; right: max(14px, env(safe-area-inset-right)); width: min(292px, calc(100vw - 28px)); }
   .command-deck { width: 100%; min-width: 0; margin: 12px 0 16px; padding: 14px; }
   .command-deck::before { display: none; }
