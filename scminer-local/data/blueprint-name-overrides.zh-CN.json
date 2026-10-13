@@ -1,0 +1,10 @@
+{
+  "version": "4.10.2-live.12881860",
+  "names": {
+    "Mercury": {
+      "zh": "水银 [冷却 S3 军用 C]",
+      "type_group": "冷却器",
+      "size": 3
+    }
+  }
+}

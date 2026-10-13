@@ -93,3 +93,39 @@ SCMDB 的 `robots.txt` 禁止抓取其 `/data/` 路径，因此蓝图数据采�
 4. 保持蓝图页“已选矿物”与“其他筛选条件”分离：重置筛选不能清除已选矿物。
 5. 新增制造属性功能前，先取得能证明“物品、槽位、材料、品质、属性变化”的
    独立公开数据源；不要依据配方文本猜测数值。
+
+## 蓝图名称翻译
+
+导入使用本地社区翻译表 `data/scmdb-locale.zh-CN.json`，来源为
+[SCMDB_zh_cn](https://github.com/Walkersifolia/SCMDB_zh_cn)，当前快照提交为
+`bff507d0bedf34d5786b2f0664fa1eb0af6328af`、版本 `4.10.2-live.12881860`。
+文件保留上游键与内容；游戏数据版权归 Cloud Imperium Games，翻译来源保留社区署名。
+导入过程不请求网络，来源 URL、文件 SHA-256、版本记录在 `translation_report.locale`。
+
+推荐导出英文页面：导入器保存原始 `name` 和 `name_en`，用唯一匹配的中文填充
+`name_zh`，页面优先展示中文且支持中英文搜索。中文导出也兼容；只有唯一反向
+匹配时才补英文，不猜测同名物品。未翻译或存在多个候选时保留英文，详情见
+[中文翻译检查报告](data/scmdb-blueprints.translation-report.md)；程序用明细同时保存在
+`data/scmdb-blueprints.json` 的 `translation_report.issues`。
+
+`data/blueprint-name-overrides.zh-CN.json` 用于人工确认译名，按英文名配置
+`zh`，可加 `type_group` 和 `size` 条件；不要仅凭同名地点或矿物翻译装备名称。
+当前仅确认 Mercury 的 S3 冷却器译名；Zephyr 仍有歧义，保留英文。
+
+更新社区翻译时，手动下载新的 LIVE JSON 覆盖本地表，更新 `scmdb_locale.py`
+的 `SOURCE_URL` 至实际上游提交，核对其版本以及补充表版本，再重新导入快照并构建。
+翻译版本需与本地矿物游戏版本相同；捕获文件没有游戏版本字段，仍需在导出页面
+人工核对版本，不能把此校验当作快照版本证明。
+
+```sh
+python3 tools/import_scmdb_public_capture.py scminer-local/imports/scmdb/具体文件.json
+python3 tools/build_blueprint_site_data.py
+python3 tools/check_scminer_site.py
+python3 tools/test_scmdb_locale.py
+```
+
+最后更新 `dist/sw.js` 的缓存版本。PR 检查会验证版本、译名和报告是否与本地表一致。
+
+PR checks 会把中文报告显示在 Actions 运行的 Summary（摘要）中，并上传
+`blueprint-translation-report-运行编号-重试编号` 附件，保存 30 天。
+如果校验失败，摘要会注明提交中的报告可能需要重新生成，不会把旧报告标记为通过。

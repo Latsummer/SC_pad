@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from scmdb_locale import BlueprintTranslator, report_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,6 +19,19 @@ def main():
         raise SystemExit('Blueprint count does not match records')
     if sum(len(b['materials']) for b in source['blueprints']) != source['counts']['materials']:
         raise SystemExit('Material count does not match records')
+    version = json.loads((ROOT / 'scminer-local/data/scminer-data.json').read_text())['game_data_version']
+    translator = BlueprintTranslator(expected_version=version)
+    results = []
+    for item in source['blueprints']:
+        translated = dict(item)
+        results.append(translator.translate(translated))
+        if any(translated[key] != item.get(key) for key in ('name_en', 'name_zh')):
+            raise SystemExit(f'Stale blueprint translation: {item["name"]}. Reimport capture.')
+    if source.get('translation_report') != translator.report(results):
+        raise SystemExit('Stale translation report. Reimport capture.')
+    report_path = ROOT / 'scminer-local/data/scmdb-blueprints.translation-report.md'
+    if report_path.read_text() != report_markdown(source['translation_report']):
+        raise SystemExit('中文翻译检查报告未更新，请重新导入快照。')
 
     with tempfile.TemporaryDirectory(prefix='scminer-check-') as temporary:
         staging = Path(temporary)
