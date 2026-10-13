@@ -107,8 +107,10 @@
     else els.openFilters.focus();
   }
 
-  const initialMaterial = new URLSearchParams(location.search).get("material");
-  if (initialMaterial && materialIds.includes(initialMaterial)) state.selected.push(initialMaterial);
+  const initialMaterials = new URLSearchParams(location.search).getAll("material");
+  initialMaterials.forEach((id) => {
+    if (materialIds.includes(id) && !state.selected.includes(id)) state.selected.push(id);
+  });
   renderSelectors(); renderAll();
   if (els.version) els.version.textContent = `${catalog.counts.blueprints.toLocaleString("zh-CN")} 张蓝图 · 离线数据`;
   els.search.addEventListener("input", restartResults);
