@@ -96,7 +96,7 @@ button, input { font: inherit; }
 button { color: inherit; }
 button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-.app-shell { width: min(1540px, 100%); margin: 0 auto; padding: 0 24px max(48px, env(safe-area-inset-bottom)); animation: page-in .55s cubic-bezier(.2,.8,.2,1) backwards; }
+.app-shell { width: min(1540px, 100%); margin: 0 auto; padding: env(safe-area-inset-top, 0px) max(24px, env(safe-area-inset-right, 0px)) max(48px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left, 0px)); animation: page-in .55s cubic-bezier(.2,.8,.2,1) backwards; }
 
 .topbar {
   min-height: 76px;
@@ -363,7 +363,7 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
 
 @media (max-width: 760px) {
   body { min-width: 0; }
-  .app-shell { width: 100%; min-width: 0; margin: 0; padding: 0 max(14px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+  .app-shell { width: 100%; min-width: 0; margin: 0; padding: env(safe-area-inset-top, 0px) max(14px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
   .topbar { min-height: 56px; flex-wrap: wrap; gap: 10px; padding: 12px 0; }
   .brand { gap: 9px; }
   .brand-mark { font-size: 1.7rem; }
@@ -372,7 +372,7 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
   .dataset-meta .status-dot { flex-shrink: 0; }
   #versionLabel { overflow-wrap: anywhere; }
   .topbar-actions { width: 100%; justify-content: space-between; gap: 12px; }
-  .theme-picker-menu { position: fixed; top: 64px; right: max(14px, env(safe-area-inset-right)); width: min(292px, calc(100vw - 28px)); }
+  .theme-picker-menu { position: absolute; top: calc(100% + 10px); left: 0; right: auto; width: min(292px, calc(100vw - 28px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); }
   .command-deck { width: 100%; min-width: 0; margin: 12px 0 16px; padding: 14px; }
   .command-deck::before { display: none; }
   .command-deck .eyebrow { display: none; }
@@ -429,7 +429,7 @@ legend small { float: right; color: #688087; font: 10px var(--mono); letter-spac
   .filter-drawer-trigger { min-width: 76px; min-height: 44px; display: block; padding: 0 13px; border: 1px solid rgba(39,215,231,.62); border-radius: 9px; background: var(--cyan-soft); color: var(--cyan); font-weight: 800; }
   .filter-drawer-backdrop { position: fixed; z-index: 40; inset: 0; display: block; border: 0; background: rgba(0,0,0,.64); opacity: 0; visibility: hidden; transition: opacity .22s ease, visibility .22s ease; }
   .filter-drawer-backdrop.open { opacity: 1; visibility: visible; }
-  .blueprint-filter-drawer { position: fixed; z-index: 41; right: 0; bottom: 0; left: 0; max-height: min(86dvh, 760px); display: grid; gap: 14px; padding: 10px max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); overflow-y: auto; border: 1px solid var(--line-bright); border-bottom: 0; border-radius: 20px 20px 0 0; background: var(--drawer-bg); box-shadow: 0 -20px 60px rgba(0,0,0,.55); transform: translateY(105%); visibility: hidden; transition: transform .25s cubic-bezier(.2,.8,.2,1), visibility .25s ease; }
+  .blueprint-filter-drawer { position: fixed; z-index: 41; right: 0; bottom: 0; left: 0; max-height: min(86dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 12px), 760px); display: grid; gap: 14px; padding: 10px max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); overflow-y: auto; border: 1px solid var(--line-bright); border-bottom: 0; border-radius: 20px 20px 0 0; background: var(--drawer-bg); box-shadow: 0 -20px 60px rgba(0,0,0,.55); transform: translateY(105%); visibility: hidden; transition: transform .25s cubic-bezier(.2,.8,.2,1), visibility .25s ease; }
   .blueprint-filter-drawer.open { transform: translateY(0); visibility: visible; }
   .filter-drawer-head { position: sticky; top: -10px; z-index: 3; display: flex; align-items: center; justify-content: space-between; margin: -10px -4px 0; padding: 16px 4px 10px; background: linear-gradient(var(--surface-3) 78%, transparent); }
   .filter-drawer-head::before { content: ""; position: absolute; top: 7px; left: 50%; width: 42px; height: 4px; border-radius: 99px; background: #547078; transform: translateX(-50%); }

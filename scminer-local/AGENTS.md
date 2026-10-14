@@ -58,6 +58,7 @@ python3 tools/build_blueprint_site_data.py
 ## UI、缓存和部署
 
 - 保持“已选矿物”和其他筛选分离，重置筛选不能清除已选矿物。
+- iOS 主屏幕 PWA 使用 `viewport-fit=cover` 和透明状态栏，内容容器必须保留 `env(safe-area-inset-top)`；横屏考虑左右安全区，底部导航保留底部安全区。顶部浮层优先锚定触发按钮，不使用忽略安全区的固定 top。
 - 手机也应能看到版本信息；页头在小屏分行，长版本可换行。验证窄屏没有横向溢出，以及主题、三种模式、筛选与详情操作。
 - 发布资源改变后更新 `dist/sw.js` 的 `CACHE_NAME`，使已安装 PWA 获取新资源。矿物同步自动更新缓存名；蓝图或 UI 改动需另行更新。不要重复使用对应旧内容的缓存名。
 - 已获部署授权时，在 `scminer-local/` 执行 `make deploy`（正式）或 `make preview`（预览）。当前 Makefile 目标是 EdgeOne 项目 `scminer`、`overseas`；以实际配置和 CLI 输出为准。

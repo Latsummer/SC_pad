@@ -1,4 +1,4 @@
-const CACHE_NAME = "scminer-atlas-assets-d7765fc92cef";
+const CACHE_NAME = "scminer-atlas-assets-30fef2bc486a";
 const APP_SHELL = [
   "./",
   "./index.html",
