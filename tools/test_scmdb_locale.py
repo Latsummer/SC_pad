@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from scmdb_locale import BlueprintTranslator
+from import_scmdb_public_capture import parse_card
 
 
 class TranslationTests(unittest.TestCase):
@@ -48,6 +49,21 @@ class TranslationTests(unittest.TestCase):
     def test_version_mismatch_rejected(self):
         with self.assertRaises(ValueError):
             BlueprintTranslator(self.locale, self.overrides, 'different')
+
+
+class BlueprintCategoryTests(unittest.TestCase):
+    def test_component_icons_match_captured_equipment(self):
+        # Representative public card headers: do not infer categories from emoji names.
+        for name, icon, expected in [
+            ('FR-66', '🔰 Size1', '护盾'),
+            ('XL-1', '🚀 Size2', '量子驱动'),
+            ('Clearcut Module', '💠 Active', '采矿模组'),
+            ('Mercury', '❄️ Size3', '冷却器'),
+        ]:
+            with self.subTest(name=name):
+                card = parse_card(f'☐\n{name}\n{icon}\nS1\nShell\nIron (0.1 SCU)\n⏱ 60s', 1)
+                self.assertEqual(card['type_group'], expected)
+                self.assertEqual(len(card['materials']), 1)
 
 
 if __name__ == '__main__':

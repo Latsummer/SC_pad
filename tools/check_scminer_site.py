@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 from scmdb_locale import BlueprintTranslator, report_markdown
+from import_scmdb_public_capture import parse_card
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,6 +24,9 @@ def main():
     translator = BlueprintTranslator(expected_version=version)
     results = []
     for item in source['blueprints']:
+        parsed = parse_card(item['raw_text'], 1)
+        if any(parsed[key] != item.get(key) for key in ('type_group', 'type_subtype', 'size')):
+            raise SystemExit(f'Stale blueprint category: {item["name"]}. Reimport capture.')
         translated = dict(item)
         results.append(translator.translate(translated))
         if any(translated[key] != item.get(key) for key in ('name_en', 'name_zh')):
