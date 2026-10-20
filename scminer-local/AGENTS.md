@@ -14,7 +14,9 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory scminer-local/dist
 - `data/scmdb-blueprints.json`：从本地用户导出的公开卡片生成的配方数据。
 - `data/blueprint-slots.zh-CN.json`：槽位中文表。
 - `imports/scmdb/`：保留原始快照及来源，不直接修改卡片文字。
-- `dist/app-data.js`、`blueprints-data.js`、`blueprint-index.js`、`blueprint-locale.js`、`scmdb-capture.html` 是生成文件，优先修改对应数据或工具再生成。
+- `dist/app-data.js`、`blueprints-data.js`、`blueprint-index.js`、`blueprint-locale.js` 是生成文件，优先修改对应数据或工具再生成。
+
+`capture-tools/blueprints.html` 和 `capture-tools/missions.html` 也是生成文件，仅用于安装书签，不部署到正式网站。
 
 ## 更新矿物
 
@@ -38,7 +40,7 @@ python3 tools/build_scminer_site_data.py --dataset scminer-local/data/scminer-da
 
 ## 更新蓝图与中文
 
-SCMDB 的 `/data/` 禁止抓取。使用用户主动导出的公开渲染卡片，不直接获取其受限数据端点。执行 `make scmdb-capture` 生成助手，浏览器访问 `/scmdb-capture.html` 保存书签；用户在 Fabricator 页面启动助手，缓慢滚动并导出 JSON。
+SCMDB 的 `/data/` 禁止抓取。使用用户主动导出的公开渲染卡片，不直接获取其受限数据端点。执行 `make scmdb-capture` 生成助手，浏览器访问 `/blueprints.html` 保存书签；用户在 Fabricator 页面启动助手，缓慢滚动并导出 JSON。
 
 将导出保存为 `imports/scmdb/scmdb-public-fabricator-*.json`，然后在仓库根目录执行 `make blueprints-build`。默认导入器按文件修改时间选择最近快照，**不是按文件名或采集时间**。需要确定输入时：
 

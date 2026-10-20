@@ -48,14 +48,20 @@ def main():
              '--locale', 'scminer-local/data/names.zh-CN.json', '--output', 'scminer-local/dist/app-data.js'],
             ['tools/build_blueprint_site_data.py'],
             ['tools/build_scmdb_capture_bookmarklet.py', '--source', 'tools/scmdb_public_capture.js',
-             '--output', 'scminer-local/dist/scmdb-capture.html'],
+             '--output', 'scminer-local/capture-tools/blueprints.html'],
+            ['tools/build_scmdb_capture_bookmarklet.py', '--kind', 'missions', '--source', 'tools/scmdb_missions_capture.js',
+             '--output', 'scminer-local/capture-tools/missions.html'],
         ]
         for command in commands:
             subprocess.run([sys.executable, *command], cwd=staging, check=True)
         for name in ['app-data.js', 'blueprints-data.js', 'blueprint-index.js',
-                     'blueprint-locale.js', 'scmdb-capture.html']:
+                     'blueprint-locale.js']:
             if (dist / name).read_bytes() != (ROOT / 'scminer-local/dist' / name).read_bytes():
                 raise SystemExit(f'Stale generated file: {name}. Rebuild and commit the output.')
+        for name in ['blueprints.html', 'missions.html']:
+            relative = Path('scminer-local/capture-tools') / name
+            if (staging / relative).read_bytes() != (ROOT / relative).read_bytes():
+                raise SystemExit(f'Stale generated file: {relative}. Rebuild and commit the output.')
     print('Site data and generated files are consistent')
 
 

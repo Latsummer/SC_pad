@@ -33,6 +33,7 @@
 | `data/scmdb-blueprints.json` | 从用户导出的 SCMDB 公开页面卡片解析出的蓝图数据。 |
 | `data/blueprint-slots.zh-CN.json` | 制造槽位英文到中文的对照表。新增槽位必须在此补译。 |
 | `imports/scmdb/` | 用户从 SCMDB 公开页面导出的原始快照。 |
+| `capture-tools/` | 蓝图与任务采集书签安装页，本机使用，不随网站部署。 |
 | `tools/` | 数据同步、导入和浏览器数据构建脚本。 |
 
 ## 更新矿物数据
@@ -59,10 +60,20 @@ python3 tools/sync_scminer_data.py --transport curl --timeout 180
 
 ## 更新制造蓝图
 
+任务信息目前提供独立的试采助手：在仓库根目录执行 `make scmdb-missions-capture`，
+打开 `capture-tools/missions.html`，按说明安装书签并手动浏览任务详情。
+导出的 JSON 放入 `imports/scmdb/missions/`；目前仅保留公开页面原始快照，尚未接入网站。
+离线采集回归检查：`node tools/test_scmdb_missions_capture.cjs`（仓库根目录运行）。
+
+书签安装页可以直接用浏览器打开本地 HTML，无需服务；也可在仓库根目录执行
+`make scmdb-serve`，访问 `http://127.0.0.1:8766/missions.html`。
+端口可用 `make scmdb-serve SCMDB_PORT=8767` 调整。保存书签后，采集发生在
+SCMDB 页面，不依赖安装页或本机 HTTP 服务。当前尚未部署此安装页。
+
 SCMDB 的 `robots.txt` 禁止抓取其 `/data/` 路径，因此蓝图数据采用**手动发起、
 只记录已在公开页面渲染的卡片**的流程：
 
-1. 执行 `make scmdb-capture`，打开 `dist/scmdb-capture.html`，按页面说明保存书签。
+1. 执行 `make scmdb-capture`，打开 `capture-tools/blueprints.html`，按页面说明保存书签。
 2. 在 SCMDB 的公开 Fabricator 页面手动启动书签，缓慢滚动至列表末尾并导出 JSON。
 3. 将导出文件放入 `imports/scmdb/`。
 4. 在仓库根目录执行：

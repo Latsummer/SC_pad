@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "archive": "scmdb-public-missions-2026-10-20T11-03-16-308Z.json.gz",
+  "source_filename": "scmdb-public-missions-2026-10-20T11-03-16-308Z.json",
+  "source_url": "https://scmdb.net/",
+  "captured_at": "2026-10-20T11:03:16.232Z",
+  "helper_version": 5,
+  "game_data_version": null,
+  "game_data_version_status": "unconfirmed: capture does not record the source game version",
+  "channel": "live",
+  "content_language": "en",
+  "content_language_basis": "user explicitly selected original English before this capture; not inferred from HTML lang",
+  "raw_bytes": 22076525,
+  "archive_bytes": 1048423,
+  "raw_sha256": "a51e8f9bca7b6ccd147033eb10ae63453c5f453b9c9f00e337b103d71588edc9",
+  "archive_sha256": "a60fb1f95c5ed8f136ae58209b4c4d4bdd76967c012bbe5b42fcd7f4eeb48b04",
+  "counts": {
+    "listed_missions": 1765,
+    "with_details": 1765,
+    "completed_missions": 1765,
+    "tabs": {
+      "overview": 1765,
+      "requirements": 1765,
+      "calculator": 1765,
+      "combat": 724
+    }
+  },
+  "coverage_note": "All 1765 listed mission IDs completed. This does not establish that all SCMDB missions, hidden events, variants, or folded sections were captured. Do not infer removals from this snapshot.",
+  "translation_reference": {
+    "local_file": "data/scmdb-locale.zh-CN.json",
+    "version": "4.10.2-live.12881860",
+    "version_match": "unverified; source game version requires confirmation"
+  }
+}
