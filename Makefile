@@ -1,5 +1,5 @@
 # 以下命令在仓库根目录执行；网站部署命令见 scminer-local/Makefile。
-.PHONY: sync scmdb-capture scmdb-missions-capture scmdb-serve scmdb-import blueprints-build
+.PHONY: sync scmdb-capture scmdb-missions-capture scmdb-serve scmdb-import blueprints-build missions-build
 
 # 本机安装页服务端口，可用 make scmdb-serve SCMDB_PORT=8767 修改。
 SCMDB_PORT ?= 8766
@@ -33,3 +33,8 @@ scmdb-import:
 # 不部署；发布前还需更新 dist/sw.js 的 CACHE_NAME（位于 scminer-local/）。
 blueprints-build: scmdb-import
 	python3 tools/build_blueprint_site_data.py
+
+# 从已归档的本地英文任务快照生成规范数据、翻译报告、列表索引及按需详情分片。
+# 不联网、不部署；指定新快照或比较旧目录时直接运行脚本的 --capture / --previous 参数。
+missions-build:
+	python3 tools/build_mission_site_data.py

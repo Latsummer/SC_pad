@@ -62,6 +62,15 @@ def main():
             relative = Path('scminer-local/capture-tools') / name
             if (staging / relative).read_bytes() != (ROOT / relative).read_bytes():
                 raise SystemExit(f'Stale generated file: {relative}. Rebuild and commit the output.')
+        shutil.copytree(ROOT / 'scminer-local/imports/scmdb/missions', staging / 'scminer-local/imports/scmdb/missions')
+        subprocess.run([sys.executable, 'tools/build_mission_site_data.py', '--output-root', str(staging / 'scminer-local')], cwd=staging, check=True)
+        for path in (staging / 'scminer-local/dist/missions').glob('*.json'):
+            actual = ROOT / 'scminer-local/dist/missions' / path.name
+            if not actual.exists() or path.read_bytes() != actual.read_bytes():
+                raise SystemExit(f'Stale mission shard: {path.name}. Run make missions-build.')
+        for name in ['scmdb-missions.json', 'scmdb-missions.translation-report.json']:
+            if (staging / 'scminer-local/data' / name).read_bytes() != (ROOT / 'scminer-local/data' / name).read_bytes():
+                raise SystemExit(f'Stale mission catalog: {name}. Run make missions-build.')
     print('Site data and generated files are consistent')
 
 

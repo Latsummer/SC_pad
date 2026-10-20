@@ -5,8 +5,8 @@
   "source_url": "https://scmdb.net/",
   "captured_at": "2026-10-20T11:03:16.232Z",
   "helper_version": 5,
-  "game_data_version": null,
-  "game_data_version_status": "unconfirmed: capture does not record the source game version",
+  "game_data_version": "4.10.2",
+  "game_data_version_status": "user-confirmed patch version; full build identifier not asserted",
   "channel": "live",
   "content_language": "en",
   "content_language_basis": "user explicitly selected original English before this capture; not inferred from HTML lang",
@@ -29,6 +29,6 @@
   "translation_reference": {
     "local_file": "data/scmdb-locale.zh-CN.json",
     "version": "4.10.2-live.12881860",
-    "version_match": "unverified; source game version requires confirmation"
+    "version_match": "patch version matches 4.10.2; full build not asserted"
   }
 }

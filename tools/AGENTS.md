@@ -13,6 +13,7 @@
 - `import_scmdb_public_capture.py`：公开卡片图标映射以实际装备核对，`🔰` 为护盾、`🚀` 为量子驱动、`💠` 为采矿模组，不按 emoji 字面含义猜分类。仅导入本地 JSON；默认按 mtime 选快照。通过 `scmdb_locale.py` 的本地翻译表填入中英文标题，歧义不自动选译名。
 - `build_blueprint_site_data.py`：检查槽位翻译，生成蓝图数据、索引和 locale。
 - `scmdb_locale.py`：版本校验、双向精确名称匹配和有类型/尺寸条件的人工译名覆盖。
+- `build_mission_site_data.py`：只读本地公开任务快照，生成规范任务、翻译报告、保守差异报告及列表／32 个详情分片。源游戏版本未知时保持 null，缺失数值不设为零，任务原始标识保留空格；`test_mission_site_data.py` 验证完整性、归档和生成一致性。
 - `test_scmdb_locale.py`：英文、中文、歧义、回退和版本不匹配回归验证，加入 PR 检查。
 - `generate_neumorphic.py`：固件图形相关工具，和网站数据更新无关。
 

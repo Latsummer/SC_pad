@@ -12,6 +12,7 @@
 - 矿物详情和扫描结果可跳到同页的制造蓝图模式，并自动带入矿物条件：
   `index.html?mode=blueprints&material=<mineral-id>`。
 - 矿物名称以“中文（英文）”展示；制造槽位只显示中文，英文原名仍作为稳定数据键保留。
+- 任务档案：1765 个已采集任务的中英文名称搜索，星系／类型／发布方筛选、蓝图奖励／共享／合法快捷筛选、报酬与声望排序；查看描述、接取条件、战斗资料和单人声望次数估算。手机使用底部导航、筛选弹窗和全屏详情。
 
 ## 不包含的能力
 
@@ -62,7 +63,7 @@ python3 tools/sync_scminer_data.py --transport curl --timeout 180
 
 任务信息目前提供独立的试采助手：在仓库根目录执行 `make scmdb-missions-capture`，
 打开 `capture-tools/missions.html`，按说明安装书签并手动浏览任务详情。
-导出的 JSON 放入 `imports/scmdb/missions/`；目前仅保留公开页面原始快照，尚未接入网站。
+导出的 JSON 放入 `imports/scmdb/missions/`；最终基线已压缩归档，并由本地构建生成网站任务档案。
 离线采集回归检查：`node tools/test_scmdb_missions_capture.cjs`（仓库根目录运行）。
 
 书签安装页可以直接用浏览器打开本地 HTML，无需服务；也可在仓库根目录执行
@@ -136,6 +137,24 @@ python3 tools/test_scmdb_locale.py
 ```
 
 最后更新 `dist/sw.js` 的缓存版本。PR 检查会验证版本、译名和报告是否与本地表一致。
+
+## 任务档案构建与数据边界
+
+在仓库根目录执行 `make missions-build`，默认读取已归档的最终英文快照。
+`tools/build_mission_site_data.py --capture 路径.json.gz` 可指定另一份本地 JSON 或 GZIP 快照，
+`--previous 旧的scmdb-missions.json` 可生成新增、变化和缺失候选报告；缺失不等于确认移除。
+不完整任务快照会拒绝构建，不覆盖已有目录。更新前保留旧版本规范目录及原始快照。
+
+- `data/scmdb-missions.json`：规范任务目录，保留原始标识（含尾部空格），缺失数值为 null。
+- `data/scmdb-missions.translation-report.json`：名称缺译／歧义报告。只选唯一匹配；若译名会丢失已经展开的地点／等级，保留英文。描述按去标签、统一换行后的最长精确匹配翻译，保留匹配键。
+- `dist/missions/index.json`：轻量列表和搜索数据；`details-桶号-内容摘要.json`：32 个按需详情分片。任务页首次不加载全部详情，已有矿物页也不加载任务目录。
+- `dist/missions.html`、`missions.js`、`missions.css`：任务页，复用现有主题及底部四入口导航。URL 的 `id` 支持直接打开任务，奖励蓝图可按同名查询本地配方。
+
+当前任务版本按用户确认的补丁版本标为 4.10.2，来源清单记录确认依据，不声称完整 build 号。新快照未确认版本时保留未知；不拿翻译版本自动代填。
+模板变量、采集不到的折叠内容及蓝图跨版本差异不猜补。声望规划只按基础 XP 估算单人次数，不模拟未知的共享或特殊阵营分配规则。
+任务列表加入离线壳缓存；详情首次打开时下载并缓存，未访问过的分片离线时不保证可用，页面提供重试。
+
+验证：`python3 tools/test_mission_site_data.py`、`python3 tools/check_scminer_site.py`，发布资源变化后更新 Service Worker 缓存名。
 
 PR checks 会把中文报告显示在 Actions 运行的 Summary（摘要）中，并上传
 `blueprint-translation-report-运行编号-重试编号` 附件，保存 30 天。

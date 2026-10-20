@@ -517,3 +517,6 @@ html[data-theme="field-workbench"] .location-card,html[data-theme="field-workben
 .search-box .dropdown-toggle .ui-chevron{width:19px;height:19px}
 .search-box .dropdown-toggle:hover,.search-box .dropdown-toggle.open{color:var(--cyan);background:var(--cyan-soft)}
 .search-box .dropdown-toggle:focus-visible{outline:2px solid var(--cyan);outline-offset:-4px}
+
+/* Links share the mode navigation with the existing in-page controls. */
+a.mode-button{text-decoration:none}

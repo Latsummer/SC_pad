@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="field-workbench">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17191c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Star Citizen 任务、报酬、声望条件与蓝图奖励查询">
+<title>任务档案 · 矿物导航台</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon.svg"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="missions.css"><script src="theme.js"></script>
+</head>
+<body data-mode="missions"><div class="app-shell">
+<header class="topbar"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">◇</span><span><strong>矿物导航台</strong><small>SC MINING ATLAS</small></span></a><div class="topbar-actions"><div class="dataset-meta"><span class="status-dot" aria-hidden="true"></span><span id="missionVersion">任务档案载入中</span></div></div></header>
+<main>
+<section class="command-deck"><div class="deck-heading"><div><p class="eyebrow">CONTRACT ARCHIVE</p><h1>下一份合约，做什么？</h1><p class="mission-lead">查报酬、看门槛，找到值得出发的任务。</p></div><nav class="mode-switch" aria-label="查询模式">
+<a class="mode-button" href="index.html"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m10 3 7 7-7 7-7-7Z"/></svg><span>找矿</span></a>
+<a class="mode-button" href="index.html?mode=scan"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 1v18M1 10h18"/></svg><span>扫描</span></a>
+<a class="mode-button" href="index.html?mode=blueprints"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="12" height="14" rx="1"/><path d="M7 7h6M7 10h6"/></svg><span>蓝图</span></a>
+<a class="mode-button active" href="missions.html" aria-current="page"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14H5zM8 7h4M8 10h4M8 13h2"/></svg><span>任务</span></a></nav></div>
+<div class="mission-search-row"><div><label for="missionSearch">搜索任务、发布方或蓝图奖励</label><input id="missionSearch" type="search" placeholder="例如：沃恩、运输、A Complicated Task" autocomplete="off"></div><button id="openMissionFilters" class="secondary-button" type="button">筛选</button></div>
+<div class="mission-quick" aria-label="快捷筛选"><button type="button" data-quick="all" class="active">全部任务</button><button type="button" data-quick="blueprints">蓝图奖励</button><button type="button" data-quick="shareable">可共享</button><button type="button" data-quick="legal">合法任务</button></div>
+</section>
+<div class="mission-layout"><aside class="mission-filter-panel panel" id="desktopFilters"><h2>缩小范围</h2><div id="missionFilterFields"><label>星系<select id="missionSystem"><option value="all">全部星系</option></select></label><label>任务类型<select id="missionType"><option value="all">全部类型</option></select></label><label>发布方<select id="missionContractor"><option value="all">全部发布方</option></select></label><button id="resetMissionFilters" class="text-button" type="button">重置全部条件</button></div><p class="mission-filter-tip">同名合约可能来自不同星系，接取条件和奖励也可能不同。</p></aside>
+<section aria-label="任务结果"><div class="mission-result-head"><p id="missionSummary" role="status">正在读取任务档案…</p><label class="mission-sort-label">排序<select id="missionSort"><option value="name">名称</option><option value="reward">报酬优先</option><option value="reputation">声望优先</option></select></label></div><div id="missionActiveFilters" class="mission-active-filters"></div><div id="missionResults" class="mission-results"></div><button id="moreMissions" class="secondary-button mission-more" hidden>再显示 24 个任务</button></section></div>
+<details class="mission-data-note"><summary>关于任务数据与离线使用</summary><p id="missionDataNote"></p><p>任务描述中的 [LOCATION]、[TARGET] 等是游戏模板变量。任务详情首次打开时下载，已打开的内容可离线查看；尚未缓存的详情需要联网。声望等级表按每级所需 XP 展示，缺失数据不会按零处理。</p></details>
+</main></div>
+<dialog id="missionFilterDialog" class="mission-filter-dialog" aria-labelledby="missionFilterTitle"><header><h2 id="missionFilterTitle">筛选任务</h2><button type="button" id="closeMissionFilters" aria-label="关闭筛选">✕</button></header><div id="mobileFilterSlot"></div><button type="button" id="applyMissionFilters" class="primary-button">查看结果</button></dialog>
+<dialog id="missionDetail" class="mission-detail" aria-labelledby="missionDetailTitle"><div class="mission-detail-head"><div><p id="missionDetailMeta"></p><h2 id="missionDetailTitle"></h2><p id="missionDetailEnglish"></p></div><button type="button" id="closeMissionDetail" aria-label="关闭任务详情">✕</button></div><nav id="missionDetailTabs" class="mission-detail-tabs" aria-label="详情内容"></nav><div id="missionDetailBody" class="mission-detail-body"></div></dialog>
+<script src="missions.js"></script><script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script>
+</body></html>

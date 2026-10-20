@@ -107,6 +107,7 @@
     else els.openFilters.focus();
   }
 
+  els.search.value = new URLSearchParams(location.search).get("q") || "";
   const initialMaterials = new URLSearchParams(location.search).getAll("material");
   initialMaterials.forEach((id) => {
     if (materialIds.includes(id) && !state.selected.includes(id)) state.selected.push(id);

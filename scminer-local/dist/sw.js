@@ -1,9 +1,13 @@
-const CACHE_NAME = "scminer-atlas-capture-tools-separated-v1";
+const CACHE_NAME = "scminer-atlas-missions-458c66c66670";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./blueprints.html",
   "./styles.css",
+  "./missions.html",
+  "./missions.css",
+  "./missions.js",
+  "./missions/index.json",
   "./theme.js",
   "./app.js",
   "./blueprints.js",

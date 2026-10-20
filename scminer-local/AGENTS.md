@@ -10,6 +10,8 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory scminer-local/dist
 
 - `dist/index.html`、`app.js`、`styles.css`：页面、矿物/扫描逻辑和响应式布局。
 - `dist/blueprints.js`：制造蓝图筛选及材料反查。
+- `dist/missions.html`、`missions.js`、`missions.css`：任务查询，手机底部四入口导航、筛选弹窗和全屏详情。
+- `data/scmdb-missions.json` 和 `dist/missions/*.json` 是生成文件，执行根目录 `make missions-build`。原始压缩快照在 `imports/scmdb/missions/`；保留任务标识尾部空格。不得用翻译版本替代未知的任务源版本。
 - `data/scminer-data.json`：矿物规范数据；`names.zh-CN.json`：中英文名称和别名。
 - `data/scmdb-blueprints.json`：从本地用户导出的公开卡片生成的配方数据。
 - `data/blueprint-slots.zh-CN.json`：槽位中文表。
