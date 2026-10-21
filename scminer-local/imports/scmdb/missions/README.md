@@ -7,10 +7,11 @@
 
 ## 已归档基线
 
-- `scmdb-public-missions-2026-10-20T11-03-16-308Z.json.gz`：用户最终英文采集，原始 JSON 无修改压缩保存，1765 个列表任务均有详情及完成标识。
+- 当前构建基线 `scmdb-public-missions-2026-10-20T12-11-46-279Z.json.gz`：1765 个列表任务均有详情、完成标识和地点采集记录。
+- 历史基线 `scmdb-public-missions-2026-10-20T11-03-16-308Z.json.gz`：首轮英文全量详情，保留用于追溯；不含交互地点明细。
 - 同名 `.manifest.json`：原始／压缩文件 SHA-256、大小、来源、时间和标签统计。
 - 采集文件本身没有游戏版本，manifest 的 `game_data_version: 4.10.2` 来自用户确认的补丁版本；不声称完整 build 号，也不以翻译表版本代替。当前只能证明本次列表已遍历，不证明隐藏活动、合并变体或折叠内容完整，不据此判定任务移除。
-- 原始快照不放进 `dist/`，不随 PWA 下载。解压示例：`gzip -dc scminer-local/imports/scmdb/missions/scmdb-public-missions-2026-10-20T11-03-16-308Z.json.gz > /tmp/scmdb-missions.json`（仓库根目录执行）。
+- 原始快照不放进 `dist/`，不随 PWA 下载。解压示例：`gzip -dc scminer-local/imports/scmdb/missions/scmdb-public-missions-2026-10-20T12-11-46-279Z.json.gz > /tmp/scmdb-missions.json`（仓库根目录执行）。
 
 ## 后续数据组织
 
@@ -41,3 +42,7 @@ v4 使用 Worker 计时器（CSP 不允许时回退），每25个完成任务、
 恢复需手动点击“恢复上次进度”，并自行核对游戏版本／语言／LIVE/PTU 未变；相同来源键的下一次保存会覆盖旧检查点。
 保存仅含助手采集的数据和完成标识，不读取站点内部存储。后台仍可能被浏览器冻结或操作系统休眠暂停。
 完成后默认触发一次 JSON 下载，若浏览器拦截，保留页面手动导出。
+
+助手内部版本7采集 `location_details`（`placeholder_tooltips` 和 `regions`），会悬停地点变量并展开区域，只读取渲染出的 DOM。当前只保留“自动采集详情”入口：恢复旧进度时，缺少地点完成标记的任务会重新采集；已补齐者跳过。区域标题匹配不受显示大小写影响，数量不符会报错待重试。
+
+定期更新、翻译审核与反向蓝图索引的操作见 [任务数据 SOP](../../../docs/mission-data-sop.md)。

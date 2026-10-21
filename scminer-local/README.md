@@ -1,6 +1,6 @@
-# 矿物导航台 / SC Mining Atlas
+# 星航助手 / 星际公民随身助手
 
-一个无需后端的 Star Citizen 矿物与制造配方查询工具。发布内容位于
+一个无需后端的 Star Citizen 资源、制造蓝图和任务查询工具。发布内容位于
 `dist/`，可作为静态网站或 PWA 部署。
 
 ## 当前功能
@@ -159,3 +159,20 @@ python3 tools/test_scmdb_locale.py
 PR checks 会把中文报告显示在 Actions 运行的 Summary（摘要）中，并上传
 `blueprint-translation-report-运行编号-重试编号` 附件，保存 30 天。
 如果校验失败，摘要会注明提交中的报告可能需要重新生成，不会把旧报告标记为通过。
+
+## 游戏内汉化 global.ini
+
+任务中文可叠加用户提供的 `global.ini`，文件名不参与解析，临时文件名也可以。原文件压缩归档在 `imports/localization/4.10.2/global.ini.gz`，来源为用户提供的社区游戏内汉化，并非官方译文。规范翻译在 `data/game-locale.zh-CN.json`；不会将完整 INI 部署到网站。
+
+```sh
+python3 tools/import_game_locale.py /path/to/global.ini --game-version 4.10.2
+make missions-build
+```
+
+导入支持 UTF-8 BOM、CRLF、`,P` 键后缀，按第一个等号分割，保留来源 SHA-256。通过 SCMDB 的英文语言键桥接，唯一的 INI 译文优先，歧义回退现有表；动态任务变量转换为占位符，不猜测实际地点。描述中的“任务蓝图奖励”附录会剥离，奖励仍以采集数据为准。游戏版本和英文桥接表版本不匹配时构建会停止。完整 INI 可供后续地点、装备和阵营翻译使用，目前仅接入可桥接的任务翻译。
+
+站点图标源与生成脚本：`tools/generate_site_icons.py`（Pillow），运行后生成 SVG、192/512 PNG 与 iPhone 180px 主屏幕图标。
+
+任务数据与翻译的定期更新流程见 [任务更新 SOP](docs/mission-data-sop.md)，包含原始快照归档、版本核对、翻译待办、人工审核和发布前验证。
+
+目录职责与归档保留策略见 [数据目录说明](docs/data-layout.md)。

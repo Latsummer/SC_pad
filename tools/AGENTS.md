@@ -9,7 +9,7 @@
 - `update_scminer_locale.py`：更新名称模板，保留已完成翻译；不要改变稳定 ID。
 - `build_scminer_site_data.py`：矿物规范数据与名称表生成浏览器数据。
 - `scmdb_public_capture.js`、`build_scmdb_capture_bookmarklet.py`：只采集用户正在浏览的公开渲染卡片，生成书签助手。改变 JS 后执行 `make scmdb-capture`。
-- `scmdb_missions_capture.js`：任务试采助手，只读取公开 DOM 的列表和 Overview/Combat/Requirements，支持用户启动的限速批次点击当前列表卡片和公开标签。执行 `make scmdb-missions-capture` 生成说明页，`node tools/test_scmdb_missions_capture.cjs` 验证；不读取内部状态或受限数据目录，Calculator 只采静态奖励、等级 XP 差额与规则，不采集 Community，不点击收藏、完成或提交操作。
+- `scmdb_missions_capture.js`：任务采集助手，只读取公开 DOM 的列表和 Overview/Combat/Requirements，支持用户启动的限速批次点击当前列表卡片和公开标签。执行 `make scmdb-missions-capture` 生成说明页，`node tools/test_scmdb_missions_capture.cjs` 验证；不读取内部状态或受限数据目录，Calculator 只采静态奖励、等级 XP 差额与规则，不采集 Community，不点击收藏、完成或提交操作。
 - `import_scmdb_public_capture.py`：公开卡片图标映射以实际装备核对，`🔰` 为护盾、`🚀` 为量子驱动、`💠` 为采矿模组，不按 emoji 字面含义猜分类。仅导入本地 JSON；默认按 mtime 选快照。通过 `scmdb_locale.py` 的本地翻译表填入中英文标题，歧义不自动选译名。
 - `build_blueprint_site_data.py`：检查槽位翻译，生成蓝图数据、索引和 locale。
 - `scmdb_locale.py`：版本校验、双向精确名称匹配和有类型/尺寸条件的人工译名覆盖。
@@ -20,3 +20,7 @@
 修改网络逻辑时保留访问边界、限速、错误可见性与构建前暂存机制。来源网络慢时优先调整明确的超时和传输参数，不绕过访问限制，不用旧缓存冒充新同步成功。
 
 验证解析器应检查代表性卡片、材料数量、稳定矿物关联、未解析条目和缺失翻译；网络请求改动可用 mock 检查超时、失败回退和后续传输复用。实际同步需用完成日志和生成数据确认。生成发布资源后按 `scminer-local/AGENTS.md` 更新缓存版本。
+
+任务翻译规则在 `mission_translation.py`，人工覆盖在 `scminer-local/data/mission-translations.zh-CN.json`。遵循 `scminer-local/docs/mission-data-sop.md`；不要编辑生成的翻译工作清单来上线译文。`archive_mission_capture.py` 验证后归档原始英文导出，拒绝不完整快照及覆盖旧归档。
+
+`update_mission_locale.py` 独立更新任务社区表与原始归档，不覆盖蓝图翻译基线。任务名称和社区附加说明分别保存，具体匹配语言键可追溯；不删除任务说明，也不把社区条件性蓝图提示当作结构化奖励。

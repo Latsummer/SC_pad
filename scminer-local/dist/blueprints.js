@@ -84,7 +84,7 @@
         const amount = material.amount_scu !== null ? `${material.amount_scu} SCU` : `×${material.amount_count}`;
         return `<li><span>${escapeHtml(slotName(material.slot))}</span><strong>${escapeHtml(name)}</strong><em>${escapeHtml(amount)}</em></li>`;
       }).join("");
-      return `<article class="blueprint-card" style="--enter-index:${index}"><div class="blueprint-card-head"><div><span class="detail-kicker">${escapeHtml(item.type_group || "其他")}${item.type_subtype ? ` · ${escapeHtml(item.type_subtype)}` : ""}${item.size ? ` · S${item.size}` : ""}</span><h2>${escapeHtml(item.name_zh || item.name)}</h2></div><time>⏱ ${formatTime(item.craft_time_seconds)}</time></div><ul class="material-list">${materials}</ul></article>`;
+      return `<article class="blueprint-card" style="--enter-index:${index}"><div class="blueprint-card-head"><div><span class="detail-kicker">${escapeHtml(item.type_group || "其他")}${item.type_subtype ? ` · ${escapeHtml(item.type_subtype)}` : ""}${item.size ? ` · S${item.size}` : ""}</span><h2>${escapeHtml(item.name_zh || item.name)}</h2></div><time>⏱ ${formatTime(item.craft_time_seconds)}</time></div><ul class="material-list">${materials}</ul><button type="button" class="blueprint-source-trigger" data-blueprint-name="${escapeHtml(item.name_en || item.name)}" data-blueprint-title="${escapeHtml(item.name_zh || item.name)}" aria-haspopup="dialog">查询产出任务 <span aria-hidden="true">↗</span></button></article>`;
     }).join("");
     const remaining = filtered.length - shown.length;
     const loadMore = remaining > 0
@@ -92,6 +92,36 @@
       : filtered.length > 24 ? `<p class="result-limit">已显示全部 ${filtered.length.toLocaleString("zh-CN")} 条结果</p>` : "";
     els.results.innerHTML = cards + loadMore;
   }
+  let missionSourcesPromise, sourceRequest = 0;
+  const sourcesDialog = document.createElement('dialog');
+  sourcesDialog.className = 'blueprint-sources-dialog';
+  sourcesDialog.setAttribute('aria-labelledby','blueprintSourceTitle');
+  sourcesDialog.innerHTML = '<header><div><p>蓝图产出任务</p><h2 id="blueprintSourceTitle"></h2></div><button type="button" class="blueprint-source-close" aria-label="关闭产出任务">✕</button></header><div class="blueprint-mission-list" aria-live="polite"></div>';
+  document.body.append(sourcesDialog);
+  sourcesDialog.addEventListener('click', event => {
+    if (event.target === sourcesDialog || event.target.closest('.blueprint-source-close')) sourcesDialog.close();
+  });
+  sourcesDialog.addEventListener('close', () => { sourceRequest++; });
+  els.results.addEventListener('click', async (event) => {
+    const button = event.target.closest('.blueprint-source-trigger');
+    if (!button) return;
+    const request = ++sourceRequest;
+    const name = button.dataset.blueprintName;
+    sourcesDialog.querySelector('h2').textContent = button.dataset.blueprintTitle;
+    const body = sourcesDialog.querySelector('.blueprint-mission-list');
+    body.textContent = '正在查询产出任务…';
+    if (!sourcesDialog.open) sourcesDialog.showModal();
+    try {
+      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
+      const data = await missionSourcesPromise;
+      if (!sourcesDialog.open || request !== sourceRequest) return;
+      const tasks = data.blueprints[name] || [];
+      const systems = {Nyx:'尼克斯',Pyro:'派罗',Stanton:'斯坦顿',Multi:'跨星系'};
+      body.innerHTML = tasks.length ? `<p class="blueprint-source-note">已记录 ${tasks.length} 个产出任务。概率为奖励池触发率，不是单张蓝图掉落率。</p><div class="blueprint-source-grid">` + tasks.map(task => `<a class="blueprint-source-task" href="missions.html?id=${encodeURIComponent(task.id)}"><span class="blueprint-source-meta">${escapeHtml(systems[task.system] || task.system)}${task.minimum_rank != null ? ` · 接取 Lv.${task.minimum_rank}` : ''}</span><strong>${escapeHtml(task.name)}</strong><small>${task.pools.map(pool => `${pool.chance_percent}% 触发 · ${pool.candidate_count} 选 1`).join('；')} →</small></a>`).join('') + `</div><a class="blueprint-source-all" href="missions.html?reward_blueprint=${encodeURIComponent(name)}">在任务页查看全部 ${tasks.length} 个任务 →</a>` : '<p class="blueprint-source-note">当前采集数据未记录产出此蓝图的任务，不代表游戏中无法通过任务获得。</p>';
+    } catch (_) {
+      if (sourcesDialog.open && request === sourceRequest) body.textContent = '任务来源暂时无法载入，请联网后关闭并重新查询。';
+    }
+  });
   function renderAll() { renderSelectors(); renderMaterialPicker(); renderActiveFilters(); renderResults(); }
   function restartResults() { state.visible = 24; renderAll(); }
   function closeSuggestions() { els.suggestions.hidden = true; els.materialSearch.setAttribute("aria-expanded", "false"); }

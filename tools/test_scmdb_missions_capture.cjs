@@ -55,6 +55,7 @@ close.click = () => { modalOpen = false; };
 modal.querySelector = ((original) => (selector) => selector === ".detail-close" ? close : original(selector))(modal.querySelector);
 tabNodes.forEach((tab, index) => {
   tab.click = () => {
+    visited.push(index);
     selectedTab = tab;
     body.innerText = `Public content ${index}`;
     if (index >= 4) throw Error("Private tab must not be clicked");
@@ -71,6 +72,29 @@ let observerCallback;
 let scheduled;
 let delayBudget = 0;
 let cardReads = 0;
+let popupVisible = false;
+let regionOpen = false;
+let enrichFixture = false;
+const visited = [];
+const tooltipRow = node('PLANET\nPyro I', { '.ph-tooltip-type': [node('PLANET')] });
+const tooltip = node('Locations\nPLANET\nPyro I', { '.ph-tooltip-header': [node('Locations')], '.ph-tooltip-item': [tooltipRow] });
+const token = node('[LOCATION]');
+token.dispatchEvent = (event) => { popupVisible = event.type === 'mouseover'; };
+const regionButton = node('Pyro Region A\n2\n▸', { '.chain-link-region-count': [node('2')] });
+regionButton.classList = { contains: () => regionOpen };
+regionButton.click = () => { regionOpen = true; };
+const region = node('', {
+  '.pyro-region-locations-header': [node('PYRO REGION A')],
+  '.pyro-region-group': [node('', { '.pyro-region-group-label': [node('PLANETS')], '.pyro-region-location': [node('Pyro I'), node('Monox')] })],
+});
+const originalModalAll = modal.querySelectorAll;
+modal.querySelectorAll = (selector) => {
+  if (enrichFixture && selector === '.ph-has-tooltip') return [token];
+  if (enrichFixture && selector === '.chain-link-region-toggle:not(.open)') return regionOpen ? [] : [regionButton];
+  if (enrichFixture && selector === '.chain-link-region-toggle.open') return regionOpen ? [regionButton] : [];
+  if (enrichFixture && selector === '.pyro-region-locations') return regionOpen ? [region] : [];
+  return originalModalAll(selector);
+};
 const checkpointData = new Map();
 const fakeIndexedDB = {
   open() {
@@ -103,6 +127,7 @@ const fakeIndexedDB = {
 };
 const context = {
   indexedDB: fakeIndexedDB,
+  MouseEvent: class { constructor(type) { this.type = type; } },
   URL: class extends URL { static createObjectURL(blob) { exported = blob; return "blob:test"; } static revokeObjectURL() {} },
   Blob, Date, Map, Set, JSON, String, RegExp,
   location: { hostname: "scmdb.net", href: "https://scmdb.net/" },
@@ -112,6 +137,7 @@ const context = {
     createElement: (tag) => tag === "section" ? panel : node(),
     querySelectorAll: (selector) => {
       if (selector === "a.contract-card[href]") { cardReads += 1; return autoMode ? [card] : [card, unrelated]; }
+      if (selector === ".ph-tooltip-fixed") return popupVisible ? [tooltip] : [];
       return selector === ".detail-modal" && modalOpen ? [modal] : [];
     },
     addEventListener() {}, removeEventListener() {},
@@ -170,7 +196,7 @@ async function payload() {
   assert.equal(calculator.calculator_basis.rank_tables[0].ranks[0].xp_to_fill_text, "3,600");
   assert(!JSON.stringify(calculator).includes("DO_NOT_CAPTURE_MISSION_COUNT"));
   assert(!calculator.raw_text.includes("Public content 3"), "calculator full DOM text and inputs not exported");
-  assert.equal(data.helper_version, 5);
+  assert.equal(data.helper_version, 7);
   assert.equal(modalOpen, false);
   assert.deepEqual(data.completed_mission_keys, [`live:${id}`]);
   assert(data.missions[0].detail_snapshots.some((snapshot) => snapshot.tab_key === "combat"));
@@ -211,5 +237,26 @@ async function payload() {
   assert(workerMessages > 0);
   assert.equal(data.automation_runs[0].done, 1);
   assert(data.completed_mission_keys.includes(`ptu:${id}`));
+  panel.click({ target: { dataset: { action: "close" } } });
+  for (const saved of checkpointData.values()) saved.location_completed = [];
+  context.location.href = 'https://scmdb.net/';
+  card.href = `https://scmdb.net/?m=${id}`;
+  modalOpen = false;
+  enrichFixture = true;
+  vm.runInNewContext(fs.readFileSync(`${__dirname}/scmdb_missions_capture.js`, 'utf8'), context);
+  panel.click({ target: { dataset: { action: 'restore' } } });
+  await new Promise(setImmediate);
+  const beforeVisits = visited.length;
+  panel.click({ target: { dataset: { action: 'auto' } } });
+  await new Promise(setImmediate);
+  data = await payload();
+  assert.equal(data.automation_runs[0].done, 1);
+  assert.equal(data.automation_runs[0].mode, 'full');
+  assert.deepEqual(visited.slice(beforeVisits), [0,1,2,3], 'automatic capture revisits old completed tasks missing location details');
+  const extras = data.missions.find(m => m.mission_id === id).detail_snapshots.find(s => s.location_details?.placeholder_tooltips.length);
+  assert.equal(extras.location_details.placeholder_tooltips[0].items[0].raw_text, 'PLANET\nPyro I');
+  assert.equal(extras.location_details.regions[0].groups[0].locations.length, 2);
+  assert(data.completed_mission_keys.includes(`live:${id}`), 'supplement preserves previous completion');
+  assert(data.location_completed_mission_keys.includes(`live:${id}`));
   console.log(`SCMDB mission capture fixtures passed (stable four-tab batch scheduled waits: ${batchDelay} ms)`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

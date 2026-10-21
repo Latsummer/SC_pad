@@ -1,22 +1,31 @@
-const CACHE_NAME = "scminer-atlas-missions-458c66c66670";
+const CACHE_NAME = "xinghang-assistant-8a28e7ff7e8a";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./blueprints.html",
   "./styles.css",
+  "./styles.css?v=mission-sources-2",
   "./missions.html",
   "./missions.css",
   "./missions.js",
+  "./missions.js?v=blueprint-sources-1",
   "./missions/index.json",
+  "./missions/blueprint-sources.json",
   "./theme.js",
   "./app.js",
   "./blueprints.js",
+  "./blueprints.js?v=mission-sources-2",
   "./app-data.js",
   "./blueprints-data.js",
   "./blueprint-index.js",
   "./blueprint-locale.js",
   "./manifest.webmanifest",
-  "./icons/icon.svg"
+  "./icons/icon.svg",
+  "./icons/icon.svg?v=xinghang-2",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/apple-touch-icon.png",
+  "./icons/apple-touch-icon.png?v=xinghang-2"
 ];
 
 self.addEventListener("install", (event) => {

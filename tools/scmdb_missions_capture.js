@@ -14,6 +14,8 @@
   let storageStatus = "尚未保存进度";
   let checkpointBusy = false;
   const completed = new Set();
+  const locationCompleted = new Set();
+  const locationExtras = new Map();
   const runs = [];
   const startedAt = new Date().toISOString();
   const compact = (value) => String(value || "").replace(/\r/g, "").split("\n").map((line) => line.trim()).filter(Boolean).join("\n");
@@ -121,6 +123,7 @@
         appendUnique(item.detail_snapshots, {
           tab: activeTab,
           tab_key: entry.key,
+          location_details: locationExtras.get(`${item.channel}:${item.mission_id}:${entry.key}`) || null,
           available_tabs: [...modal.querySelectorAll(".detail-tab")].map(text),
           header_text: text(modal.querySelector(".detail-header")),
           raw_text: calculator ? JSON.stringify(basis) : text(body),
@@ -133,7 +136,7 @@
     } catch (error) { lastError = String(error.message || error); }
     const detailed = [...records.values()].filter((item) => item.detail_snapshots.length).length;
     const tabs = [...records.values()].reduce((sum, item) => sum + new Set(item.detail_snapshots.map((entry) => entry.value.tab)).size, 0);
-    const message = `${records.size} 个任务 · ${detailed} 个有详情 · ${tabs} 个详情标签`;
+    const message = `${records.size} 个任务 · ${detailed} 个有详情 · ${tabs} 个详情标签 · ${locationCompleted.size} 个已补地点明细`;
     const status = panel.querySelector("[data-status]");
     const elapsed = automation ? (Date.now() - Date.parse(automation.started_at)) / 1000 : 0;
     const processed = automation ? automation.done + automation.failures.length : 0;
@@ -197,7 +200,7 @@
     if (checkpointBusy) return;
     checkpointBusy = true;
     try {
-      await checkpointStore(true, { version: 4, saved_at: new Date().toISOString(), source_url: location.href, records: [...records], completed: [...completed] });
+      await checkpointStore(true, { version: 4, saved_at: new Date().toISOString(), source_url: location.href, records: [...records], completed: [...completed], location_completed: [...locationCompleted] });
       storageStatus = `已保存 ${completed.size} 个完成任务 · ${new Date().toLocaleTimeString()}`;
     } catch (error) { storageStatus = `进度保存失败：${error.message}；请手动导出`; }
     finally { checkpointBusy = false; if (!disposed) capture(true); }
@@ -208,6 +211,7 @@
       const saved = await checkpointStore(false);
       if (!saved || saved.version !== 4) throw Error("没有 v4 进度");
       for (const [key, item] of saved.records) {
+        for (const entry of item.detail_snapshots) if (entry.value.location_details) locationExtras.set(`${key}:${entry.value.tab_key}`, entry.value.location_details);
         const current = records.get(key);
         if (!current) records.set(key, item);
         else {
@@ -217,6 +221,7 @@
         }
       }
       for (const key of saved.completed) completed.add(key);
+      for (const key of saved.location_completed || []) locationCompleted.add(key);
       storageStatus = `已恢复 ${completed.size} 个完成任务（${saved.saved_at}）；请确认游戏版本相同`;
     } catch (error) { storageStatus = `恢复失败：${error.message}`; }
     if (!disposed) capture(true);
@@ -252,6 +257,57 @@
   function stopAutomation() {
     if (automation) automation.active = false;
   }
+  function regionDetails(modal) {
+    return [...modal.querySelectorAll(".pyro-region-locations")].filter(visible).map((region) => ({
+      name: text(region.querySelector(".pyro-region-locations-header")),
+      groups: [...region.querySelectorAll(".pyro-region-group")].map((group) => ({
+        type: text(group.querySelector(".pyro-region-group-label")),
+        locations: [...group.querySelectorAll(".pyro-region-location")].map((node) => {
+          const icon = text(node.querySelector(".pyro-region-location-icon"));
+          return text(node).replace(icon, "").trim();
+        }),
+      })),
+    }));
+  }
+  async function captureLocationDetails(modal, run, missionId, tab) {
+    if (!["overview", "requirements"].includes(tab)) return;
+    const tooltips = [];
+    const tokens = [...new Map([...modal.querySelectorAll(".ph-has-tooltip")].filter(visible).map((node) => [text(node), node])).values()];
+    for (const token of tokens) {
+      if (!run.active || disposed) throw Error("已停止");
+      token.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, view: window, relatedTarget: document.body }));
+      try {
+        await delay(20);
+        const popup = await waitFor(() => [...document.querySelectorAll(".ph-tooltip-fixed")].find((node) => visible(node) && node.querySelectorAll(".ph-tooltip-item").length), run);
+        tooltips.push({ placeholder: text(token), heading: text(popup.querySelector(".ph-tooltip-header")),
+          items: [...popup.querySelectorAll(".ph-tooltip-item")].map((node) => ({
+            type: text(node.querySelector(".ph-tooltip-type")), raw_text: text(node),
+          })),
+        });
+      } finally {
+        token.dispatchEvent(new MouseEvent("mouseout", { bubbles: true, view: window, relatedTarget: document.body }));
+        await delay(20);
+      }
+    }
+    const regionButtons = [...modal.querySelectorAll(".chain-link-region-toggle:not(.open)")].filter((node) => visible(node) && !node.disabled);
+    for (const button of regionButtons) {
+      if (!run.active || disposed) throw Error("已停止");
+      button.click();
+      await waitFor(() => button.classList.contains("open"), run);
+    }
+    if (regionButtons.length) await settle(run, missionId, tab);
+    const regions = regionDetails(modal);
+    for (const button of [...modal.querySelectorAll(".chain-link-region-toggle.open")].filter(visible)) {
+      const expected = Number(text(button.querySelector(".chain-link-region-count")));
+      const regionName = text(button).replace(/\s*\d+\s*[▸▾]\s*$/, "").trim();
+      // innerText includes CSS text-transform (the heading is uppercase).
+      const normalizeRegion = (name) => name.replace(/\s+/g, " ").trim().toLowerCase();
+      const region = regions.find((entry) => normalizeRegion(entry.name) === normalizeRegion(regionName));
+      if (expected > 0 && (!region || region.groups.reduce((sum, group) => sum + group.locations.length, 0) !== expected)) throw Error(`区域地点明细不完整：${regionName}（预期 ${expected}，读取 ${region ? region.groups.reduce((sum, group) => sum + group.locations.length, 0) : 0}）`);
+    }
+    const channel = identity(location.href).channel;
+    locationExtras.set(`${channel}:${missionId}:${tab}`, { attempted: true, placeholder_tooltips: tooltips, regions });
+  }
   async function startAutomation() {
     if (automation || disposed) return;
     if (currentModal()) { lastError = "请先关闭任务详情，再启动自动采集。"; capture(); return; }
@@ -259,10 +315,10 @@
     panel.querySelector('[data-action="pause"]').textContent = "暂停";
     capture();
     const limit = Math.max(1, Math.min(5000, Number(panel.querySelector("[data-limit]").value) || 20));
-    const queue = [...document.querySelectorAll("a.contract-card[href]")].filter(visible).map((card) => ({ href: card.href, ...identity(card.href) })).filter((item) => item.mission_id && !completed.has(`${item.channel}:${item.mission_id}`));
+    const queue = [...document.querySelectorAll("a.contract-card[href]")].filter(visible).map((card) => ({ href: card.href, ...identity(card.href) })).filter((item) => item.mission_id && !(completed.has(`${item.channel}:${item.mission_id}`) && locationCompleted.has(`${item.channel}:${item.mission_id}`)));
     const unique = [...new Map(queue.map((item) => [`${item.channel}:${item.mission_id}`, item])).values()].slice(0, limit);
     clearTimeout(timer);
-    const run = { active: true, started_at: new Date().toISOString(), total: unique.length, done: 0, failures: [] };
+    const run = { mode: "full", active: true, started_at: new Date().toISOString(), total: unique.length, done: 0, failures: [] };
     automation = run;
     runs.push(run);
     lastError = "";
@@ -296,12 +352,14 @@
             const disclosures = [...modal.querySelectorAll(".detail-body details:not([open]) > summary, .detail-body button[aria-expanded='false']")].filter(visible).slice(0, 100);
             for (const disclosure of disclosures) { if (!run.active || disposed) break; disclosure.click(); await delay(20); }
             if (disclosures.length) await settle(run, item.mission_id, key);
+            await captureLocationDetails(modal, run, item.mission_id, key);
             if (run.active && !disposed) capture(true);
           }
           if (run.active && !disposed) {
             const saved = records.get(`${item.channel}:${item.mission_id}`);
             if (!keys.every((key) => saved?.detail_snapshots.some((entry) => entry.value.tab_key === key && entry.value.raw_text))) throw Error("详情标签内容未全部记录，保留为待重试");
             completed.add(`${item.channel}:${item.mission_id}`);
+            locationCompleted.add(`${item.channel}:${item.mission_id}`);
             run.done += 1;
             if (run.done % 25 === 0) await saveCheckpoint();
           }
@@ -337,14 +395,14 @@
   function exportJson() {
     capture(true);
     const missions = [...records.values()].map((item) => ({ ...item, list_snapshots: item.list_snapshots.map((entry) => entry.value), detail_snapshots: item.detail_snapshots.map((entry) => entry.value) }));
-    const payload = { format: "scmdb-public-missions-capture-v1", helper_version: 5, source_url: location.href, started_at: startedAt, captured_at: new Date().toISOString(), page_language: document.documentElement.lang, note: "Public rendered DOM only. Optional user-started batches click existing cards/tabs/disclosures. Not a completeness claim. No Community content, calculator player inputs, app state, or direct /data/ requests by this helper. Text may be translated even if page_language is en.", warnings: lastError ? [lastError] : [], storage_status: storageStatus, automation_runs: runs, completed_mission_keys: [...completed], counts: { missions: missions.length, with_details: missions.filter((item) => item.detail_snapshots.length).length }, missions };
+    const payload = { format: "scmdb-public-missions-capture-v1", helper_version: 7, source_url: location.href, started_at: startedAt, captured_at: new Date().toISOString(), page_language: document.documentElement.lang, note: "Public rendered DOM only. Optional user-started batches click existing cards/tabs/disclosures. Not a completeness claim. No Community content, calculator player inputs, app state, or direct /data/ requests by this helper. Text may be translated even if page_language is en.", warnings: lastError ? [lastError] : [], storage_status: storageStatus, automation_runs: runs, completed_mission_keys: [...completed], location_completed_mission_keys: [...locationCompleted], counts: { missions: missions.length, with_details: missions.filter((item) => item.detail_snapshots.length).length }, missions };
     const objectUrl = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a"); link.href = objectUrl; link.download = `scmdb-public-missions-${new Date().toISOString().replace(/[:.]/g, "-")}.json`; link.click(); setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
   }
   const panel = document.createElement("section");
   panel.setAttribute("aria-label", "SCMDB 任务采集助手");
   panel.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:2147483647;width:min(340px,calc(100vw - 48px));padding:14px;border:1px solid #35d9e8;border-radius:12px;background:#071114;color:#e8f6f7;font:13px system-ui;box-shadow:0 8px 30px #0008";
-  panel.innerHTML = '<strong>SCMDB 任务采集助手</strong><p>支持中文页面。自动采集会逐个打开当前列表的任务、切换公开详情标签并关闭；运行时请勿操作站点。不会自动翻页。普通折叠项会尝试展开。</p><label>本批任务数 <input data-limit type="number" min="1" max="5000" value="100" style="width:70px"></label><label><input data-auto-export type="checkbox" checked> 完成后自动导出</label><p data-status aria-live="polite">等待任务卡片</p><div><button data-action="auto">自动采集详情</button> <button data-action="stop">停止自动采集</button> <button data-action="save">保存进度</button> <button data-action="restore">恢复上次进度</button> <button data-action="capture">立即记录</button> <button data-action="pause">暂停</button> <button data-action="export">导出 JSON</button> <button data-action="close">关闭</button></div><small>每25个及批次结束自动保存到本浏览器。刷新后重新启动助手并恢复进度；须保持同一游戏版本。后台可跑，休眠或标签冻结会暂停；自动下载被拦截时手动导出。Calculator 仅采奖励、等级差额与规则；Community 不采集。非标准折叠项仍需手动展开。</small>';
+  panel.innerHTML = '<strong>SCMDB 任务采集助手</strong><p>支持中文页面。自动采集会逐个打开当前列表的任务、切换公开详情标签并关闭；运行时请勿操作站点。不会自动翻页。会悬停地点变量并展开区域清单；旧进度中缺少地点明细的任务会自动重新采集。</p><label>本批任务数 <input data-limit type="number" min="1" max="5000" value="100" style="width:70px"></label><label><input data-auto-export type="checkbox" checked> 完成后自动导出</label><p data-status aria-live="polite">等待任务卡片</p><div><button data-action="auto">自动采集详情</button> <button data-action="stop">停止自动采集</button> <button data-action="save">保存进度</button> <button data-action="restore">恢复上次进度</button> <button data-action="capture">立即记录</button> <button data-action="pause">暂停</button> <button data-action="export">导出 JSON</button> <button data-action="close">关闭</button></div><small>每25个及批次结束自动保存到本浏览器。刷新后重新启动助手并恢复进度；须保持同一游戏版本。后台可跑，休眠或标签冻结会暂停；自动下载被拦截时手动导出。Calculator 仅采奖励、等级差额与规则；Community 不采集。非标准折叠项仍需手动展开。</small>';
   document.body.append(panel);
   panel.querySelectorAll("button").forEach((button) => { button.style.cssText = "margin-bottom:8px;padding:6px 8px;border:1px solid #2c7980;border-radius:5px;background:#10262a;color:#e8f6f7;cursor:pointer"; });
   panel.addEventListener("click", (event) => {

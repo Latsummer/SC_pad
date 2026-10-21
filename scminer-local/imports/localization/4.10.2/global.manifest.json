@@ -1,0 +1,9 @@
+{
+  "archive": "global.ini.gz",
+  "source_name": "global.ini",
+  "game_version": "4.10.2",
+  "source": "User-provided in-game community localization",
+  "raw_bytes": 10792982,
+  "raw_sha256": "52e88f253d70c12f316f22f3433085e01a3d759d94ff8d8ee6760e823b41b697",
+  "archive_sha256": "d3470a17720868667f2376d26289d014d43b518f11a8e00be1b1835e17645462"
+}

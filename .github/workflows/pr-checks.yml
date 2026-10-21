@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in scminer-local/dist/*.js tools/scmdb_public_capture.js erkul-calculator-zh.user.js; do
+          for file in scminer-local/dist/*.js tools/scmdb_public_capture.js tools/scmdb_missions_capture.js erkul-calculator-zh.user.js; do
             node --check "$file"
           done
       - name: Validate site data and generated files
@@ -42,6 +42,13 @@ jobs:
         run: python3 tools/check_scminer_site.py
       - name: Check blueprint translation regressions
         run: python3 tools/test_scmdb_locale.py
+      - name: Check mission capture, translation and data regressions
+        run: |
+          python3 tools/test_archive_mission_capture.py
+          python3 tools/test_game_locale.py
+          python3 tools/test_mission_translation.py
+          python3 tools/test_mission_site_data.py
+          node tools/test_scmdb_missions_capture.cjs
       - name: 展示中文翻译报告
         if: always()
         env:
