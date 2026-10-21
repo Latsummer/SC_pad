@@ -12,10 +12,30 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--kind", choices=["blueprints", "missions"], default="blueprints")
     args = parser.parse_args()
 
     code = args.source.read_text(encoding="utf-8")
     bookmarklet = "javascript:" + quote(code, safe="()[]{}:;,.!~=+-*/?&|'")
+    if args.kind == "missions":
+        title = "SCMDB 任务采集助手"
+        intro = "支持中文任务内容。手动启动批量采集后，助手逐个打开当前列表的任务、切换公开详情标签、尝试展开标准折叠项并关闭详情。不直接访问 /data/、自动翻页或读取应用内部数据。"
+        steps = """<li>更新旧版：先导出并关闭 SCMDB 页面上的旧助手，删除旧书签，再把本页按钮重新拖到收藏栏。已打开的安装页请刷新。</li>
+<li>打开 <a href="https://scmdb.net/" target="_blank" rel="noopener">SCMDB</a>，等待任务列表出现。中文翻译可以保留，另行记录页面显示的游戏版本及 LIVE/PTU。</li>
+<li>点击收藏栏中的采集助手，关闭已有任务详情，先保留默认的 100 个任务，点击“自动采集详情”。程序只处理启动时当前列表中已有的卡片，运行时请勿操作站点或切换语言／版本。</li>
+<li>自动采集详情会同时悬停地点变量并展开区域清单；恢复旧进度后，缺少地点明细的已完成任务也会自动重新采集。</li>
+<li>每个任务会查看概览 Overview、战斗 Combat（若有）、要求 Requirements 和计算 Calculator；Calculator 只采奖励字段、声望等级差额及规则，不采人数输入或重复计算结果，Community 不采集。可随时点“停止自动采集”；停止后保留详情供检查，手动关闭即可再次启动。程序跳过本页会话中已完整跑完的任务，失败条目会记录在导出中并可重试。</li>
+<li>先检查 100 个任务的导出效果，再提高本批任务数。助手按 DOM 稳定状态等待，并，使用后台 Worker 定时器（不可用时回退普通定时器），批量期间不重复扫描整个列表；面板显示实测速率和预计剩余时间。大型列表建议分批并及时导出。非标准折叠项仍需手动展开，标签计数不代表详情完整性。</li>
+<li>点击“导出 JSON”，保存到 scminer-local/imports/scmdb/missions/。每25个任务和批次结束自动保存至当前浏览器的 IndexedDB；刷新后重新启动助手，确认游戏版本、翻译和 LIVE/PTU 相同，再点“恢复上次进度”。未到保存点的任务会重跑。保存失败会显示提示，需手动导出。</li>
+<li>连同页面游戏版本一起反馈首批 JSON。此阶段保留原始内容，不生成完整性保证。可把标签放到后台，运行时不要操作 SCMDB 页面。保持电脑唤醒；标签冻结／丢弃、浏览器退出或电脑休眠会暂停采集。完成后默认自动导出，下载被浏览器拦截时请手动导出。不要在游戏版本更新后恢复旧进度。</li>"""
+        page = f'''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title>
+<style>body{{max-width:780px;margin:40px auto;padding:0 22px;background:#071114;color:#e8f6f7;font:16px system-ui;line-height:1.7}}a{{color:#35d9e8}}.bookmark{{display:inline-block;padding:12px 18px;background:#35d9e8;color:#031014;border-radius:10px;font-weight:bold;text-decoration:none}}textarea{{box-sizing:border-box;width:100%;height:100px}}</style>
+<h1>{title}</h1><p>{intro}</p><p>把下方按钮拖到浏览器收藏栏。点击本说明页上的按钮不会开始采集。</p><p><a class="bookmark" href="{bookmarklet}">启动 SCMDB 任务采集</a></p><ol>{steps}</ol>
+<details><summary>无法拖动书签？</summary><p>新建书签，将下方完整内容复制到书签的“网址”字段。使用桌面浏览器操作更方便。</p><textarea readonly>{bookmarklet.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')}</textarea></details></html>'''
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(page, encoding="utf-8")
+        print(f"wrote {args.output}")
+        return
     page = f"""<!doctype html>
 <html lang="zh-CN">
 <meta charset="utf-8">

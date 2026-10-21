@@ -11,7 +11,7 @@
   const mineralById = new Map(data.minerals.map((item) => [item.id, item]));
   const locationById = new Map(data.locations.map((item) => [item.id, item]));
   const state = {
-    mode: new URLSearchParams(location.search).get("mode") === "blueprints" ? "blueprints" : "mineral",
+    mode: ["scan", "blueprints"].includes(new URLSearchParams(location.search).get("mode")) ? new URLSearchParams(location.search).get("mode") : "mineral",
     selected: [],
     system: "all",
     method: "all",
@@ -21,7 +21,7 @@
   const els = {
     version: document.querySelector("#versionLabel"),
     workspaceTitle: document.querySelector("#workspaceTitle"),
-    modeButtons: [...document.querySelectorAll(".mode-button")],
+    modeButtons: [...document.querySelectorAll(".mode-button[data-mode]")],
     mineralControls: document.querySelector("#mineralControls"),
     scanControls: document.querySelector("#scanControls"),
     mineralWorkspace: document.querySelector("#mineralWorkspace"),
@@ -79,7 +79,7 @@
     els.modeButtons.forEach((button) => {
       const active = button.dataset.mode === mode;
       button.classList.toggle("active", active);
-      button.setAttribute("aria-selected", String(active));
+      button.setAttribute("aria-pressed", String(active));
     });
     const mineral = mode === "mineral";
     const scan = mode === "scan";

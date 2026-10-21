@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "archive": "scmdb-public-missions-2026-10-20T12-11-46-279Z.json.gz",
+  "source_filename": "scmdb-public-missions-2026-10-20T12-11-46-279Z.json",
+  "source_url": "https://scmdb.net/",
+  "captured_at": "2026-10-20T12:11:46.164Z",
+  "helper_version": 7,
+  "game_data_version": "4.10.2",
+  "game_data_version_status": "user-confirmed patch version; full build identifier not asserted",
+  "channel": "live",
+  "content_language": "en",
+  "content_language_basis": "user explicitly selected original English before this capture; not inferred from HTML lang",
+  "raw_bytes": 31143076,
+  "archive_bytes": 1753200,
+  "raw_sha256": "af928993603c2c95be75c0428911d6dadc62201695281ce6e774ebd59435dc05",
+  "archive_sha256": "fb6968d291bd47913ef9ee953b4826327a4efcccb5e268d8a109cd587ee1f4a9",
+  "counts": {
+    "listed_missions": 1765,
+    "with_details": 1765,
+    "completed_missions": 1765,
+    "tabs": {
+      "overview": 1765,
+      "requirements": 1765,
+      "calculator": 1765,
+      "combat": 724
+    },
+    "location_completed_missions": 1765
+  },
+  "coverage_note": "All 1765 listed mission IDs completed. This does not establish that all SCMDB missions, hidden events, variants, or folded sections were captured. Do not infer removals from this snapshot.",
+  "translation_reference": {
+    "local_file": "data/scmdb-locale.zh-CN.json",
+    "version": "4.10.2-live.12881860",
+    "version_match": "patch version matches 4.10.2; full build not asserted"
+  }
+}

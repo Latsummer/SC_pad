@@ -2,6 +2,9 @@
 """Validate local site data and reproducible browser payloads without network access."""
 from pathlib import Path
 import json
+import gzip
+import hashlib
+from urllib.parse import urlsplit
 import shutil
 import subprocess
 import sys
@@ -12,7 +15,40 @@ from import_scmdb_public_capture import parse_card
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def check_archives_and_assets():
+    site = ROOT / 'scminer-local'
+    for path in (site / 'imports').rglob('*.manifest.json'):
+        metadata = json.loads(path.read_text())
+        if not metadata.get('archive_sha256'):
+            continue
+        archive = path.with_name(metadata.get('archive') or path.name.replace('.manifest.json', '.json.gz'))
+        packed = archive.read_bytes()
+        if hashlib.sha256(packed).hexdigest() != metadata['archive_sha256'] or hashlib.sha256(gzip.decompress(packed)).hexdigest() != metadata['raw_sha256']:
+            raise SystemExit(f'Archive checksum mismatch: {path}')
+    game_locale = json.loads((site / 'data/game-locale.zh-CN.json').read_text())
+    ini = site / 'imports/localization' / game_locale['game_version'] / 'global.ini.gz'
+    if hashlib.sha256(gzip.decompress(ini.read_bytes())).hexdigest() != game_locale['source_sha256']:
+        raise SystemExit('Game locale does not match its original archived global.ini')
+    mission_locale = json.loads((site / 'data/scmdb-mission-locale.zh-CN.json').read_text())
+    archive = site / 'imports/localization' / mission_locale['version'].split('-')[0] / f"scmdb-lang-{mission_locale['version']}.json.gz"
+    if gzip.decompress(archive.read_bytes()) != (site / 'data/scmdb-mission-locale.zh-CN.json').read_bytes():
+        raise SystemExit('Mission locale differs from archived source')
+    # Prevent an omitted icon or renamed asset from breaking service-worker installation.
+    import re
+    shell = re.search(r'const APP_SHELL = (\[[\s\S]*?\]);', (site / 'dist/sw.js').read_text())
+    if not shell:
+        raise SystemExit('Missing service-worker app shell')
+    for entry in json.loads(shell[1]):
+        if not (site / 'dist' / urlsplit(entry).path).exists():
+            raise SystemExit(f'Missing service-worker asset: {entry}')
+    manifest = json.loads((site / 'dist/manifest.webmanifest').read_text())
+    for icon in manifest['icons']:
+        if not (site / 'dist' / urlsplit(icon['src']).path).is_file():
+            raise SystemExit(f'Missing PWA icon: {icon["src"]}')
+
+
 def main():
+    check_archives_and_assets()
     source = json.loads((ROOT / 'scminer-local/data/scmdb-blueprints.json').read_text())
     if source['counts']['unparsed_cards'] or source.get('unparsed_cards'):
         raise SystemExit('Blueprint data contains unparsed cards')
@@ -48,14 +84,33 @@ def main():
              '--locale', 'scminer-local/data/names.zh-CN.json', '--output', 'scminer-local/dist/app-data.js'],
             ['tools/build_blueprint_site_data.py'],
             ['tools/build_scmdb_capture_bookmarklet.py', '--source', 'tools/scmdb_public_capture.js',
-             '--output', 'scminer-local/dist/scmdb-capture.html'],
+             '--output', 'scminer-local/capture-tools/blueprints.html'],
+            ['tools/build_scmdb_capture_bookmarklet.py', '--kind', 'missions', '--source', 'tools/scmdb_missions_capture.js',
+             '--output', 'scminer-local/capture-tools/missions.html'],
         ]
         for command in commands:
             subprocess.run([sys.executable, *command], cwd=staging, check=True)
         for name in ['app-data.js', 'blueprints-data.js', 'blueprint-index.js',
-                     'blueprint-locale.js', 'scmdb-capture.html']:
+                     'blueprint-locale.js']:
             if (dist / name).read_bytes() != (ROOT / 'scminer-local/dist' / name).read_bytes():
                 raise SystemExit(f'Stale generated file: {name}. Rebuild and commit the output.')
+        for name in ['blueprints.html', 'missions.html']:
+            relative = Path('scminer-local/capture-tools') / name
+            if (staging / relative).read_bytes() != (ROOT / relative).read_bytes():
+                raise SystemExit(f'Stale generated file: {relative}. Rebuild and commit the output.')
+        shutil.copytree(ROOT / 'scminer-local/imports/scmdb/missions', staging / 'scminer-local/imports/scmdb/missions')
+        subprocess.run([sys.executable, 'tools/build_mission_site_data.py', '--output-root', str(staging / 'scminer-local')], cwd=staging, check=True)
+        expected_files = {path.name for path in (staging / 'scminer-local/dist/missions').glob('*.json')}
+        actual_files = {path.name for path in (ROOT / 'scminer-local/dist/missions').glob('*.json')}
+        if expected_files != actual_files:
+            raise SystemExit('Stale or missing generated mission files; run make missions-build')
+        for path in (staging / 'scminer-local/dist/missions').glob('*.json'):
+            actual = ROOT / 'scminer-local/dist/missions' / path.name
+            if not actual.exists() or path.read_bytes() != actual.read_bytes():
+                raise SystemExit(f'Stale mission shard: {path.name}. Run make missions-build.')
+        for name in ['scmdb-missions.json', 'scmdb-missions.translation-report.json', 'scmdb-missions.translation-worklist.json']:
+            if (staging / 'scminer-local/data' / name).read_bytes() != (ROOT / 'scminer-local/data' / name).read_bytes():
+                raise SystemExit(f'Stale mission catalog: {name}. Run make missions-build.')
     print('Site data and generated files are consistent')
 
 

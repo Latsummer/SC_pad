@@ -1,18 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#102b31"/>
-      <stop offset="1" stop-color="#050b0d"/>
-    </linearGradient>
-    <linearGradient id="crystal" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#fff0a3"/>
-      <stop offset=".5" stop-color="#f2b84b"/>
-      <stop offset="1" stop-color="#a86416"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#background)"/>
-  <rect x="26" y="26" width="460" height="460" rx="92" fill="none" stroke="#27d7e7" stroke-opacity=".75" stroke-width="10"/>
-  <path d="M256 74 407 170v158L256 438 105 328V170Z" fill="none" stroke="#27d7e7" stroke-width="20" stroke-linejoin="round"/>
-  <path d="m256 126 78 56-78 202-78-202Z" fill="url(#crystal)"/>
-  <path d="m256 126v258m-78-202 78 47 78-47" fill="none" stroke="#fff5ca" stroke-opacity=".55" stroke-width="10" stroke-linejoin="round"/>
+<rect width="512" height="512" fill="#101820"/>
+<polyline points="220,91 174,91 91,174 91,222" fill="none" stroke="#315460" stroke-width="7" stroke-linejoin="bevel"/>
+<polyline points="292,91 338,91 421,174 421,222" fill="none" stroke="#315460" stroke-width="7" stroke-linejoin="bevel"/>
+<polyline points="91,290 91,338 174,421 222,421" fill="none" stroke="#315460" stroke-width="7" stroke-linejoin="bevel"/>
+<polyline points="421,290 421,338 338,421 290,421" fill="none" stroke="#315460" stroke-width="7" stroke-linejoin="bevel"/>
+<polyline points="91,197 91,174 121,144" fill="none" stroke="#70dce4" stroke-width="8" stroke-linejoin="bevel"/>
+<polyline points="391,368 421,338 421,315" fill="none" stroke="#70dce4" stroke-width="8" stroke-linejoin="bevel"/>
+<polyline points="197,421 174,421 144,391" fill="none" stroke="#dca84e" stroke-width="7" stroke-linejoin="bevel"/>
+<polyline points="315,91 338,91 368,121" fill="none" stroke="#dca84e" stroke-width="7" stroke-linejoin="bevel"/>
+<polyline points="123,256 147,256" fill="none" stroke="#5d818b" stroke-width="4" stroke-linejoin="bevel"/>
+<polyline points="365,256 389,256" fill="none" stroke="#5d818b" stroke-width="4" stroke-linejoin="bevel"/>
+<polyline points="256,93 256,107" fill="none" stroke="#5d818b" stroke-width="4" stroke-linejoin="bevel"/>
+<polyline points="256,391 256,409" fill="none" stroke="#5d818b" stroke-width="4" stroke-linejoin="bevel"/>
+<polyline points="208,378 256,402 304,378" fill="none" stroke="#dca84e" stroke-width="5" stroke-linejoin="bevel"/>
+<polygon points="256,130 256,300 163,349 188,278" fill="#f2c365"/>
+<polygon points="256,130 324,278 349,349 256,300" fill="#b77a2e"/>
+<polygon points="256,130 266,259 256,280 246,259" fill="#ffe9ac"/>
+<polygon points="256,332 269,347 256,362 243,347" fill="#6bdbe3"/>
 </svg>

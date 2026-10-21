@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="离线 Star Citizen 矿物、扫描特征与分布查询工具">
+    <meta name="description" content="星际公民随身助手：找资源、查蓝图、选任务，支持离线使用">
     <meta name="theme-color" content="#17191c">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="矿物导航台">
-    <title>矿物导航台 · SC Mining Atlas</title>
+    <meta name="apple-mobile-web-app-title" content="星航助手">
+    <title>星航助手 · 星际公民随身助手</title>
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-    <link rel="apple-touch-icon" href="icons/icon.svg">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=xinghang-2">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=xinghang-2">
+    <link rel="stylesheet" href="styles.css?v=mission-sources-2">
     <script src="theme.js"></script>
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="#" aria-label="矿物导航台首页">
-          <span class="brand-mark" aria-hidden="true">◇</span>
-          <span><strong>矿物导航台</strong><small>SC MINING ATLAS</small></span>
+        <a class="brand" href="#" aria-label="星航助手首页">
+          <img class="brand-mark brand-icon" src="icons/icon.svg?v=xinghang-2" alt="" aria-hidden="true">
+          <span><strong>星航助手</strong><small>星际公民随身助手</small></span>
         </a>
         <div class="topbar-actions">
           <div class="dataset-meta">
@@ -38,10 +38,11 @@
               <p class="eyebrow">LOCAL PROSPECTING CONSOLE</p>
               <h1 id="workspaceTitle">今天要找什么矿？</h1>
             </div>
-            <div class="mode-switch" role="tablist" aria-label="查询模式">
-              <button class="mode-button active" type="button" role="tab" aria-selected="true" data-mode="mineral"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m10 3 7 7-7 7-7-7Z"/></svg><span class="mode-label-long">矿物与分布</span><span class="mode-label-short">找矿</span></button>
-              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="scan"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3"/><path d="M10 1v3m0 12v3M1 10h3m12 0h3"/></svg><span class="mode-label-long">扫描值反查</span><span class="mode-label-short">扫描</span></button>
-              <button class="mode-button" type="button" role="tab" aria-selected="false" data-mode="blueprints"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="12" height="14" rx="1"/><path d="M7 7h6M7 10h6M7 13h4"/></svg><span class="mode-label-long">制造蓝图</span><span class="mode-label-short">蓝图</span></button>
+            <div class="mode-switch" role="navigation" aria-label="查询模式">
+              <button class="mode-button active" type="button" aria-pressed="true" data-mode="mineral"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m10 3 7 7-7 7-7-7Z"/></svg><span class="mode-label-long">矿物与分布</span><span class="mode-label-short">找矿</span></button>
+              <button class="mode-button" type="button" aria-pressed="false" data-mode="scan"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="3"/><path d="M10 1v3m0 12v3M1 10h3m12 0h3"/></svg><span class="mode-label-long">扫描值反查</span><span class="mode-label-short">扫描</span></button>
+              <button class="mode-button" type="button" aria-pressed="false" data-mode="blueprints"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="12" height="14" rx="1"/><path d="M7 7h6M7 10h6M7 13h4"/></svg><span class="mode-label-long">制造蓝图</span><span class="mode-label-short">蓝图</span></button>
+              <a class="mode-button" href="missions.html"><svg class="mode-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v14H5zM8 7h4M8 10h4M8 13h2"/></svg><span>任务</span></a>
             </div>
           </div>
 
@@ -162,7 +163,7 @@
     <script src="blueprints-data.js"></script>
     <script src="blueprint-locale.js"></script>
     <script src="app.js"></script>
-    <script src="blueprints.js"></script>
+    <script src="blueprints.js?v=mission-sources-2"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {}));

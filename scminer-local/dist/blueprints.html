@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#071114">
     <meta name="description" content="离线 Star Citizen 制造蓝图与矿物材料查询工具">
-    <title>制造蓝图 · 矿物导航台</title>
+    <title>制造蓝图 · 星航助手</title>
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=xinghang-2">
+    <link rel="stylesheet" href="styles.css?v=mission-sources-2">
     <script src="theme.js"></script>
-  </head>
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=xinghang-2"><meta name="apple-mobile-web-app-title" content="星航助手">
+</head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="index.html" aria-label="返回矿物导航台">
-          <span class="brand-mark" aria-hidden="true">◇</span>
-          <span><strong>矿物导航台</strong><small>SC MINING ATLAS</small></span>
+        <a class="brand" href="index.html" aria-label="返回星航助手">
+          <img class="brand-mark brand-icon" src="icons/icon.svg?v=xinghang-2" alt="" aria-hidden="true">
+          <span><strong>星航助手</strong><small>星际公民随身助手</small></span>
         </a>
         <div class="topbar-actions">
-          <a class="nav-link active" href="blueprints.html">制造蓝图</a>
+          <a class="nav-link active" href="blueprints.html">制造蓝图</a><a class="nav-link" href="missions.html">任务</a>
           <div class="dataset-meta"><span class="status-dot" aria-hidden="true"></span><span id="blueprintVersion">蓝图数据载入中</span></div>
         </div>
       </header>
@@ -74,7 +75,7 @@
     <script src="app-data.js"></script>
     <script src="blueprints-data.js"></script>
     <script src="blueprint-locale.js"></script>
-    <script src="blueprints.js"></script>
+    <script src="blueprints.js?v=mission-sources-2"></script>
     <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js", {scope:"./"}).catch(() => {}));</script>
   </body>
 </html>

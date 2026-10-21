@@ -1,6 +1,6 @@
 # SCMDB public-page captures
 
-Place JSON files exported by `dist/scmdb-capture.html` in this directory.
+Place JSON files exported by `capture-tools/blueprints.html` in this directory.
 
 Each export contains only raw blueprint-card text rendered in the public SCMDB
 Fabricator page. The future importer will convert these snapshots into the
