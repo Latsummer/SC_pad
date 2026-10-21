@@ -84,7 +84,7 @@
         const amount = material.amount_scu !== null ? `${material.amount_scu} SCU` : `×${material.amount_count}`;
         return `<li><span>${escapeHtml(slotName(material.slot))}</span><strong>${escapeHtml(name)}</strong><em>${escapeHtml(amount)}</em></li>`;
       }).join("");
-      return `<article class="blueprint-card" style="--enter-index:${index}"><div class="blueprint-card-head"><div><span class="detail-kicker">${escapeHtml(item.type_group || "其他")}${item.type_subtype ? ` · ${escapeHtml(item.type_subtype)}` : ""}${item.size ? ` · S${item.size}` : ""}</span><h2>${escapeHtml(item.name_zh || item.name)}</h2></div><time>⏱ ${formatTime(item.craft_time_seconds)}</time></div><ul class="material-list">${materials}</ul><button type="button" class="blueprint-source-trigger" data-blueprint-name="${escapeHtml(item.name_en || item.name)}" data-blueprint-title="${escapeHtml(item.name_zh || item.name)}" aria-haspopup="dialog">查询产出任务 <span aria-hidden="true">↗</span></button></article>`;
+      return `<article class="blueprint-card" data-recipe-id="${escapeHtml(item.id)}" style="--enter-index:${index}"><div class="blueprint-card-head"><div><span class="detail-kicker">${escapeHtml(item.type_group || "其他")}${item.type_subtype ? ` · ${escapeHtml(item.type_subtype)}` : ""}${item.size ? ` · S${item.size}` : ""}</span><h2>${escapeHtml(item.name_zh || item.name)}</h2></div><time>⏱ ${formatTime(item.craft_time_seconds)}</time></div><ul class="material-list">${materials}</ul><div class="blueprint-card-actions">${item.quality_path?`<button type="button" class="blueprint-quality-trigger" data-quality-id="${escapeHtml(item.id)}" aria-haspopup="dialog">制造详情 <span aria-hidden="true">↗</span></button>`:""}<button type="button" class="blueprint-source-trigger" data-blueprint-name="${escapeHtml(item.name_en || item.name)}" data-blueprint-title="${escapeHtml(item.name_zh || item.name)}" aria-haspopup="dialog">查询产出任务 <span aria-hidden="true">↗</span></button></div></article>`;
     }).join("");
     const remaining = filtered.length - shown.length;
     const loadMore = remaining > 0
@@ -92,6 +92,12 @@
       : filtered.length > 24 ? `<p class="result-limit">已显示全部 ${filtered.length.toLocaleString("zh-CN")} 条结果</p>` : "";
     els.results.innerHTML = cards + loadMore;
   }
+  els.results.addEventListener('click',event=>{
+    const button=event.target.closest('[data-quality-id]');
+    if(!button) return;
+    const item=catalog.blueprints.find(value=>value.id===button.dataset.qualityId);
+    if(item) window.BlueprintQuality?.open(item,button);
+  });
   let missionSourcesPromise, sourceRequest = 0;
   const sourcesDialog = document.createElement('dialog');
   sourcesDialog.className = 'blueprint-sources-dialog';
@@ -143,6 +149,8 @@
     if (materialIds.includes(id) && !state.selected.includes(id)) state.selected.push(id);
   });
   renderSelectors(); renderAll();
+  const initialRecipe=new URLSearchParams(location.search).get('blueprint');
+  if(initialRecipe) {const item=catalog.blueprints.find(value=>value.id===initialRecipe);if(item) window.BlueprintQuality?.open(item);}
   if (els.version) els.version.textContent = `${catalog.counts.blueprints.toLocaleString("zh-CN")} 张蓝图 · 离线数据`;
   els.search.addEventListener("input", restartResults);
   els.materialSearch.addEventListener("focus", openSuggestions);

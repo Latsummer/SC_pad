@@ -392,19 +392,62 @@
       }
     }
   }
+  const sourceVersion = () => text(document.querySelector('select:disabled'));
+  function importData(data,confirmSameVersion=false) {
+    if(automation || disposed) throw Error('请先停止采集再导入');
+    if(data.format!=='scmdb-public-missions-capture-v1' || !Array.isArray(data.missions)) throw Error('不是任务助手导出的 JSON');
+    const source=new URL(data.source_url), current=new URL(location.href);
+    if(source.hostname!=='scmdb.net') throw Error('来源不是 SCMDB');
+    if(identity(source.href).channel!==identity(current.href).channel || (source.searchParams.get('lang')||'')!==(current.searchParams.get('lang')||'') || (data.page_language && data.page_language!==document.documentElement.lang)) throw Error('频道或页面语言不同，请使用独立采集会话');
+    const version=sourceVersion();
+    if(data.source_version_text && data.source_version_text!==version) throw Error('游戏版本不一致，请使用新会话重新采集；不会导入旧版本数据');
+    const canResume=!!data.source_version_text || confirmSameVersion;
+    const staged=[];
+    for(const item of data.missions) {
+      if(!item || typeof item.mission_id!=='string' || !Array.isArray(item.list_snapshots) || !Array.isArray(item.detail_snapshots)) throw Error('任务记录格式不正确');
+      const url=new URL(item.source_url), id=identity(url.href);
+      if(url.hostname!=='scmdb.net' || id.mission_id!==item.mission_id || id.channel!==item.channel) throw Error('任务身份与来源不一致');
+      for(const snapshot of [...item.list_snapshots,...item.detail_snapshots]) if(!snapshot || typeof snapshot!=='object' || Array.isArray(snapshot)) throw Error('任务快照格式不正确');
+      const normalize=snapshot=>{const {captured_at,...value}=snapshot;return {signature:JSON.stringify(value),value:snapshot};};
+      staged.push([`${item.channel}:${item.mission_id}`,{...item,list_snapshots:item.list_snapshots.map(normalize),detail_snapshots:item.detail_snapshots.map(normalize)}]);
+    }
+    for(const name of ['completed_mission_keys','location_completed_mission_keys']) if(data[name]!==undefined && (!Array.isArray(data[name]) || data[name].some(key=>typeof key!=='string'))) throw Error('任务完成标记格式不正确');
+    const done=new Set(data.completed_mission_keys||[]), locations=new Set(data.location_completed_mission_keys||[]);
+    for(const [key,item] of staged) {
+      const existing=records.get(key);
+      if(!existing) records.set(key,item);
+      else for(const kind of ['list_snapshots','detail_snapshots']) for(const entry of item[kind]) if(!existing[kind].some(old=>old.signature===entry.signature)) existing[kind].push(entry);
+      for(const entry of item.detail_snapshots) if(entry.value.location_details) locationExtras.set(`${key}:${entry.value.tab_key}`,entry.value.location_details);
+      const tabs=new Set(item.detail_snapshots.map(entry=>entry.value.tab_key));
+      if(canResume && done.has(key) && ['overview','requirements','calculator'].every(tab=>tabs.has(tab))) completed.add(key);
+      if(canResume && completed.has(key) && locations.has(key)) locationCompleted.add(key);
+    }
+    storageStatus=`已导入 ${staged.length} 个任务；${canResume?'完整项会跳过，缺失地点明细继续补采':'文件版本不明，任务将重新采集；确认同版本可勾选后重新导入'}`;
+    capture(true);
+    return {missions:staged.length,canResume};
+  }
   function exportJson() {
     capture(true);
     const missions = [...records.values()].map((item) => ({ ...item, list_snapshots: item.list_snapshots.map((entry) => entry.value), detail_snapshots: item.detail_snapshots.map((entry) => entry.value) }));
-    const payload = { format: "scmdb-public-missions-capture-v1", helper_version: 7, source_url: location.href, started_at: startedAt, captured_at: new Date().toISOString(), page_language: document.documentElement.lang, note: "Public rendered DOM only. Optional user-started batches click existing cards/tabs/disclosures. Not a completeness claim. No Community content, calculator player inputs, app state, or direct /data/ requests by this helper. Text may be translated even if page_language is en.", warnings: lastError ? [lastError] : [], storage_status: storageStatus, automation_runs: runs, completed_mission_keys: [...completed], location_completed_mission_keys: [...locationCompleted], counts: { missions: missions.length, with_details: missions.filter((item) => item.detail_snapshots.length).length }, missions };
+    const payload = { format: "scmdb-public-missions-capture-v1", helper_version: 8, source_version_text:sourceVersion(), source_url: location.href, started_at: startedAt, captured_at: new Date().toISOString(), page_language: document.documentElement.lang, note: "Public rendered DOM only. Optional user-started batches click existing cards/tabs/disclosures. Not a completeness claim. No Community content, calculator player inputs, app state, or direct /data/ requests by this helper. Text may be translated even if page_language is en.", warnings: lastError ? [lastError] : [], storage_status: storageStatus, automation_runs: runs, completed_mission_keys: [...completed], location_completed_mission_keys: [...locationCompleted], counts: { missions: missions.length, with_details: missions.filter((item) => item.detail_snapshots.length).length }, missions };
     const objectUrl = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a"); link.href = objectUrl; link.download = `scmdb-public-missions-${new Date().toISOString().replace(/[:.]/g, "-")}.json`; link.click(); setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
   }
   const panel = document.createElement("section");
   panel.setAttribute("aria-label", "SCMDB 任务采集助手");
   panel.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:2147483647;width:min(340px,calc(100vw - 48px));padding:14px;border:1px solid #35d9e8;border-radius:12px;background:#071114;color:#e8f6f7;font:13px system-ui;box-shadow:0 8px 30px #0008";
-  panel.innerHTML = '<strong>SCMDB 任务采集助手</strong><p>支持中文页面。自动采集会逐个打开当前列表的任务、切换公开详情标签并关闭；运行时请勿操作站点。不会自动翻页。会悬停地点变量并展开区域清单；旧进度中缺少地点明细的任务会自动重新采集。</p><label>本批任务数 <input data-limit type="number" min="1" max="5000" value="100" style="width:70px"></label><label><input data-auto-export type="checkbox" checked> 完成后自动导出</label><p data-status aria-live="polite">等待任务卡片</p><div><button data-action="auto">自动采集详情</button> <button data-action="stop">停止自动采集</button> <button data-action="save">保存进度</button> <button data-action="restore">恢复上次进度</button> <button data-action="capture">立即记录</button> <button data-action="pause">暂停</button> <button data-action="export">导出 JSON</button> <button data-action="close">关闭</button></div><small>每25个及批次结束自动保存到本浏览器。刷新后重新启动助手并恢复进度；须保持同一游戏版本。后台可跑，休眠或标签冻结会暂停；自动下载被拦截时手动导出。Calculator 仅采奖励、等级差额与规则；Community 不采集。非标准折叠项仍需手动展开。</small>';
+  panel.innerHTML = '<strong>SCMDB 任务采集助手</strong><p>支持中文页面。自动采集会逐个打开当前列表的任务、切换公开详情标签并关闭；运行时请勿操作站点。不会自动翻页。会悬停地点变量并展开区域清单；旧进度中缺少地点明细的任务会自动重新采集。</p><label>本批任务数 <input data-limit type="number" min="1" max="5000" value="100" style="width:70px"></label><label><input data-auto-export type="checkbox" checked> 完成后自动导出</label><p data-status aria-live="polite">等待任务卡片</p><div><button data-action="auto">自动采集详情</button> <button data-action="stop">停止自动采集</button> <button data-action="save">保存进度</button> <button data-action="restore">恢复上次进度</button> <button data-action="import">导入 JSON</button> <button data-action="capture">立即记录</button> <button data-action="pause">暂停</button> <button data-action="export">导出 JSON</button> <button data-action="close">关闭</button></div><input data-import-file type="file" accept=".json,application/json" hidden><label style="display:block"><input data-import-same type="checkbox"> 文件版本缺失时，确认与当前游戏版本相同</label><small>每25个及批次结束自动保存到本浏览器。刷新后重新启动助手并恢复进度；须保持同一游戏版本。后台可跑，休眠或标签冻结会暂停；自动下载被拦截时手动导出。Calculator 仅采奖励、等级差额与规则；Community 不采集。非标准折叠项仍需手动展开。</small>';
   document.body.append(panel);
   panel.querySelectorAll("button").forEach((button) => { button.style.cssText = "margin-bottom:8px;padding:6px 8px;border:1px solid #2c7980;border-radius:5px;background:#10262a;color:#e8f6f7;cursor:pointer"; });
+  const importFile=panel.querySelector('[data-import-file]');
+  importFile.addEventListener('change',async()=>{
+    try {
+      if(!importFile.files?.[0]) return;
+      importData(JSON.parse(await importFile.files[0].text()),!!panel.querySelector('[data-import-same]').checked);
+      await saveCheckpoint();
+    } catch(error) {lastError=`导入失败：${error.message}`;capture(true);}
+    finally {importFile.value='';}
+  });
   panel.addEventListener("click", (event) => {
     const action = event.target.dataset.action;
     if (action === "auto") { startAutomation().catch((error) => { lastError = String(error.message || error); capture(); }); }
@@ -414,12 +457,13 @@
     if (action === "export") { exportJson(); }
     if (action === "save") { saveCheckpoint(); }
     if (action === "restore") { restoreCheckpoint(); }
+    if (action === "import" && !automation) { importFile.click(); }
     if (action === "close") { disposed = true; stopAutomation(); clockWorker?.terminate(); for (const entry of clockPending.values()) entry.resolve(); clockPending.clear(); observer.disconnect(); clearTimeout(timer); document.removeEventListener("click", schedule, true); window.removeEventListener("scroll", schedule, true); panel.remove(); delete window.__SCMDB_MISSIONS_CAPTURE__; }
   });
   const observer = new MutationObserver((mutations) => { if (mutations.some((mutation) => !panel.contains(mutation.target))) schedule(); });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["class", "hidden", "aria-expanded"] });
   document.addEventListener("click", schedule, true);
   window.addEventListener("scroll", schedule, true);
-  window.__SCMDB_MISSIONS_CAPTURE__ = { show: () => { panel.hidden = false; }, capture };
+  window.__SCMDB_MISSIONS_CAPTURE__ = { show: () => { panel.hidden = false; }, capture, importData };
   capture();
 })();

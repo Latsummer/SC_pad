@@ -66,7 +66,8 @@ card.click = () => { cardClicks += 1; modalOpen = true; selectedTab = active; };
 const status = node();
 const pause = node();
 const limit = node(); limit.value = "20";
-const panel = node("", { "[data-status]": [status], '[data-action="pause"]': [pause], "[data-limit]": [limit] });
+const fileInput=node();
+const panel = node("", { "[data-import-file]": [fileInput], "[data-import-same]": [node()], "[data-status]": [status], '[data-action="pause"]': [pause], "[data-limit]": [limit] });
 let exported;
 let observerCallback;
 let scheduled;
@@ -133,6 +134,7 @@ const context = {
   location: { hostname: "scmdb.net", href: "https://scmdb.net/" },
   window: { addEventListener() {}, removeEventListener() {} },
   document: {
+    querySelector: selector => selector==='select:disabled' ? node('4.10.2-test') : null,
     documentElement: { lang: "en" }, body: { append() {} },
     createElement: (tag) => tag === "section" ? panel : node(),
     querySelectorAll: (selector) => {
@@ -196,7 +198,7 @@ async function payload() {
   assert.equal(calculator.calculator_basis.rank_tables[0].ranks[0].xp_to_fill_text, "3,600");
   assert(!JSON.stringify(calculator).includes("DO_NOT_CAPTURE_MISSION_COUNT"));
   assert(!calculator.raw_text.includes("Public content 3"), "calculator full DOM text and inputs not exported");
-  assert.equal(data.helper_version, 7);
+  assert.equal(data.helper_version, 8);
   assert.equal(modalOpen, false);
   assert.deepEqual(data.completed_mission_keys, [`live:${id}`]);
   assert(data.missions[0].detail_snapshots.some((snapshot) => snapshot.tab_key === "combat"));
@@ -258,5 +260,30 @@ async function payload() {
   assert.equal(extras.location_details.regions[0].groups[0].locations.length, 2);
   assert(data.completed_mission_keys.includes(`live:${id}`), 'supplement preserves previous completion');
   assert(data.location_completed_mission_keys.includes(`live:${id}`));
+  const savedImport=structuredClone(data);
+  const importer=context.window.__SCMDB_MISSIONS_CAPTURE__.importData;
+  assert.throws(()=>importer({...data,source_version_text:'other'}),/版本/);
+  assert.throws(()=>importer({...data,source_url:'https://other.example/'}),/来源/);
+  assert.throws(()=>importer({...data,missions:[{...data.missions[0],mission_id:'wrong'}]}),/身份/);
+  panel.click({ target: { dataset: { action: 'close' } } });
+  vm.runInNewContext(fs.readFileSync(`${__dirname}/scmdb_missions_capture.js`, 'utf8'), context);
+  const importAgain=context.window.__SCMDB_MISSIONS_CAPTURE__.importData;
+  delete savedImport.source_version_text;
+  importAgain(savedImport);
+  data=await payload();assert.equal(data.completed_mission_keys.length,0,'unknown version imports content without completion');
+  importAgain(savedImport,true);data=await payload();
+  assert(data.completed_mission_keys.includes(`live:${id}`),'explicit same-version confirmation restores old-file progress');
+  const importedCount=data.missions[0].detail_snapshots.length;
+  importAgain(savedImport,true);data=await payload();
+  assert.equal(data.missions[0].detail_snapshots.length,importedCount,'repeat import deduplicates snapshots');
+  const clicksBeforeImportResume=cardClicks;
+  panel.click({ target: { dataset: { action: 'auto' } } });await new Promise(setImmediate);
+  assert.equal(cardClicks,clicksBeforeImportResume,'imported complete mission skipped');
+  if(process.argv[2]) {
+    const actual=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+    const result=context.window.__SCMDB_MISSIONS_CAPTURE__.importData(actual,true);
+    assert.equal(result.missions,actual.missions.length);
+    console.log(`Imported real mission file: ${result.missions} missions`);
+  }
   console.log(`SCMDB mission capture fixtures passed (stable four-tab batch scheduled waits: ${batchDelay} ms)`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

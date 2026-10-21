@@ -84,6 +84,7 @@
     const mineral = mode === "mineral";
     const scan = mode === "scan";
     const blueprints = mode === "blueprints";
+    els.version.textContent = blueprints && window.SCMDB_BLUEPRINTS?.source?.game_data_version ? `${window.SCMDB_BLUEPRINTS.source.game_data_version} · ${window.SCMDB_BLUEPRINTS.counts.blueprints} 张蓝图 · 离线数据` : `${data.game_data_version} · ${data.counts.minerals} 种资源 · 离线数据`;
     els.mineralControls.hidden = !mineral;
     els.scanControls.hidden = !scan;
     els.mineralWorkspace.hidden = !mineral;

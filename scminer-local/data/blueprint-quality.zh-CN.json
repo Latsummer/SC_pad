@@ -1,0 +1,18 @@
+{
+  "stats": {
+    "Fire Rate": "射速", "DPS": "每秒伤害", "Physical Damage / Shot": "单发物理伤害", "Energy Damage / Shot": "单发能量伤害", "Damage / Shot": "单发伤害", "Distortion Damage / Shot (detonation)": "爆炸畸变伤害", "Damage / Shot (detonation)": "爆炸伤害",
+    "Recoil Pitch": "垂直后坐力", "Recoil Yaw": "水平后坐力", "Recoil Smooth": "后坐力恢复时间", "Spread": "散布", "Ammo Speed": "弹速",
+    "Min": "最低温度", "Max": "最高温度", "Radiation Protection": "辐射防护", "Radiation Scrub Rate": "辐射清除速率", "Electromagnetic": "电磁信号", "Infrared": "红外信号",
+    "Integrity": "耐久", "Repair Time": "修复时间", "Power Draw": "耗电", "EM Sig.": "电磁信号", "IR Sig.": "红外信号", "Power Output": "供电能力", "Cooling Rate": "冷却能力", "Quantum Fuel Rate": "量子燃料流量", "Drive Speed": "量子航行速度", "Fuel / 10Mkm": "每千万公里燃耗", "Spool Up": "预热时间", "Cooldown": "冷却时间",
+    "HP": "护盾容量", "Regen": "恢复速率", "Down Delay": "击破恢复延迟", "Damage Delay": "受击恢复延迟", "Sensitivity": "灵敏度", "Piercing": "穿透能力", "Ping Cooldown": "探测冷却", "Assist Min": "辅助最小距离", "Assist Max": "辅助最大距离",
+    "Full Dmg Range": "全伤害距离", "Zero Dmg Range": "伤害归零距离", "Hydrogen Fuel Rate": "氢燃料流量", "Min Force": "最小作用力", "Max Force": "最大作用力", "Full Str. Dist.": "全强度距离", "Max Distance": "最大距离", "Max Volume": "最大体积", "Charges": "使用次数", "Cargo Capacity": "货舱容量", "Speed": "速度", "Radius": "作用半径", "Efficiency": "效率", "Optimal Charge Window": "最佳充能窗口", "Resistance": "抗性", "Instability": "不稳定性", "Shatter Damage": "碎裂伤害", "Optimal Charge Rate": "最佳充能速率",
+    "PHYSICAL": "物理", "ENERGY": "能量", "DISTORTION": "畸变", "THERMAL": "热能", "BIOCHEMICAL": "生化", "STUN": "眩晕"
+  },
+  "effects": {
+    "Damage Mitigation": "伤害减免", "Min Temp": "最低温度", "Max Temp": "最高温度", "Integrity": "耐久", "Impact Force": "冲击力", "Recoil Smoothness": "后坐力恢复", "Recoil Handling": "后坐力操控", "Recoil Kick": "后坐力冲击", "Coolant Rating": "冷却能力", "Power Pips": "供电格数", "Fire Rate": "射速", "Max. Shield Strength": "最大护盾容量", "Min. Assist Distance": "最小辅助距离", "Max. Assist Distance": "最大辅助距离", "Quantum Speed": "量子速度", "Quantum Fuel Burn": "量子燃耗", "Laser Power": "激光功率", "Full Strength Dist.": "全强度距离", "Max. Distance": "最大距离", "Radius": "作用半径", "Speed": "速度", "Beam Force": "光束作用力", "Max. Volume": "最大体积", "Efficiency": "效率", "Radiation Dissipation": "辐射消散"
+  },
+  "sections": {
+    "Rapid": "连发", "Burst (sequence)": "点射", "Single": "单发", "Charged": "蓄力", "DAMAGE RESISTANCE": "伤害抗性", "TEMPERATURE": "环境温度", "RADIATION": "辐射防护", "SIGNATURES": "信号", "COMPONENT": "组件", "NOZZLE": "喷嘴", "QUANTUM DRIVE": "量子驱动", "POWER PLANT": "电源", "COOLER": "冷却器", "SHIELD": "护盾", "RADAR": "雷达", "MINING LASER": "采矿激光", "TRACTOR BEAM": "牵引光束"
+  },
+  "tags": {"Medium": "中型", "Light": "轻型", "Heavy": "重型", "Magazine": "弹匣／电池", "Short Range": "近距离", "Medium Range": "中距离", "Long Range": "远距离", "Military": "军用", "Industrial": "工业", "Civilian": "民用", "Stealth": "隐身", "Competition": "竞速"}
+}

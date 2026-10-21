@@ -13,3 +13,5 @@
 规范任务文件与网页分片有意分别保留：前者用于审计和版本比较，后者用于按需加载。生成文件不得手工编辑；数据变化必须重新构建并通过一致性检查。差异报告的 changed 也包括翻译、结构化字段等变化，不一定是游戏修改。
 
 缓存（`.sync-cache/`、`__pycache__/`、EdgeOne 状态）不提交，采集调试文件、截图和临时小批量导出不放进发布目录。历史归档不按时间自动删除，需要确认不再用于追溯后单独决定。
+
+蓝图完整详情基线在 `imports/scmdb/blueprint-details/` 压缩归档。`data/scmdb-blueprint-quality.json` 为独立规范目录与精简预设，优先生成当前网页的 1618 个稳定 ID 配方；旧 `data/scmdb-blueprints.json` 为历史卡片基线，继续用于原始卡片翻译校验。`dist/blueprints-data.js` 只含列表配方和分片地址，`dist/blueprint-quality/` 的 64 个摘要分片在点击制造详情后才加载。原始 58 MB 导出与完整汉化文件均不部署。新文件构建入口为 `make blueprint-quality-build`，不能手改生成数据。

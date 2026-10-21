@@ -5,7 +5,7 @@
     "mode": "user-exported-public-rendered-page",
     "source_url": "https://scmdb.net/?page=fab",
     "captured_at": "2026-10-13T09:16:21.412Z",
-    "imported_at": "2026-10-16T08:51:21.171852+00:00",
+    "imported_at": "2026-10-21T06:11:56.324257+00:00",
     "expected_public_count": 1607,
     "captured_count": 1611,
     "coverage_note": "The public page count is a visual reference. This file contains only cards observed by the user-initiated capture."
@@ -13,7 +13,7 @@
   "counts": {
     "blueprints": 1611,
     "materials": 4300,
-    "materials_matching_mining_locale": 4162,
+    "materials_matching_mining_locale": 4200,
     "unparsed_cards": 0
   },
   "slot_counts": {
@@ -145,7 +145,11 @@
           "name": "Aluminum",
           "amount_scu": 0.2,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Electronics",
@@ -178,7 +182,11 @@
           "name": "Aluminum",
           "amount_scu": 0.05,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         }
       ],
       "raw_text": "☐\nTH-01 Propulsor\n●\n⚙️ —\nS2\nFrame\nAluminum (0.05 SCU)\nAluminum\n⏱ 10s\n🛒"
@@ -27387,7 +27395,11 @@
           "name": "Aluminum",
           "amount_scu": 0.03,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         }
       ],
       "raw_text": "☐\nChiron Backpack Purgatory Camo\n🛡 Explorer\nVGL\nS1\nFrame\nAluminum (0.03 SCU)\nAluminum\n⏱ 60s\n🛒"
@@ -63325,7 +63337,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63369,7 +63385,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63413,7 +63433,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63457,7 +63481,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63501,7 +63529,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63545,7 +63577,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63589,7 +63625,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63633,7 +63673,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63677,7 +63721,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63721,7 +63769,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63765,7 +63817,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63809,7 +63865,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63853,7 +63913,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63897,7 +63961,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -63941,7 +64009,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -64369,7 +64441,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -64413,7 +64489,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -64457,7 +64537,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -64501,7 +64585,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -64545,7 +64633,11 @@
           "name": "Aluminum",
           "amount_scu": 0.02,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Grip",
@@ -64973,7 +65065,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65017,7 +65113,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65061,7 +65161,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65105,7 +65209,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65149,7 +65257,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65193,7 +65305,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65285,7 +65401,11 @@
           "name": "Aluminum",
           "amount_scu": 0.06,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65329,7 +65449,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65373,7 +65497,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65417,7 +65545,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -65461,7 +65593,11 @@
           "name": "Aluminum",
           "amount_scu": 0.04,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -68001,7 +68137,11 @@
           "name": "Aluminum",
           "amount_scu": 0.03,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -68045,7 +68185,11 @@
           "name": "Aluminum",
           "amount_scu": 0.03,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -68089,7 +68233,11 @@
           "name": "Aluminum",
           "amount_scu": 0.03,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",
@@ -68133,7 +68281,11 @@
           "name": "Aluminum",
           "amount_scu": 0.03,
           "amount_count": null,
-          "mineral": null
+          "mineral": {
+            "id": "aluminium",
+            "zh": "铝",
+            "en": "Aluminium"
+          }
         },
         {
           "slot": "Stock",

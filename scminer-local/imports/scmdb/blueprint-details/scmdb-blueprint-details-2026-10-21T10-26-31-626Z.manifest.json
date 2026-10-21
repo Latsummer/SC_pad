@@ -1,0 +1,76 @@
+{
+  "format": "scmdb-blueprint-detail-archive-manifest-v1",
+  "source_filename": "scmdb-blueprint-details-2026-10-21T10-26-31-626Z.json",
+  "archive_filename": "scmdb-blueprint-details-2026-10-21T10-26-31-626Z.json.gz",
+  "source_url": "https://scmdb.net/?page=fab",
+  "captured_at": "2026-10-21T10:26:31.308Z",
+  "source_version_text": "4.10.2-live.12913470",
+  "helper_version": 8,
+  "raw_sha256": "82138e98f93d0fba30a6c74bec9af72fb50786dca82ce1330f6d2851b0123ddf",
+  "archive_sha256": "bfacfdc23668e7c1839330a71a6c063eede09fe6ddeb9c92c05711849d11288a",
+  "raw_bytes": 58374970,
+  "archive_bytes": 1342409,
+  "counts": {
+    "cards_text_deduplicated": 1611,
+    "unique_recipe_ids": 1618,
+    "complete_details": 1618,
+    "dynamic_quality": 1549,
+    "fixed_quality": 69,
+    "capture_failures": 0,
+    "unparsed_effect_ranges": 153
+  },
+  "unparsed_rule_texts": [
+    {
+      "raw_text": "Q: 0–1000 · ×9–1.1",
+      "count": 3
+    },
+    {
+      "raw_text": "0–399: -1 pip | 400–899: +0 pips | 900–1000: +1 pip",
+      "count": 80
+    },
+    {
+      "raw_text": "0–249: -2 pips | 250–499: -1 pip | 500–699: +0 pips | 700–899: +1 pip | 900–1000: +2 pips",
+      "count": 66
+    },
+    {
+      "raw_text": "0–249: -3 pips | 250–349: -2 pips | 350–499: -1 pip | 500–699: +0 pips | 700–799: +1 pip | 800–899: +2 pips | 900–1000: +3 pips",
+      "count": 4
+    }
+  ],
+  "unclassified_group_cards": [
+    {
+      "card_text": "☐\nMetamaterial Test #146\n●\n⚙️ —\nS1\nSubstrate\nTitanium (2 SCU)\nLattice\nRiccite (2 SCU)\nFilament Coating\nYormandi Eye (×4)\nTitanium, Riccite, Yormandi Eye\n⏱ 70s\n🛒",
+      "matching_detail_ids": [
+        "BP_CRAFT_Carryable_2H_CY_CollectorMaterial_001"
+      ],
+      "all_matching_details_complete": true
+    },
+    {
+      "card_text": "☐\nProbe\n⚙️ —\nS2\nFrame\nAluminum (0.2 SCU)\nElectronics\nSilicon (0.2 SCU)\nAluminum, Silicon\n⏱ 10s\n🛒",
+      "matching_detail_ids": [
+        "BP_CRAFT_Carryable_2H_FL_MissionItem_Microsatellite_a"
+      ],
+      "all_matching_details_complete": true
+    },
+    {
+      "card_text": "☐\nTH-01 Propulsor\n●\n⚙️ —\nS2\nFrame\nAluminum (0.05 SCU)\nAluminum\n⏱ 10s\n🛒",
+      "matching_detail_ids": [
+        "BP_CRAFT_Carryable_2H_FL_MissionItem_prototype_ship_component_2_a"
+      ],
+      "all_matching_details_complete": true
+    },
+    {
+      "card_text": "☐\nMetamaterial Test #152\n●\n⚙️ —\nS1\nCase\nStileron (0.5 SCU)\nSupport Structure\nOuratite (0.3 SCU)\nStileron, Ouratite\n⏱ 10s\n🛒",
+      "matching_detail_ids": [
+        "BP_CRAFT_Carryable_2H_SQ_CollectorMaterial_002"
+      ],
+      "all_matching_details_complete": true
+    }
+  ],
+  "notes": [
+    "All 1618 exported recipe identities are distinct and all details pass the current structural inspector. Equality with the visible root count does not independently prove identity coverage of the entire website.",
+    "150 Power Pips rules are discrete steps, not linear multiplier ranges. Three damage-mitigation ranges carry source warning markers and omit Base. Preserve these without inventing a formula.",
+    "Four cards flagged unclassified by automatic grouping have matching complete detail records in this export.",
+    "This is an immutable raw baseline, not a replacement for the old recipe catalog and not a validated universal quality calculator."
+  ]
+}

@@ -1,0 +1,38 @@
+/* Exercise fetch races, retries, caching and observed preset switching offline. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const node=()=>({innerHTML:'',textContent:'',dataset:{},scrollTop:0,setAttribute(){},focus(){},contains(){return false;},querySelector(){return null;},querySelectorAll(){return [];},addEventListener(name,fn){this[name]=fn;}});
+const fields=Object.fromEntries(['h2','.bp-quality-kicker','.bp-quality-english','.bp-quality-toolbar','.bp-quality-body','.bp-quality-stats'].map(key=>[key,node()]));
+const dialog=node();dialog.querySelector=key=>fields[key]||null;dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;dialog.closeEvent?.();};
+dialog.addEventListener=(event,fn)=>{dialog[event==='close'?'closeEvent':event]=fn;};
+const pending=new Map(),counts=new Map();
+const context={window:{BlueprintQualityModel:require('../scminer-local/dist/blueprint-quality-model.js'),SCMDB_BLUEPRINTS:{source:{game_data_version:'4.10.2-test'}}},document:{body:{append(){}},createElement(){return dialog;},activeElement:null},fetch:path=>{counts.set(path,(counts.get(path)||0)+1);return new Promise((resolve,reject)=>pending.set(path,{resolve:data=>resolve({ok:true,json:async()=>data}),reject}));}};
+vm.runInNewContext(fs.readFileSync(`${__dirname}/../scminer-local/dist/blueprint-quality.js`,'utf8'),context);
+const recipe=id=>({id,title:id,dynamic:true,source_url:'https://scmdb.net/?page=fab&fab='+id,product_info:[id],warnings:[],dismantle_notices:[],slots:[],stats:[{label:'Fire Rate',section:'Rapid',base:'10 RPM'}],presets:Object.fromEntries(['min','base','half','max'].map(label=>[label,{values:[id+' '+label],qualities:[],effects:[],quality_issues:[]}]))});
+const item=id=>({id,name:id,name_en:id,materials:[],quality_path:id+'.json'});
+const payload=id=>({recipes:{[id]:recipe(id)}});
+(async()=>{
+ const a=context.window.BlueprintQuality.open(item('A'));
+ const b=context.window.BlueprintQuality.open(item('B'));
+ pending.get('B.json').resolve(payload('B'));await b;
+ assert(fields['.bp-quality-body'].innerHTML.includes('B base'));
+ pending.get('A.json').resolve(payload('A'));await a;
+ assert(fields['.bp-quality-body'].innerHTML.includes('B base'),'late response cannot replace current recipe');
+ dialog.click({target:{closest:s=>s==='[data-quality-preset]'?{dataset:{qualityPreset:'max'}}:null}});
+ assert(fields['.bp-quality-body'].innerHTML.includes('B max'),'buttons select observed snapshot values');
+ await context.window.BlueprintQuality.open(item('B'));
+ assert.equal(counts.get('B.json'),1,'reuse a cached shard');
+ const c=context.window.BlueprintQuality.open(item('C'));
+ pending.get('C.json').reject(Error('offline'));await c;
+ assert(fields['.bp-quality-body'].innerHTML.includes('重新载入'));
+ dialog.click({target:{closest:s=>s==='[data-quality-retry]'?{}:null}});
+ assert.equal(counts.get('C.json'),2,'failed shard can be retried');
+ pending.get('C.json').resolve(payload('C'));await new Promise(setImmediate);
+ assert(fields['.bp-quality-body'].innerHTML.includes('C base'));
+ const d=context.window.BlueprintQuality.open(item('D'));
+ dialog.close();const before=fields['.bp-quality-body'].innerHTML;
+ pending.get('D.json').resolve(payload('D'));await d;
+ assert.equal(fields['.bp-quality-body'].innerHTML,before,'closed dialog ignores late data');
+ console.log('Blueprint quality UI fixtures passed (observed presets, fetch race, retry, shard cache and close)');
+})().catch(error=>{console.error(error);process.exitCode=1;});
