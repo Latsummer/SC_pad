@@ -24,3 +24,9 @@
 任务翻译规则在 `mission_translation.py`，人工覆盖在 `scminer-local/data/mission-translations.zh-CN.json`。遵循 `scminer-local/docs/mission-data-sop.md`；不要编辑生成的翻译工作清单来上线译文。`archive_mission_capture.py` 验证后归档原始英文导出，拒绝不完整快照及覆盖旧归档。
 
 `update_mission_locale.py` 独立更新任务社区表与原始归档，不覆盖蓝图翻译基线。任务名称和社区附加说明分别保存，具体匹配语言键可追溯；不删除任务说明，也不把社区条件性蓝图提示当作结构化奖励。
+
+蓝图制造品质采集通过 `scmdb_public_capture.js` 的独立属性导出进行，Inspector 为 `inspect_blueprint_details.py`。原始属性样本在 `imports/scmdb/blueprint-details/`；四组预设不等于最终公式已验证。先按 `docs/blueprint-quality-plan.md` 收集代表样本，不直接覆盖静态配方库。
+
+蓝图助手可选自动分类模式仅点击公开 `.fab-filter-group` 控件：超过 100 个才细分，小组直接采，无法细分的大组保留提示。分组会修改公开筛选状态，不请求数据接口；不得通过应用内部状态补出筛选选项。`node tools/test_scmdb_blueprint_groups.cjs` 验证分类遗留项、总批次上限、停止和续采；改变算法时保留手动当前列表模式。
+
+`build_blueprint_quality_data.py` 从固定的本地完整详情归档构建按配方 ID 的目录、精简四预设、规则及 64 个按需摘要分片。卡片映射必须与详情材料和数量交叉验证；版本、译名、原始单位和射击模式保留。Power Pips 是阶梯，异常减伤规则不猜补；不得用统一线性插值伪造成品预测。构建与验证见蓝图品质方案及 `test_blueprint_quality_data.py`。

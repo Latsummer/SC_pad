@@ -19,7 +19,9 @@ def write_js(path: Path, name: str, value: dict) -> None:
 
 
 def main() -> None:
-    source = json.loads(SOURCE.read_text(encoding="utf-8"))
+    quality_file = ROOT / 'scminer-local/data/scmdb-blueprint-quality.json'
+    quality = json.loads(quality_file.read_text()) if quality_file.exists() else None
+    source = quality['catalog'] if quality else json.loads(SOURCE.read_text(encoding="utf-8"))
     slot_locale = json.loads(SLOT_LOCALE.read_text(encoding="utf-8"))
     missing_slots = sorted(set(source["slot_counts"]) - set(slot_locale["slots"]))
     if missing_slots:
@@ -36,10 +38,11 @@ def main() -> None:
         blueprints.append({
             key: item.get(key)
             for key in ("id", "name", "name_zh", "name_en", "category", "type_group", "type_subtype", "manufacturer", "size", "craft_time_seconds")
-        } | {"materials": materials})
+        } | {"materials": materials, "quality_path": quality["quality_paths"].get(item["id"]) if quality else None})
 
     payload = {
         "schema_version": 1,
+        "quality_counts": quality["counts"] if quality else None,
         "source": source["source"],
         "counts": source["counts"],
         "slot_counts": source["slot_counts"],
@@ -48,6 +51,9 @@ def main() -> None:
     index = {"byMineral": dict(sorted(material_index.items())), "blueprintCount": len(blueprints)}
     write_js(DIST / "blueprints-data.js", "SCMDB_BLUEPRINTS", payload)
     write_js(DIST / "blueprint-index.js", "SCMDB_BLUEPRINT_INDEX", index)
+    quality_locale = ROOT / 'scminer-local/data/blueprint-quality.zh-CN.json'
+    if quality_locale.exists():
+        slot_locale['quality'] = json.loads(quality_locale.read_text())
     write_js(DIST / "blueprint-locale.js", "SCMDB_BLUEPRINT_LOCALE", slot_locale)
     print(f"Built {len(blueprints)} browser blueprints and {len(material_index)} mineral links")
 

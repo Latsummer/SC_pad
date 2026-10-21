@@ -57,7 +57,7 @@ python3 tools/build_blueprint_site_data.py
 - 社区翻译参考 `https://github.com/Walkersifolia/SCMDB_zh_cn`。在 SCMDB Fabricator URL 附加 `lang=https://raw.githubusercontent.com/Walkersifolia/SCMDB_zh_cn/main/lang-zh_CN-live.json` 可加载中文；确认翻译文件和页面游戏版本相同，再采集。
 - 不以捕获数量证明完整性；比较不同语言快照时，名称可能合并或变化，应核对配方和材料，保留原始快照。
 - 新槽位先补中文表再构建。`--expected-count` 的默认值是历史参考值，不是最新总数保证。
-- 配方数据不包含品质或材料引起的最终属性变化，不能用采矿抗性、密度或扫描信号推导制造属性。
+- 制造品质规范数据在 `data/scmdb-blueprint-quality.json`，运行 `make blueprint-quality-build` 生成 64 个按需分片和按 ID 的当前网页配方目录；旧 `scmdb-blueprints.json` 为历史卡片基线。当前页面保留四预设观察值，并对通过逐项预设校验的规则提供明确标注的滑块估算；新规则必须校验，不匹配项保留预设值，不能用采矿抗性、密度或扫描信号推导制造属性。
 
 ## UI、缓存和部署
 

@@ -49,12 +49,18 @@ jobs:
           python3 tools/test_mission_translation.py
           python3 tools/test_mission_site_data.py
           node tools/test_scmdb_missions_capture.cjs
+          node tools/test_scmdb_blueprint_details.cjs
+          node tools/test_scmdb_blueprint_groups.cjs
+          python3 tools/test_blueprint_details.py
+          python3 tools/test_blueprint_quality_data.py
+          node tools/test_blueprint_quality_ui.cjs
+          node tools/test_blueprint_quality_model.cjs
       - name: 展示中文翻译报告
         if: always()
         env:
           CHECK_RESULT: ${{ steps.site_check.outcome }}
         run: |
-          report=scminer-local/data/scmdb-blueprints.translation-report.md
+          report=scminer-local/data/scmdb-blueprint-quality.translation-report.md
           if [ -f "$report" ]; then
             if [ "$CHECK_RESULT" = success ]; then
               printf '数据与翻译一致性校验：通过。\n\n' >> "$GITHUB_STEP_SUMMARY"
@@ -66,10 +72,10 @@ jobs:
             printf '未找到中文翻译报告，请重新导入蓝图快照生成报告。\n' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: 上传中文翻译报告附件
-        if: always() && hashFiles('scminer-local/data/scmdb-blueprints.translation-report.md') != ''
+        if: always() && hashFiles('scminer-local/data/scmdb-blueprint-quality.translation-report.md') != ''
         uses: actions/upload-artifact@v4
         with:
           name: blueprint-translation-report-${{ github.run_id }}-${{ github.run_attempt }}
-          path: scminer-local/data/scmdb-blueprints.translation-report.md
+          path: scminer-local/data/scmdb-blueprint-quality.translation-report.md
           if-no-files-found: error
           retention-days: 30

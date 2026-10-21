@@ -1,10 +1,9 @@
-const CACHE_NAME = "xinghang-assistant-8a28e7ff7e8a";
+const CACHE_NAME = "xinghang-assistant-e82552f26a476f96";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./blueprints.html",
   "./styles.css",
-  "./styles.css?v=mission-sources-2",
   "./missions.html",
   "./missions.css",
   "./missions.js",
@@ -14,7 +13,7 @@ const APP_SHELL = [
   "./theme.js",
   "./app.js",
   "./blueprints.js",
-  "./blueprints.js?v=mission-sources-2",
+  "./blueprint-quality.js",
   "./app-data.js",
   "./blueprints-data.js",
   "./blueprint-index.js",
@@ -25,7 +24,17 @@ const APP_SHELL = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
-  "./icons/apple-touch-icon.png?v=xinghang-2"
+  "./icons/apple-touch-icon.png?v=xinghang-2",
+  "./blueprint-quality-model.js",
+  "./styles.css?v=4794d58f4459",
+  "./app.js?v=404e3ef9bb51",
+  "./app-data.js?v=2c2c3b7a586e",
+  "./blueprint-index.js?v=b34bcdc532f8",
+  "./blueprints-data.js?v=c1dcd5acaa40",
+  "./blueprint-locale.js?v=803777efdb68",
+  "./blueprint-quality-model.js?v=5d610ec7d7c0",
+  "./blueprint-quality.js?v=1c56104124ea",
+  "./blueprints.js?v=9c031791e6b1"
 ];
 
 self.addEventListener("install", (event) => {

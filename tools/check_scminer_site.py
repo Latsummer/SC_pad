@@ -10,7 +10,7 @@ import subprocess
 import sys
 import tempfile
 from scmdb_locale import BlueprintTranslator, report_markdown
-from import_scmdb_public_capture import parse_card
+from import_scmdb_public_capture import parse_card, mineral_lookup
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -41,6 +41,11 @@ def check_archives_and_assets():
     for entry in json.loads(shell[1]):
         if not (site / 'dist' / urlsplit(entry).path).exists():
             raise SystemExit(f'Missing service-worker asset: {entry}')
+    shell_entries = set(json.loads(shell[1]))
+    for page in ['index.html','blueprints.html']:
+        for ref in re.findall(r'(?:src|href)="([^"]+\.(?:js|css)(?:\?[^"]*)?)"', (site / 'dist' / page).read_text()):
+            if './' + ref not in shell_entries:
+                raise SystemExit(f'Uncached shell resource: {page}: {ref}; run make site-cache')
     manifest = json.loads((site / 'dist/manifest.webmanifest').read_text())
     for icon in manifest['icons']:
         if not (site / 'dist' / urlsplit(icon['src']).path).is_file():
@@ -58,11 +63,15 @@ def main():
         raise SystemExit('Material count does not match records')
     version = json.loads((ROOT / 'scminer-local/data/scminer-data.json').read_text())['game_data_version']
     translator = BlueprintTranslator(expected_version=version)
+    materials = mineral_lookup(ROOT / 'scminer-local/data/names.zh-CN.json')
     results = []
     for item in source['blueprints']:
         parsed = parse_card(item['raw_text'], 1)
         if any(parsed[key] != item.get(key) for key in ('type_group', 'type_subtype', 'size')):
             raise SystemExit(f'Stale blueprint category: {item["name"]}. Reimport capture.')
+        for material in item['materials']:
+            if material.get('mineral') != materials.get(material['name'].casefold()):
+                raise SystemExit(f'Stale material mapping: {material["name"]}. Reimport capture.')
         translated = dict(item)
         results.append(translator.translate(translated))
         if any(translated[key] != item.get(key) for key in ('name_en', 'name_zh')):
@@ -79,7 +88,9 @@ def main():
         shutil.copytree(ROOT / 'scminer-local/data', staging / 'scminer-local/data')
         dist = staging / 'scminer-local/dist'
         dist.mkdir(parents=True)
+        shutil.copytree(ROOT / 'scminer-local/imports/scmdb/blueprint-details', staging / 'scminer-local/imports/scmdb/blueprint-details')
         commands = [
+            ['tools/build_blueprint_quality_data.py'],
             ['tools/build_scminer_site_data.py', '--dataset', 'scminer-local/data/scminer-data.json',
              '--locale', 'scminer-local/data/names.zh-CN.json', '--output', 'scminer-local/dist/app-data.js'],
             ['tools/build_blueprint_site_data.py'],
@@ -90,6 +101,16 @@ def main():
         ]
         for command in commands:
             subprocess.run([sys.executable, *command], cwd=staging, check=True)
+        quality_relative = Path('scminer-local/data/scmdb-blueprint-quality.json')
+        if (staging / quality_relative).read_bytes() != (ROOT / quality_relative).read_bytes():
+            raise SystemExit('Stale normalized blueprint quality data; run make blueprint-quality-build')
+        quality_report = Path('scminer-local/data/scmdb-blueprint-quality.translation-report.md')
+        if (staging / quality_report).read_bytes() != (ROOT / quality_report).read_bytes():
+            raise SystemExit('Stale blueprint quality translation report')
+        expected_quality = {path.name: path.read_bytes() for path in (dist / 'blueprint-quality').glob('*.json')}
+        actual_quality = {path.name: path.read_bytes() for path in (ROOT / 'scminer-local/dist/blueprint-quality').glob('*.json')}
+        if expected_quality != actual_quality:
+            raise SystemExit('Stale blueprint quality shards; run make blueprint-quality-build')
         for name in ['app-data.js', 'blueprints-data.js', 'blueprint-index.js',
                      'blueprint-locale.js']:
             if (dist / name).read_bytes() != (ROOT / 'scminer-local/dist' / name).read_bytes():

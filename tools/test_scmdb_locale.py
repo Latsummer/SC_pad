@@ -4,10 +4,17 @@ from pathlib import Path
 import tempfile
 import unittest
 from scmdb_locale import BlueprintTranslator
-from import_scmdb_public_capture import parse_card
+from import_scmdb_public_capture import parse_card, mineral_lookup
 
 
 class TranslationTests(unittest.TestCase):
+    def test_aluminum_alias_links_to_existing_mineral(self):
+        root = Path(__file__).resolve().parents[1]
+        lookup = mineral_lookup(root / 'scminer-local/data/names.zh-CN.json')
+        self.assertEqual(lookup['aluminum'], lookup['aluminium'])
+        self.assertEqual(lookup['aluminum']['id'], 'aluminium')
+        self.assertEqual(lookup['aluminum']['zh'], '铝')
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

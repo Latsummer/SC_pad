@@ -19,7 +19,9 @@
     "aluminium": {
       "en": "Aluminium",
       "zh": "铝",
-      "aliases_en": [],
+      "aliases_en": [
+        "Aluminum"
+      ],
       "aliases_zh": []
     },
     "aphorite": {

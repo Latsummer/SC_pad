@@ -1,5 +1,5 @@
 # 以下命令在仓库根目录执行；网站部署命令见 scminer-local/Makefile。
-.PHONY: sync scmdb-capture scmdb-missions-capture scmdb-serve scmdb-import blueprints-build missions-build
+.PHONY: sync scmdb-capture scmdb-missions-capture scmdb-serve scmdb-import blueprints-build missions-build blueprint-quality-build site-cache
 
 # 本机安装页服务端口，可用 make scmdb-serve SCMDB_PORT=8767 修改。
 SCMDB_PORT ?= 8766
@@ -38,3 +38,15 @@ blueprints-build: scmdb-import
 # 不联网、不部署；指定新快照或比较旧目录时直接运行脚本的 --capture / --previous 参数。
 missions-build:
 	python3 tools/build_mission_site_data.py
+
+# 从固定的全量蓝图详情归档生成按 ID 的配方、品质规则及按需详情分片，再更新网站蓝图目录。
+# 只读取本地文件，不联网、不部署；新版本可先用工具的 --capture 指定归档验证。
+blueprint-quality-build:
+	python3 tools/build_blueprint_quality_data.py
+	python3 tools/build_blueprint_site_data.py
+	python3 tools/refresh_scminer_assets.py
+
+# 更新蓝图与共用页面资源的内容版本 URL 以及 PWA 缓存名，供页面／样式修改后使用。
+# 本地操作，不联网、不部署。
+site-cache:
+	python3 tools/refresh_scminer_assets.py
