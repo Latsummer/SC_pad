@@ -24,9 +24,16 @@
   const materialIds = [...new Set(catalog.blueprints.flatMap((item) => item.materials.map((material) => material.mineral?.id).filter(Boolean)))];
   const slotName = (slot) => window.SCMDB_BLUEPRINT_LOCALE?.slots?.[slot] || slot;
 
+  const collator=new Intl.Collator('zh-CN');
+  const searchIndex=new Map(catalog.blueprints.map(item=>[item,normalize(`${item.name_zh || ''}|${item.name_en || ''}|${item.name || ''}`)]));
+  const sortedBlueprints=[...catalog.blueprints].sort((a,b)=>a.craft_time_seconds-b.craft_time_seconds || collator.compare(a.name_zh || a.name,b.name_zh || b.name));
+  const materialCounts=new Map();
+  catalog.blueprints.forEach(item=>new Set(item.materials.map(m=>m.mineral?.id).filter(Boolean)).forEach(id=>materialCounts.set(id,(materialCounts.get(id)||0)+1)));
+  let previousSearch=null, normalizedSearch='';
+  function searchQuery(){if(previousSearch!==els.search.value){previousSearch=els.search.value;normalizedSearch=normalize(previousSearch);}return normalizedSearch;}
   function matches(item, omit = "") {
-    const query = normalize(els.search.value);
-    if (query && !normalize(`${item.name_zh || ""}|${item.name_en || ""}|${item.name || ""}`).includes(query)) return false;
+    const query = searchQuery();
+    if (query && !searchIndex.get(item).includes(query)) return false;
     if (state.selected.length && !state.selected.every((id) => item.materials.some((material) => material.mineral?.id === id))) return false;
     if (omit !== "type" && state.type !== "all" && (item.type_group || "其他") !== state.type) return false;
     if (omit !== "subtype" && state.subtype !== "all" && item.type_subtype !== state.subtype) return false;
@@ -58,7 +65,7 @@
     els.selected.innerHTML = state.selected.length ? state.selected.map((id) => `<span class="mineral-chip">${escapeHtml(mineralName(id))}<button type="button" data-remove="${id}" aria-label="移除 ${escapeHtml(mineralName(id))}">×</button></span>`).join("") : '<span class="selection-hint">未选择材料</span>';
     const query = normalize(els.materialSearch.value);
     const matches = materialIds.filter((id) => id !== undefined && !state.selected.includes(id) && normalize(mineralName(id)).includes(query)).sort((a,b) => mineralName(a).localeCompare(mineralName(b), "zh-CN"));
-    els.suggestions.innerHTML = matches.map((id) => `<button class="suggestion" type="button" data-add="${id}"><span>${escapeHtml(mineralName(id))}</span><small>${catalog.blueprints.filter((item) => item.materials.some((m) => m.mineral?.id === id)).length} 张蓝图</small></button>`).join("") || '<div class="empty-list">没有匹配的已采集矿物</div>';
+    els.suggestions.innerHTML = matches.map((id) => `<button class="suggestion" type="button" data-add="${id}"><span>${escapeHtml(mineralName(id))}</span><small>${materialCounts.get(id) || 0} 张蓝图</small></button>`).join("") || '<div class="empty-list">没有匹配的已采集矿物</div>';
   }
   function renderActiveFilters() {
     if (!els.activeFilters) return;
@@ -71,7 +78,7 @@
     els.activeFilters.hidden = !tags.length;
   }
   function renderResults() {
-    const filtered = catalog.blueprints.filter((item) => matches(item)).sort((a,b) => a.craft_time_seconds - b.craft_time_seconds || (a.name_zh || a.name).localeCompare(b.name_zh || b.name, "zh-CN"));
+    const filtered = sortedBlueprints.filter((item) => matches(item));
     const activeCount = state.selected.length + [state.type, state.subtype, state.slot, state.size].filter((value) => value !== "all").length;
     if (els.openFilters) els.openFilters.textContent = activeCount ? `筛选 ${activeCount}` : "筛选";
     if (els.applyFilters) els.applyFilters.textContent = `查看 ${filtered.length.toLocaleString("zh-CN")} 条结果`;
@@ -118,7 +125,7 @@
     body.textContent = '正在查询产出任务…';
     if (!sourcesDialog.open) sourcesDialog.showModal();
     try {
-      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
+      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json?v=643f365edb18').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
       const data = await missionSourcesPromise;
       if (!sourcesDialog.open || request !== sourceRequest) return;
       const tasks = data.blueprints[name] || [];
@@ -148,7 +155,7 @@
   initialMaterials.forEach((id) => {
     if (materialIds.includes(id) && !state.selected.includes(id)) state.selected.push(id);
   });
-  renderSelectors(); renderAll();
+  renderAll();
   const initialRecipe=new URLSearchParams(location.search).get('blueprint');
   if(initialRecipe) {const item=catalog.blueprints.find(value=>value.id===initialRecipe);if(item) window.BlueprintQuality?.open(item);}
   if (els.version) els.version.textContent = `${catalog.counts.blueprints.toLocaleString("zh-CN")} 张蓝图 · 离线数据`;

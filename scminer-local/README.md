@@ -180,3 +180,9 @@ make missions-build
 蓝图制造品质属性正进行独立采样，入口仍是蓝图采集书签。采集步骤与后续计算接入方案见 [蓝图品质方案](docs/blueprint-quality-plan.md)。网站已接入预设结果与材料品质规则；已加入材料独立滑块和经预设校验的本地估算。
 
 从固定全量详情基线重新构建：`make blueprint-quality-build`。完整采集与定期更新见 [蓝图品质方案](docs/blueprint-quality-plan.md)；新详情目录优先于旧卡片目录生成网站列表，旧原始卡片与规范文件继续保留用于追溯。
+
+## 页面切换缓存
+
+任务与主页面仍是独立 HTML。Service Worker 对当前版本已缓存的页面、带内容摘要的脚本／样式／列表和详情分片直接返回缓存，避免标签切换等待网络；未缓存内容联网加载。页面查询参数保留给页面处理，缓存只合并同一页面的 HTML，不混用不同版本数据。新发布通过更新 Service Worker 和缓存名切换整套预缓存资源。
+
+修改任务列表数据或页面资源后运行 `make site-cache`，同时刷新三个页面及任务索引消费脚本的内容版本；运行 `node tools/test_scminer_navigation_cache.cjs` 检查慢网／离线缓存路径。首次更新后需等新 Service Worker 激活，再刷新或重新进入页面验证。

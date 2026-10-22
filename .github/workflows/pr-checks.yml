@@ -55,6 +55,7 @@ jobs:
           python3 tools/test_blueprint_quality_data.py
           node tools/test_blueprint_quality_ui.cjs
           node tools/test_blueprint_quality_model.cjs
+          node tools/test_scminer_navigation_cache.cjs
       - name: 展示中文翻译报告
         if: always()
         env:
