@@ -31,6 +31,16 @@ class QualityDataTests(unittest.TestCase):
         self.assertEqual(parsed['tiers'][2]['delta'],1)
         self.assertEqual(rule('0–399: -1 pip | 500–1000: +1 pip')['kind'],'unverified')
 
+    def test_component_classification_from_public_cards(self):
+        catalog = {item['id']: item for item in self.data['catalog']['blueprints']}
+        powerbolt = catalog['BP_CRAFT_POWR_LPLT_S01_PowerBolt_SCItem']
+        self.assertEqual((powerbolt['component_class'], powerbolt['component_grade']), ('Civilian', 'C'))
+        classified = [item for item in catalog.values() if item['component_class']]
+        self.assertEqual(len(classified), 319)
+        self.assertEqual({item['component_grade'] for item in classified}, set('ABCD'))
+        self.assertEqual({item['component_class'] for item in classified}, {'Military', 'Civilian', 'Stealth', 'Industrial', 'Competition'})
+        self.assertTrue(all(item['component_grade'] is None for item in catalog.values() if item['component_class'] is None))
+
     def test_suspect_source_rule_not_invented(self):
         self.assertEqual(rule('Q: 0–1000 · ×9–1.1')['kind'],'unverified')
         self.assertEqual(self.data['counts']['rules']['unverified'],3)

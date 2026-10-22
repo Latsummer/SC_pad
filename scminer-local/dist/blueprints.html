@@ -8,7 +8,7 @@
     <title>制造蓝图 · 星航助手</title>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=xinghang-2">
-    <link rel="stylesheet" href="styles.css?v=4794d58f4459">
+    <link rel="stylesheet" href="styles.css?v=01c63f72d4eb">
     <script src="theme.js?v=7c30c0eee6dd"></script>
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=xinghang-2"><meta name="apple-mobile-web-app-title" content="星航助手">
 </head>
@@ -58,6 +58,8 @@
               <label>细分类型<select id="subtypeFilter"><option value="all">全部细分</option></select></label>
               <label>材料槽位<select id="slotFilter"><option value="all">全部槽位</option></select></label>
               <label>尺寸<select id="sizeFilter"><option value="all">全部尺寸</option></select></label>
+                <label>组件用途<select id="componentClassFilter"><option value="all">全部用途</option></select></label>
+                <label>组件等级<select id="componentGradeFilter"><option value="all">全部等级</option></select></label>
             </div>
             <div class="filter-drawer-actions">
               <button id="resetBlueprintFilters" class="text-button blueprint-reset" type="button">重置筛选</button>
@@ -73,11 +75,11 @@
       </main>
     </div>
     <script src="app-data.js?v=2c2c3b7a586e"></script>
-    <script src="blueprints-data.js?v=c1dcd5acaa40"></script>
+    <script src="blueprints-data.js?v=b4393f5a4cfb"></script>
     <script src="blueprint-locale.js?v=803777efdb68"></script>
     <script src="blueprint-quality-model.js?v=5d610ec7d7c0"></script>
     <script src="blueprint-quality.js?v=1c56104124ea"></script>
-    <script src="blueprints.js?v=e701dba7e8cd"></script>
+    <script src="blueprints.js?v=9a74240059c9"></script>
     <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js", {scope:"./"}).catch(() => {}));</script>
   </body>
 </html>

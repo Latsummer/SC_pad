@@ -1,4 +1,4 @@
-const CACHE_NAME = "xinghang-assistant-a400d43c34fc7c80";
+const CACHE_NAME = "xinghang-assistant-402d25a989f25be7";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,15 +14,15 @@ const APP_SHELL = [
   "./missions.js?v=2945c17e333a",
   "./missions.css?v=33a0a59744e6",
   "./theme.js?v=7c30c0eee6dd",
-  "./styles.css?v=4794d58f4459",
+  "./styles.css?v=01c63f72d4eb",
   "./app.js?v=404e3ef9bb51",
   "./app-data.js?v=2c2c3b7a586e",
   "./blueprint-index.js?v=b34bcdc532f8",
-  "./blueprints-data.js?v=c1dcd5acaa40",
+  "./blueprints-data.js?v=b4393f5a4cfb",
   "./blueprint-locale.js?v=803777efdb68",
   "./blueprint-quality-model.js?v=5d610ec7d7c0",
   "./blueprint-quality.js?v=1c56104124ea",
-  "./blueprints.js?v=e701dba7e8cd"
+  "./blueprints.js?v=9a74240059c9"
 ];
 
 self.addEventListener("install", (event) => {

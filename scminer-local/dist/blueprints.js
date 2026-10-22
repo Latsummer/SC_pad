@@ -6,12 +6,13 @@
   if (!catalog || !mining || !locale) { document.body.innerHTML = '<div class="empty-list">蓝图数据载入失败，请重新生成离线数据。</div>'; return; }
 
   const mineralById = new Map(mining.minerals.map((item) => [item.id, item]));
-  const state = { selected: [], type: "all", subtype: "all", slot: "all", size: "all", visible: 24 };
+  const state = { selected: [], type: "all", subtype: "all", slot: "all", size: "all", component_class: "all", component_grade: "all", visible: 24 };
   const els = {
     version: document.querySelector("#blueprintVersion"), search: document.querySelector("#blueprintSearch"),
     materialSearch: document.querySelector("#materialSearch"), suggestions: document.querySelector("#materialSuggestions"),
     selected: document.querySelector("#selectedMaterials"), type: document.querySelector("#typeFilter"), subtype: document.querySelector("#subtypeFilter"), slot: document.querySelector("#slotFilter"),
     size: document.querySelector("#sizeFilter"),
+    component_class: document.querySelector("#componentClassFilter"), component_grade: document.querySelector("#componentGradeFilter"),
     reset: document.querySelector("#resetBlueprintFilters"), summary: document.querySelector("#blueprintSummary"), results: document.querySelector("#blueprintResults"),
     drawer: document.querySelector("#blueprintFilterDrawer"), openFilters: document.querySelector("#openBlueprintFilters"), closeFilters: document.querySelector("#closeBlueprintFilters"),
     backdrop: document.querySelector("#blueprintFilterBackdrop"), applyFilters: document.querySelector("#applyBlueprintFilters"),
@@ -24,6 +25,7 @@
   const materialIds = [...new Set(catalog.blueprints.flatMap((item) => item.materials.map((material) => material.mineral?.id).filter(Boolean)))];
   const slotName = (slot) => window.SCMDB_BLUEPRINT_LOCALE?.slots?.[slot] || slot;
 
+  const componentClassName = value => ({Military:"军用",Civilian:"民用",Stealth:"隐身",Industrial:"工业",Competition:"竞赛"}[value] || value);
   const collator=new Intl.Collator('zh-CN');
   const searchIndex=new Map(catalog.blueprints.map(item=>[item,normalize(`${item.name_zh || ''}|${item.name_en || ''}|${item.name || ''}`)]));
   const sortedBlueprints=[...catalog.blueprints].sort((a,b)=>a.craft_time_seconds-b.craft_time_seconds || collator.compare(a.name_zh || a.name,b.name_zh || b.name));
@@ -39,6 +41,7 @@
     if (omit !== "subtype" && state.subtype !== "all" && item.type_subtype !== state.subtype) return false;
     if (omit !== "slot" && state.slot !== "all" && !item.materials.some((material) => material.slot === state.slot)) return false;
     if (omit !== "size" && state.size !== "all" && item.size !== Number(state.size)) return false;
+    for (const key of ["component_class", "component_grade"]) if (omit !== key && state[key] !== "all" && item[key] !== state[key]) return false;
     return true;
   }
   function setOptions(element, label, entries, currentKey) {
@@ -56,6 +59,7 @@
     return [...counts.entries()].sort((a,b) => String(a[0]).localeCompare(String(b[0]), "zh-CN"));
   }
   function renderSelectors() {
+    for (const key of ["component_class", "component_grade"]) setOptions(els[key], key === "component_class" ? "全部用途" : "全部等级", countBy(catalog.blueprints.filter(item => matches(item, key)), key).map(([value,count]) => [value,count,key === "component_class" ? componentClassName(value) : `${value} 级`]), key);
     setOptions(els.type, "全部大类", countBy(catalog.blueprints.filter((item) => matches(item, "type")), "type_group"), "type");
     setOptions(els.subtype, "全部细分", countBy(catalog.blueprints.filter((item) => matches(item, "subtype")), "type_subtype"), "subtype");
     setOptions(els.slot, "全部槽位", countBy(catalog.blueprints.filter((item) => matches(item, "slot")), "slot").map(([slot, count]) => [slot, count, slotName(slot)]), "slot");
@@ -74,12 +78,14 @@
     if (state.subtype !== "all") tags.push({ key: "subtype", label: state.subtype });
     if (state.slot !== "all") tags.push({ key: "slot", label: slotName(state.slot) });
     if (state.size !== "all") tags.push({ key: "size", label: `S${state.size}` });
+    if (state.component_class !== "all") tags.push({key:"component_class",label:componentClassName(state.component_class)});
+    if (state.component_grade !== "all") tags.push({key:"component_grade",label:`${state.component_grade} 级`});
     els.activeFilters.innerHTML = tags.map((tag) => `<button type="button" class="active-filter-chip" data-clear-filter="${tag.key}"${tag.value ? ` data-filter-value="${escapeHtml(tag.value)}"` : ""}><span>${escapeHtml(tag.label)}</span><b aria-hidden="true">×</b></button>`).join("");
     els.activeFilters.hidden = !tags.length;
   }
   function renderResults() {
     const filtered = sortedBlueprints.filter((item) => matches(item));
-    const activeCount = state.selected.length + [state.type, state.subtype, state.slot, state.size].filter((value) => value !== "all").length;
+    const activeCount = state.selected.length + [state.type, state.subtype, state.slot, state.size, state.component_class, state.component_grade].filter((value) => value !== "all").length;
     if (els.openFilters) els.openFilters.textContent = activeCount ? `筛选 ${activeCount}` : "筛选";
     if (els.applyFilters) els.applyFilters.textContent = `查看 ${filtered.length.toLocaleString("zh-CN")} 条结果`;
     const shown = filtered.slice(0, state.visible);
@@ -91,7 +97,7 @@
         const amount = material.amount_scu !== null ? `${material.amount_scu} SCU` : `×${material.amount_count}`;
         return `<li><span>${escapeHtml(slotName(material.slot))}</span><strong>${escapeHtml(name)}</strong><em>${escapeHtml(amount)}</em></li>`;
       }).join("");
-      return `<article class="blueprint-card" data-recipe-id="${escapeHtml(item.id)}" style="--enter-index:${index}"><div class="blueprint-card-head"><div><span class="detail-kicker">${escapeHtml(item.type_group || "其他")}${item.type_subtype ? ` · ${escapeHtml(item.type_subtype)}` : ""}${item.size ? ` · S${item.size}` : ""}</span><h2>${escapeHtml(item.name_zh || item.name)}</h2></div><time>⏱ ${formatTime(item.craft_time_seconds)}</time></div><ul class="material-list">${materials}</ul><div class="blueprint-card-actions">${item.quality_path?`<button type="button" class="blueprint-quality-trigger" data-quality-id="${escapeHtml(item.id)}" aria-haspopup="dialog">制造详情 <span aria-hidden="true">↗</span></button>`:""}<button type="button" class="blueprint-source-trigger" data-blueprint-name="${escapeHtml(item.name_en || item.name)}" data-blueprint-title="${escapeHtml(item.name_zh || item.name)}" aria-haspopup="dialog">查询产出任务 <span aria-hidden="true">↗</span></button></div></article>`;
+      return `<article class="blueprint-card" data-recipe-id="${escapeHtml(item.id)}" style="--enter-index:${index}"><div class="blueprint-card-head"><div><span class="detail-kicker">${escapeHtml(item.type_group || "其他")}${item.type_subtype ? ` · ${escapeHtml(item.type_subtype)}` : ""}${item.size ? ` · S${item.size}` : ""}${item.component_class ? ` · ${escapeHtml(componentClassName(item.component_class))} ${escapeHtml(item.component_grade)}` : ""}</span><h2>${escapeHtml(item.name_zh || item.name)}</h2></div><time>⏱ ${formatTime(item.craft_time_seconds)}</time></div><ul class="material-list">${materials}</ul><div class="blueprint-card-actions">${item.quality_path?`<button type="button" class="blueprint-quality-trigger" data-quality-id="${escapeHtml(item.id)}" aria-haspopup="dialog">制造详情 <span aria-hidden="true">↗</span></button>`:""}<button type="button" class="blueprint-source-trigger" data-blueprint-name="${escapeHtml(item.name_en || item.name)}" data-blueprint-title="${escapeHtml(item.name_zh || item.name)}" aria-haspopup="dialog">查询产出任务 <span aria-hidden="true">↗</span></button></div></article>`;
     }).join("");
     const remaining = filtered.length - shown.length;
     const loadMore = remaining > 0
@@ -166,8 +172,9 @@
   els.suggestions.addEventListener("click", (event) => { const button = event.target.closest("[data-add]"); if (button) addMaterial(button.dataset.add); });
   els.selected.addEventListener("click", (event) => { const button = event.target.closest("[data-remove]"); if (button) { state.selected = state.selected.filter((id) => id !== button.dataset.remove); restartResults(); } });
   els.type.addEventListener("change", () => { state.type = els.type.value; state.subtype = "all"; restartResults(); });
+  [els.component_class, els.component_grade].forEach(element => element.addEventListener("change", () => { state[element === els.component_class ? "component_class" : "component_grade"] = element.value; restartResults(); }));
   [els.subtype, els.slot, els.size].forEach((element) => element.addEventListener("change", () => { state[element === els.subtype ? "subtype" : element === els.slot ? "slot" : "size"] = element.value; restartResults(); }));
-  els.reset.addEventListener("click", () => { state.type = state.subtype = state.slot = state.size = "all"; els.search.value = els.materialSearch.value = ""; closeSuggestions(); restartResults(); });
+  els.reset.addEventListener("click", () => { state.type = state.subtype = state.slot = state.size = state.component_class = state.component_grade = "all"; els.search.value = els.materialSearch.value = ""; closeSuggestions(); restartResults(); });
   els.openFilters?.addEventListener("click", () => setDrawer(true));
   els.closeFilters?.addEventListener("click", () => setDrawer(false));
   els.backdrop?.addEventListener("click", () => setDrawer(false));
