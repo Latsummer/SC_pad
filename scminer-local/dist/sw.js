@@ -1,4 +1,4 @@
-const CACHE_NAME = "xinghang-assistant-402d25a989f25be7";
+const CACHE_NAME = "xinghang-assistant-fd6188e5660ca80f";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,7 +14,7 @@ const APP_SHELL = [
   "./missions.js?v=2945c17e333a",
   "./missions.css?v=33a0a59744e6",
   "./theme.js?v=7c30c0eee6dd",
-  "./styles.css?v=01c63f72d4eb",
+  "./styles.css?v=4cffbcfe1943",
   "./app.js?v=404e3ef9bb51",
   "./app-data.js?v=2c2c3b7a586e",
   "./blueprint-index.js?v=b34bcdc532f8",
