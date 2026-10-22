@@ -495,6 +495,12 @@ html[data-theme="field-workbench"] .location-card,html[data-theme="field-workben
     A transform/opacity animation on its ancestor moves and fades the bar too. */
  .app-shell{animation:none}
  .app-shell{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+ /* Let the scan placeholder fill a short page, including iOS standalone height. */
+ body[data-mode="scan"] .app-shell{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+ body[data-mode="scan"] main{display:flex;flex:1;flex-direction:column}
+ body[data-mode="scan"] .scan-workspace:not([hidden]){display:flex;flex:1;flex-direction:column}
+ body[data-mode="scan"] .scan-results{display:flex;flex:1;flex-direction:column}
+ body[data-mode="scan"] .scan-results>.empty-state{flex:1;min-height:340px}
  .mode-switch{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;margin:0;padding:10px max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left));border-radius:0;border:0;border-top:1px solid var(--line);background:var(--surface);box-shadow:0 -8px 24px #0002;gap:4px}
  .mode-button{position:relative;flex-direction:column;gap:4px;min-height:52px;padding:5px 8px;background:none!important;box-shadow:none!important;color:var(--muted);font-size:11px;font-weight:500}
  .mode-button.active{color:var(--cyan)!important}.mode-button::before{content:"";position:absolute;top:-10px;left:20%;right:20%;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform 180ms ease}
@@ -545,3 +551,9 @@ a.mode-button{text-decoration:none}
 .bp-quality-live:empty { display:none; }
 .bp-quality-live span { display:flex; flex-direction:column; gap:4px; padding:8px; border-radius:8px; background:var(--bg); font-size:12px; color:var(--muted); }
 .bp-quality-live strong { color:var(--gold); font-size:14px; }
+
+/* iOS focus zoom is triggered by small form-control text. Keep pinch zoom enabled. */
+@media (max-width: 760px) {
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not(#scanInput),
+  select, textarea { font-size:16px !important; }
+}
