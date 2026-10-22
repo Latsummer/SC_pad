@@ -491,10 +491,13 @@ html[data-theme="field-workbench"] .location-card,html[data-theme="field-workben
 @keyframes workbench-scan{from{top:0;opacity:.8}to{top:100%;opacity:0}}
 @media(min-width:1121px){html[data-theme="field-workbench"] .workspace-grid{grid-template-columns:190px minmax(0,1fr) 320px}}
 @media(max-width:760px){
+ /* Keep the fixed bottom navigation viewport-anchored and visible on first paint.
+    A transform/opacity animation on its ancestor moves and fades the bar too. */
+ .app-shell{animation:none}
  .app-shell{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
- .mode-switch{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;margin:0;padding:7px 8px calc(7px + env(safe-area-inset-bottom));border-radius:0;border:0;border-top:1px solid var(--line);background:var(--surface);box-shadow:0 -8px 24px #0002;gap:4px}
+ .mode-switch{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;margin:0;padding:10px max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left));border-radius:0;border:0;border-top:1px solid var(--line);background:var(--surface);box-shadow:0 -8px 24px #0002;gap:4px}
  .mode-button{position:relative;flex-direction:column;gap:4px;min-height:52px;padding:5px 8px;background:none!important;box-shadow:none!important;color:var(--muted);font-size:11px;font-weight:500}
- .mode-button.active{color:var(--cyan)!important}.mode-button::before{content:"";position:absolute;top:-7px;left:20%;right:20%;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform 180ms ease}
+ .mode-button.active{color:var(--cyan)!important}.mode-button::before{content:"";position:absolute;top:-10px;left:20%;right:20%;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform 180ms ease}
  .mode-button.active::before{transform:scaleX(1)}.mode-icon{display:block;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
  .deck-heading{display:block}.deck-heading h1{display:none}.command-deck .mineral-controls,.command-deck .scan-controls{margin-top:0}
  html[data-theme="field-workbench"] .command-deck{padding:0;border:0;background:none;margin:16px 0 12px}

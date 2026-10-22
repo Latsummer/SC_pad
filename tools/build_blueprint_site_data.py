@@ -37,7 +37,7 @@ def main() -> None:
                 material_index[payload["mineral"]["id"]] += 1
         blueprints.append({
             key: item.get(key)
-            for key in ("id", "name", "name_zh", "name_en", "category", "type_group", "type_subtype", "manufacturer", "size", "craft_time_seconds")
+            for key in ("id", "name", "name_zh", "name_en", "category", "type_group", "type_subtype", "manufacturer", "size", "craft_time_seconds", "component_class", "component_grade")
         } | {"materials": materials, "quality_path": quality["quality_paths"].get(item["id"]) if quality else None})
 
     payload = {

@@ -167,6 +167,12 @@ def build(capture, data_dir, capture_name, raw_sha):
         if any(material_signature(item['materials']) != expected for item in candidates):
             raise ValueError(f"Card/detail material mismatch: {entry['recipe_id']}")
         item = candidates[0]
+        # Public cards explicitly label component class and grade together.
+        component_labels = {match.groups() for candidate in candidates
+                            for match in re.finditer(r'^(Military|Civilian|Stealth|Industrial|Competition) ([A-D])$', candidate['raw_text'], re.M)}
+        if len(component_labels) > 1:
+            raise ValueError(f"Conflicting component classification: {entry['recipe_id']}")
+        item['component_class'], item['component_grade'] = next(iter(component_labels), (None, None))
         item['id'] = entry['recipe_id']
         item['name'] = item['name'].replace('⚠', '').strip()
         for material in item['materials']:
