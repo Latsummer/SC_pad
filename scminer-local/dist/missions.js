@@ -13,13 +13,14 @@
   const SYSTEMS = {Stanton:'斯坦顿',Pyro:'派罗',Nyx:'尼克斯',Multi:'跨星系',Unknown:'地点未记录'};
   const GROUPS = {overview:'任务概览', requirements:'接取条件', combat:'战斗情报', calculator:'声望规划'};
   const labels = {'BLUEPRINT REWARDS':'蓝图奖励','PROVIDED BLUEPRINT':'任务提供的蓝图','YOU RECEIVE':'可获得物品','ITEM REWARDS':'物品奖励','REQUIRED ITEMS':'交付物品','HAULING ORDERS':'运输要求','PREREQUISITE MISSIONS':'前置任务','MISSION CHAIN':'任务链','REQUIRED STANDING':'声望门槛','REPUTATION LOCKOUT':'声望排斥条件','REQUIRED SCENARIO':'所需场景／活动','AVAILABLE AT':'接取地点','AVAILABLE IN':'可出现区域','SPAWN AREA':'出现范围','LOCATION TRIGGER':'地点触发条件','LOCATION VARIANTS':'地点组合','SHIP ENCOUNTERS':'遭遇舰船','FAILURE PENALTIES':'失败惩罚'};
-  const title = (m) => cleanText(m.name_zh || m.name_en).split('\n')[0].trim();
+  const titleCache=new WeakMap(), searchIndex=new WeakMap(), collator=new Intl.Collator('zh-CN');
+  const title = (m) => titleCache.get(m) ?? cleanText(m.name_zh || m.name_en).split('\n')[0].trim();
   const contractorLabels = {};
   const state = {catalog:null, all:[], quick:'all', rewardBlueprint:new URLSearchParams(location.search).get('reward_blueprint') || '', types:new Set(), visible:24, current:null, detail:null, tab:'overview', request:0};
   const shardCache = new Map();
+  let query='';
   function matches(m) {
-    const query = normalize($('missionSearch').value);
-    return (!state.rewardBlueprint || (m.reward_blueprints || []).includes(state.rewardBlueprint)) && (!query || normalize([m.name_en,m.name_zh,...(m.name_notes_zh || []),m.contractor,m.contractor_zh,TYPES[m.type],m.type,m.rewards_search].join(' ')).includes(query)) &&
+    return (!state.rewardBlueprint || (m.reward_blueprints || []).includes(state.rewardBlueprint)) && (!query || searchIndex.get(m).includes(query)) &&
       ($('missionSystem').value === 'all' || m.system === $('missionSystem').value) &&
       (!state.types.size || state.types.has(m.type)) &&
       ($('missionRank').value === 'all' || ($('missionRank').value === 'unknown' ? m.minimum_rank == null : m.minimum_rank === Number($('missionRank').value))) &&
@@ -28,8 +29,9 @@
   }
   function render() {
     if (!state.catalog) return;
+    query=normalize($('missionSearch').value);
     const sort = $('missionSort').value;
-    const results = state.all.filter(matches).sort((a,b) => sort === 'reward' ? (b.reward ?? -1)-(a.reward ?? -1) || title(a).localeCompare(title(b),'zh-CN') : sort === 'reputation' ? (b.reputation ?? -1)-(a.reputation ?? -1) || title(a).localeCompare(title(b),'zh-CN') : title(a).localeCompare(title(b),'zh-CN'));
+    const results = state.all.filter(matches).sort((a,b) => sort === 'reward' ? (b.reward ?? -1)-(a.reward ?? -1) || collator.compare(title(a),title(b)) : sort === 'reputation' ? (b.reputation ?? -1)-(a.reputation ?? -1) || collator.compare(title(a),title(b)) : collator.compare(title(a),title(b)));
     $('missionSummary').innerHTML = `<strong>${results.length.toLocaleString('zh-CN')}</strong> 个任务 · 已显示 ${Math.min(results.length,state.visible)}`;
     $('applyMissionFilters').textContent = `查看 ${results.length} 个任务`;
     $('missionResults').innerHTML = results.slice(0,state.visible).map((m) => `<button type="button" class="mission-card" data-mission="${escape(m.id)}" aria-label="查看任务：${escape(title(m))}"><div class="mission-card-top"><span class="mission-card-classification"><span class="mission-system-chip" data-system="${escape(m.system)}">${escape(SYSTEMS[m.system] || m.system)}</span><span class="mission-type-chip">${escape(TYPES[m.type] || m.type)}</span></span><span class="mission-tag${m.illegal ? ' danger' : ''}">${m.illegal == null ? '合法性未记录' : m.illegal ? '非法' : '合法'}</span></div><div><h2>${escape(title(m))}</h2>${m.name_notes_zh?.length ? `<div class="mission-title-notes" aria-label="社区汉化任务说明" title="社区汉化任务说明">${m.name_notes_zh.map(note => `<span>${escape(note)}</span>`).join('')}</div>` : ''}${m.name_zh ? `<div class="mission-en">${escape(m.name_en)}</div>` : ''}<div class="mission-en">${escape(m.contractor_zh || m.contractor)}</div></div><div class="mission-tags">${m.hauling?.pickups != null && m.hauling?.dropoffs != null ? `<span class="mission-tag">${m.hauling.pickups} 取 → ${m.hauling.dropoffs} 送</span>` : ''}${m.hauling?.total_scu ? `<span class="mission-tag">${escape(m.hauling.total_scu)} SCU</span>` : ''}${m.minimum_rank != null ? `<span class="mission-tag">接取 Lv.${m.minimum_rank}</span>` : ''}${m.blueprints ? '<span class="mission-tag accent">蓝图奖励</span>' : ''}${m.shareable === true ? '<span class="mission-tag">可共享</span>' : m.shareable === false ? '<span class="mission-tag">单人</span>' : ''}${m.once_only ? '<span class="mission-tag">一次性</span>' : ''}</div><div class="mission-card-stats"><div><small>基础报酬 / aUEC</small><strong>${compactReward(m.reward)}</strong></div><div><small>基础声望 / XP</small><strong class="mission-rep">${format(m.reputation)}</strong></div><span class="mission-arrow" aria-hidden="true">↗</span></div></button>`).join('') || '<div class="mission-empty">没有符合条件的任务。<br>试试其他关键词，或重置筛选条件。</div>';
@@ -299,10 +301,13 @@
   window.addEventListener('popstate',() => { const id = new URLSearchParams(location.search).get('id'); if (id) openDetail(id,false); else if ($('missionDetail').open) $('missionDetail').close(); });
   async function load() {
     try {
-      const response = await fetch('missions/index.json');
+      const response = await fetch('missions/index.json?v=7b1f3b50b3ff');
       if (!response.ok) throw Error('索引读取失败');
       state.catalog = await response.json(); state.all = state.catalog.missions;
-      state.all.forEach((m) => { contractorLabels[m.contractor] = m.contractor_zh || m.contractor; });
+      state.all.forEach((m) => {
+        titleCache.set(m,title(m));
+        searchIndex.set(m,normalize([m.name_en,m.name_zh,...(m.name_notes_zh || []),m.contractor,m.contractor_zh,TYPES[m.type],m.type,m.rewards_search].join(' ')));
+        contractorLabels[m.contractor] = m.contractor_zh || m.contractor; });
       const date = state.catalog.source.captured_at.slice(0,10);
       $('missionVersion').textContent = `${state.catalog.source.game_data_version || date} · 任务档案`;
       $('missionDataNote').textContent = `SCMDB 公开页面采集于 ${date}，共 ${state.all.length} 个列表任务。任务版本 ${state.catalog.source.game_data_version || '未记录'}，不代表实时可接任务或游戏全部任务。中文参考 SCMDB 社区翻译；缺失或有歧义时保留英文。`;

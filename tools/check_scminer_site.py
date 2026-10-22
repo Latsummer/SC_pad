@@ -42,10 +42,16 @@ def check_archives_and_assets():
         if not (site / 'dist' / urlsplit(entry).path).exists():
             raise SystemExit(f'Missing service-worker asset: {entry}')
     shell_entries = set(json.loads(shell[1]))
-    for page in ['index.html','blueprints.html']:
+    for page in ['index.html','blueprints.html','missions.html']:
         for ref in re.findall(r'(?:src|href)="([^"]+\.(?:js|css)(?:\?[^"]*)?)"', (site / 'dist' / page).read_text()):
             if './' + ref not in shell_entries:
                 raise SystemExit(f'Uncached shell resource: {page}: {ref}; run make site-cache')
+    # Mission data and its consumers must change versions together.
+    for data_file,consumer in [('missions/index.json','missions.js'),('missions/blueprint-sources.json','blueprints.js')]:
+        digest=hashlib.sha256((site / 'dist' / data_file).read_bytes()).hexdigest()[:12]
+        ref=data_file+'?v='+digest
+        if "fetch('"+ref+"')" not in (site / 'dist' / consumer).read_text() or './'+ref not in shell_entries:
+            raise SystemExit('Stale mission data cache version; run make site-cache')
     manifest = json.loads((site / 'dist/manifest.webmanifest').read_text())
     for icon in manifest['icons']:
         if not (site / 'dist' / urlsplit(icon['src']).path).is_file():
