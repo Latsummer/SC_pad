@@ -6,12 +6,12 @@ from pathlib import Path
 import re
 
 ROOT=Path(__file__).resolve().parents[1]
-ASSETS=('missions/index.json','missions/blueprint-sources.json','missions.js','missions.css','theme.js','styles.css','app.js','app-data.js','blueprint-index.js','blueprints-data.js','blueprint-locale.js','blueprint-quality-model.js','blueprint-quality.js','blueprints.js')
+ASSETS=('missions/index.json','missions/blueprint-sources.json','missions/blueprint-source-names.json','missions.js','missions.css','theme.js','styles.css','app.js','app-data.js','blueprint-index.js','blueprints-data.js','blueprint-locale.js','blueprint-quality-model.js','blueprint-quality.js','blueprints.js')
 
 
 def refresh(dist):
     # Data hashes must be embedded before hashing their consuming scripts.
-    for asset,consumers in {'missions/index.json':['missions.js'],'missions/blueprint-sources.json':['blueprints.js']}.items():
+    for asset,consumers in {'missions/index.json':['missions.js'],'missions/blueprint-sources.json':['blueprints.js'],'missions/blueprint-source-names.json':['blueprints.js']}.items():
         digest=hashlib.sha256((dist/asset).read_bytes()).hexdigest()[:12]
         for consumer in consumers:
             page=dist/consumer

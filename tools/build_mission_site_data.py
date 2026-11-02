@@ -295,8 +295,10 @@ def build(capture, output_root, previous=None):
                     if evidence not in pools_by_name[item['name_en']]:
                         pools_by_name[item['name_en']].append(evidence)
         for name, pools in pools_by_name.items():
-            reverse[name].append({'id':mission['id'], 'name':mission['name_zh'] or mission['name_en'], 'system':mission['system'], 'minimum_rank':mission['minimum_rank'], 'pools':pools})
+            reverse[name].append({'id':mission['id'], 'name':mission['name_zh'] or mission['name_en'], 'system':mission['system'], 'contractor':mission['contractor_zh'] or mission['contractor'], 'type':mission['type'], 'notes':mission['name_notes_zh'], 'minimum_rank':mission['minimum_rank'], 'pools':pools})
     write_json(output_root / 'dist/missions/blueprint-sources.json', {'source':catalog['source'], 'blueprints':dict(sorted(reverse.items()))})
+    # Lightweight manifest for marking which blueprints have mission sources, without loading the full reverse index.
+    write_json(output_root / 'dist/missions/blueprint-source-names.json', {'source':catalog['source'], 'names':sorted(reverse)})
     # This directory is exclusively generated; remove obsolete immutable shards.
     current = set(shard_files.values())
     for path in (output_root / 'dist/missions').glob('details-*.json'):

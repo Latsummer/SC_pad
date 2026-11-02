@@ -86,6 +86,8 @@ class MissionCatalogTests(unittest.TestCase):
             self.assertEqual(set(mission['reward_blueprints']), {name for name, key in expected if key == mission['id']})
         self.assertEqual(expected, {(name, task['id']) for name,tasks in reverse.items() for task in tasks})
         self.assertTrue(reverse.get('Karna "Fate" Rifle'))
+        names = json.loads((self.output / 'dist/missions/blueprint-source-names.json').read_text())['names']
+        self.assertEqual(names, sorted(reverse.keys()))
 
     def test_community_notes_across_mission_types(self):
         for category in ['Mercenary','Refueling','Investigation','Salvage','Delivery','Hauling - Local']:

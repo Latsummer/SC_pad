@@ -49,6 +49,8 @@
 
   const normalize = (value) => String(value || "").normalize("NFKC").toLocaleLowerCase().replace(/[\s_\-()（）]/g, "");
 
+  const tagHue = text => { let hash = 0; for (const char of String(text)) hash = (hash * 31 + char.codePointAt(0)) >>> 0; return hash % 360; };
+
   function nameEntry(id, type = "minerals") {
     return locale[type]?.[id] || { en: type === "minerals" ? mineralById.get(id)?.name : locationById.get(id)?.name, zh: "", aliases_en: [], aliases_zh: [] };
   }
@@ -155,7 +157,7 @@
       return;
     }
     els.selected.innerHTML = state.selected.map((id) => `
-      <span class="mineral-chip">
+      <span class="mineral-chip" style="--tag-hue:${tagHue(id)}">
         ${escapeHtml(displayName(id))}
         <button type="button" data-remove="${id}" aria-label="移除 ${escapeHtml(displayName(id))}">×</button>
       </span>`).join("");
