@@ -35,6 +35,9 @@
 
 .mission-card-top{align-items:flex-start}.mission-card-classification{display:flex;flex-wrap:wrap;gap:6px;min-width:0}.mission-system-chip,.mission-type-chip{display:inline-block;padding:4px 9px;border:1px solid var(--line-bright);border-radius:6px;font-size:12px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}.mission-system-chip{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface));border-color:color-mix(in srgb,var(--gold) 38%,var(--line))}.mission-type-chip{color:var(--cyan);background:var(--cyan-soft);border-color:color-mix(in srgb,var(--cyan) 32%,var(--line))}.mission-card-top>.mission-tag{flex-shrink:0;margin-top:3px}
 
-.mission-system-chip[data-system="Nyx"]{color:#8cc5ff;background:#173a60;border-color:#438ad0}
-.mission-system-chip[data-system="Pyro"]{color:#ffe17a;background:#514218;border-color:#cba633}
-.mission-system-chip[data-system="Stanton"]{color:#ffb079;background:#633016;border-color:#c6672d}
+/* Hash-tinted classification tags: inline --tag-hue (0-360) drives text/background/border. */
+.mission-system-chip[style*="--tag-hue"], .mission-type-chip[style*="--tag-hue"], .mission-tag[style*="--tag-hue"] {
+  color: hsl(var(--tag-hue, 210) 65% 72%);
+  background: hsl(var(--tag-hue, 210) 45% 55% / .12);
+  border-color: hsl(var(--tag-hue, 210) 45% 55% / .35);
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = "xinghang-assistant-fd6188e5660ca80f";
+const CACHE_NAME = "xinghang-assistant-dc14d5f5d29eece9";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -10,19 +10,20 @@ const APP_SHELL = [
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png?v=xinghang-2",
   "./missions/index.json?v=7b1f3b50b3ff",
-  "./missions/blueprint-sources.json?v=643f365edb18",
-  "./missions.js?v=2945c17e333a",
-  "./missions.css?v=33a0a59744e6",
+  "./missions/blueprint-sources.json?v=a9a7bb1037e4",
+  "./missions/blueprint-source-names.json?v=a8d1d48f9510",
+  "./missions.js?v=445b8afc92cc",
+  "./missions.css?v=98e5fb3dfcb3",
   "./theme.js?v=7c30c0eee6dd",
-  "./styles.css?v=4cffbcfe1943",
-  "./app.js?v=404e3ef9bb51",
+  "./styles.css?v=8e7b46d5c50a",
+  "./app.js?v=b1ff64279bf2",
   "./app-data.js?v=2c2c3b7a586e",
   "./blueprint-index.js?v=b34bcdc532f8",
   "./blueprints-data.js?v=b4393f5a4cfb",
   "./blueprint-locale.js?v=803777efdb68",
   "./blueprint-quality-model.js?v=5d610ec7d7c0",
-  "./blueprint-quality.js?v=1c56104124ea",
-  "./blueprints.js?v=9a74240059c9"
+  "./blueprint-quality.js?v=ce7e6394a32a",
+  "./blueprints.js?v=105a2d805b1f"
 ];
 
 self.addEventListener("install", (event) => {

@@ -47,7 +47,7 @@ def check_archives_and_assets():
             if './' + ref not in shell_entries:
                 raise SystemExit(f'Uncached shell resource: {page}: {ref}; run make site-cache')
     # Mission data and its consumers must change versions together.
-    for data_file,consumer in [('missions/index.json','missions.js'),('missions/blueprint-sources.json','blueprints.js')]:
+    for data_file,consumer in [('missions/index.json','missions.js'),('missions/blueprint-sources.json','blueprints.js'),('missions/blueprint-source-names.json','blueprints.js')]:
         digest=hashlib.sha256((site / 'dist' / data_file).read_bytes()).hexdigest()[:12]
         ref=data_file+'?v='+digest
         if "fetch('"+ref+"')" not in (site / 'dist' / consumer).read_text() or './'+ref not in shell_entries:

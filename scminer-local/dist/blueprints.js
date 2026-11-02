@@ -6,7 +6,7 @@
   if (!catalog || !mining || !locale) { document.body.innerHTML = '<div class="empty-list">蓝图数据载入失败，请重新生成离线数据。</div>'; return; }
 
   const mineralById = new Map(mining.minerals.map((item) => [item.id, item]));
-  const state = { selected: [], type: "all", subtype: "all", slot: "all", size: "all", component_class: "all", component_grade: "all", visible: 24 };
+  const state = { selected: [], type: "all", subtype: "all", slot: "all", size: "all", component_class: "all", component_grade: "all", sourceOnly: false, visible: 24 };
   const els = {
     version: document.querySelector("#blueprintVersion"), search: document.querySelector("#blueprintSearch"),
     materialSearch: document.querySelector("#materialSearch"), suggestions: document.querySelector("#materialSuggestions"),
@@ -17,8 +17,10 @@
     drawer: document.querySelector("#blueprintFilterDrawer"), openFilters: document.querySelector("#openBlueprintFilters"), closeFilters: document.querySelector("#closeBlueprintFilters"),
     backdrop: document.querySelector("#blueprintFilterBackdrop"), applyFilters: document.querySelector("#applyBlueprintFilters"),
     activeFilters: document.querySelector("#activeBlueprintFilters"),
+    sourceOnly: document.querySelector("#sourceOnlyFilter"),
   };
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+  const tagHue = text => { let hash = 0; for (const char of String(text)) hash = (hash * 31 + char.codePointAt(0)) >>> 0; return hash % 360; };
   const normalize = (value) => String(value || "").normalize("NFKC").toLocaleLowerCase().replace(/[\s_\-()（）]/g, "");
   const mineralName = (id) => { const entry = locale.minerals[id]; return entry?.zh ? `${entry.zh} (${entry.en})` : entry?.en || mineralById.get(id)?.name || id; };
   const formatTime = (seconds) => seconds >= 60 ? `${Math.floor(seconds / 60)} 分 ${seconds % 60 ? `${seconds % 60} 秒` : ""}`.trim() : `${seconds} 秒`;
@@ -42,6 +44,7 @@
     if (omit !== "slot" && state.slot !== "all" && !item.materials.some((material) => material.slot === state.slot)) return false;
     if (omit !== "size" && state.size !== "all" && item.size !== Number(state.size)) return false;
     for (const key of ["component_class", "component_grade"]) if (omit !== key && state[key] !== "all" && item[key] !== state[key]) return false;
+    if (state.sourceOnly && sourceNames && !sourceNames.has(item.name_en || item.name)) return false;
     return true;
   }
   function setOptions(element, label, entries, currentKey) {
@@ -66,7 +69,7 @@
     setOptions(els.size, "全部尺寸", countBy(catalog.blueprints.filter((item) => matches(item, "size")), "size").sort((a,b) => Number(a[0]) - Number(b[0])).map(([size, count]) => [size, count, `S${size}`]), "size");
   }
   function renderMaterialPicker() {
-    els.selected.innerHTML = state.selected.length ? state.selected.map((id) => `<span class="mineral-chip">${escapeHtml(mineralName(id))}<button type="button" data-remove="${id}" aria-label="移除 ${escapeHtml(mineralName(id))}">×</button></span>`).join("") : '<span class="selection-hint">未选择材料</span>';
+    els.selected.innerHTML = state.selected.length ? state.selected.map((id) => `<span class="mineral-chip" style="--tag-hue:${tagHue(id)}">${escapeHtml(mineralName(id))}<button type="button" data-remove="${id}" aria-label="移除 ${escapeHtml(mineralName(id))}">×</button></span>`).join("") : '<span class="selection-hint">未选择材料</span>';
     const query = normalize(els.materialSearch.value);
     const matches = materialIds.filter((id) => id !== undefined && !state.selected.includes(id) && normalize(mineralName(id)).includes(query)).sort((a,b) => mineralName(a).localeCompare(mineralName(b), "zh-CN"));
     els.suggestions.innerHTML = matches.map((id) => `<button class="suggestion" type="button" data-add="${id}"><span>${escapeHtml(mineralName(id))}</span><small>${materialCounts.get(id) || 0} 张蓝图</small></button>`).join("") || '<div class="empty-list">没有匹配的已采集矿物</div>';
@@ -80,12 +83,13 @@
     if (state.size !== "all") tags.push({ key: "size", label: `S${state.size}` });
     if (state.component_class !== "all") tags.push({key:"component_class",label:componentClassName(state.component_class)});
     if (state.component_grade !== "all") tags.push({key:"component_grade",label:`${state.component_grade} 级`});
-    els.activeFilters.innerHTML = tags.map((tag) => `<button type="button" class="active-filter-chip" data-clear-filter="${tag.key}"${tag.value ? ` data-filter-value="${escapeHtml(tag.value)}"` : ""}><span>${escapeHtml(tag.label)}</span><b aria-hidden="true">×</b></button>`).join("");
+    if (state.sourceOnly) tags.push({key:"sourceOnly",label:"可从任务产出"});
+    els.activeFilters.innerHTML = tags.map((tag) => `<button type="button" class="active-filter-chip" style="--tag-hue:${tagHue(tag.key + ':' + (tag.value || state[tag.key] || ''))}" data-clear-filter="${tag.key}"${tag.value ? ` data-filter-value="${escapeHtml(tag.value)}"` : ""}><span>${escapeHtml(tag.label)}</span><b aria-hidden="true">×</b></button>`).join("");
     els.activeFilters.hidden = !tags.length;
   }
   function renderResults() {
     const filtered = sortedBlueprints.filter((item) => matches(item));
-    const activeCount = state.selected.length + [state.type, state.subtype, state.slot, state.size, state.component_class, state.component_grade].filter((value) => value !== "all").length;
+    const activeCount = state.selected.length + [state.type, state.subtype, state.slot, state.size, state.component_class, state.component_grade].filter((value) => value !== "all").length + (state.sourceOnly ? 1 : 0);
     if (els.openFilters) els.openFilters.textContent = activeCount ? `筛选 ${activeCount}` : "筛选";
     if (els.applyFilters) els.applyFilters.textContent = `查看 ${filtered.length.toLocaleString("zh-CN")} 条结果`;
     const shown = filtered.slice(0, state.visible);
@@ -104,6 +108,7 @@
       ? `<div class="load-more-row"><span>已显示 ${shown.length.toLocaleString("zh-CN")} / ${filtered.length.toLocaleString("zh-CN")}</span><button class="secondary-button" type="button" data-load-more>加载更多 ${Math.min(24, remaining)} 条<small>剩余 ${remaining.toLocaleString("zh-CN")} 条</small></button></div>`
       : filtered.length > 24 ? `<p class="result-limit">已显示全部 ${filtered.length.toLocaleString("zh-CN")} 条结果</p>` : "";
     els.results.innerHTML = cards + loadMore;
+    markSourceButtons();
   }
   els.results.addEventListener('click',event=>{
     const button=event.target.closest('[data-quality-id]');
@@ -112,6 +117,21 @@
     if(item) window.BlueprintQuality?.open(item,button);
   });
   let missionSourcesPromise, sourceRequest = 0;
+  let sourceNames = null, sourceNamesPromise;
+  // Tiny manifest answers "does this blueprint have mission sources" without loading the full reverse index.
+  function markSourceButtons() {
+    if (!sourceNames) return;
+    els.results.querySelectorAll('.blueprint-source-trigger').forEach(button => {
+      const has = sourceNames.has(button.dataset.blueprintName);
+      button.disabled = !has;
+      button.classList.toggle('no-sources', !has);
+      if (!has) button.textContent = '无产出任务';
+    });
+  }
+  function loadSourceNames() {
+    if (!sourceNamesPromise) sourceNamesPromise = fetch('missions/blueprint-source-names.json?v=a8d1d48f9510').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).then(data => { sourceNames = new Set(data.names); markSourceButtons(); }).catch(() => { sourceNamesPromise = null; });
+    return sourceNamesPromise;
+  }
   const sourcesDialog = document.createElement('dialog');
   sourcesDialog.className = 'blueprint-sources-dialog';
   sourcesDialog.setAttribute('aria-labelledby','blueprintSourceTitle');
@@ -126,17 +146,19 @@
     if (!button) return;
     const request = ++sourceRequest;
     const name = button.dataset.blueprintName;
+    if (sourceNames && !sourceNames.has(name)) return;
     sourcesDialog.querySelector('h2').textContent = button.dataset.blueprintTitle;
     const body = sourcesDialog.querySelector('.blueprint-mission-list');
     body.textContent = '正在查询产出任务…';
     if (!sourcesDialog.open) sourcesDialog.showModal();
     try {
-      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json?v=643f365edb18').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
+      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json?v=a9a7bb1037e4').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
       const data = await missionSourcesPromise;
       if (!sourcesDialog.open || request !== sourceRequest) return;
       const tasks = data.blueprints[name] || [];
       const systems = {Nyx:'尼克斯',Pyro:'派罗',Stanton:'斯坦顿',Multi:'跨星系'};
-      body.innerHTML = tasks.length ? `<p class="blueprint-source-note">已记录 ${tasks.length} 个产出任务。概率为奖励池触发率，不是单张蓝图掉落率。</p><div class="blueprint-source-grid">` + tasks.map(task => `<a class="blueprint-source-task" href="missions.html?id=${encodeURIComponent(task.id)}"><span class="blueprint-source-meta">${escapeHtml(systems[task.system] || task.system)}${task.minimum_rank != null ? ` · 接取 Lv.${task.minimum_rank}` : ''}</span><strong>${escapeHtml(task.name)}</strong><small>${task.pools.map(pool => `${pool.chance_percent}% 触发 · ${pool.candidate_count} 选 1`).join('；')} →</small></a>`).join('') + `</div><a class="blueprint-source-all" href="missions.html?reward_blueprint=${encodeURIComponent(name)}">在任务页查看全部 ${tasks.length} 个任务 →</a>` : '<p class="blueprint-source-note">当前采集数据未记录产出此蓝图的任务，不代表游戏中无法通过任务获得。</p>';
+      const types = {'Battaglia':'巴塔利亚','RSI Discovery Event':'RSI 探索活动','Mercenary':'雇佣兵','Bounty Hunter':'赏金猎人','Delivery':'运送','Hauling':'货运','Hauling - Stellar':'星系内货运','Hauling - Planetary':'行星货运','Hauling - Interstellar':'星际货运','Hauling - Local':'本地货运','Ship Mining':'船采','Ground Vehicle Mining':'地面载具采矿','Hand Mining':'手采','Salvage':'打捞','Refueling':'加油','Maintenance':'维修','Investigation':'调查','Collection':'收集','Courier':'快递','Wikelo - Vehicles':'维克洛 · 载具','Wikelo - Other Items':'维克洛 · 物品','Other':'其他','Priority':'优先任务','PvP Missions':'玩家对抗'};
+      body.innerHTML = tasks.length ? `<p class="blueprint-source-note">已记录 ${tasks.length} 个产出任务。概率为奖励池触发率，不是单张蓝图掉落率。</p><div class="blueprint-source-grid">` + tasks.map(task => `<a class="blueprint-source-task" href="missions.html?id=${encodeURIComponent(task.id)}"><span class="blueprint-source-meta">${escapeHtml(systems[task.system] || task.system)}${task.minimum_rank != null ? ` · 接取 Lv.${task.minimum_rank}` : ''}</span><strong>${escapeHtml(task.name)}</strong><span class="blueprint-source-tags"><span style="--tag-hue:${tagHue(task.contractor)}">${escapeHtml(task.contractor)}</span><span style="--tag-hue:${tagHue(task.type)}">${escapeHtml(types[task.type] || task.type)}</span></span>${task.notes?.length ? `<span>${task.notes.map(escapeHtml).join(' · ')}</span>` : ''}<small>${task.pools.map(pool => `${pool.chance_percent}% 触发 · ${pool.candidate_count} 选 1`).join('；')} →</small></a>`).join('') + `</div><a class="blueprint-source-all" href="missions.html?reward_blueprint=${encodeURIComponent(name)}">在任务页查看全部 ${tasks.length} 个任务 →</a>` : '<p class="blueprint-source-note">当前采集数据未记录产出此蓝图的任务，不代表游戏中无法通过任务获得。</p>';
     } catch (_) {
       if (sourcesDialog.open && request === sourceRequest) body.textContent = '任务来源暂时无法载入，请联网后关闭并重新查询。';
     }
@@ -162,6 +184,8 @@
     if (materialIds.includes(id) && !state.selected.includes(id)) state.selected.push(id);
   });
   renderAll();
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 600));
+  idle(loadSourceNames);
   const initialRecipe=new URLSearchParams(location.search).get('blueprint');
   if(initialRecipe) {const item=catalog.blueprints.find(value=>value.id===initialRecipe);if(item) window.BlueprintQuality?.open(item);}
   if (els.version) els.version.textContent = `${catalog.counts.blueprints.toLocaleString("zh-CN")} 张蓝图 · 离线数据`;
@@ -174,16 +198,17 @@
   els.type.addEventListener("change", () => { state.type = els.type.value; state.subtype = "all"; restartResults(); });
   [els.component_class, els.component_grade].forEach(element => element.addEventListener("change", () => { state[element === els.component_class ? "component_class" : "component_grade"] = element.value; restartResults(); }));
   [els.subtype, els.slot, els.size].forEach((element) => element.addEventListener("change", () => { state[element === els.subtype ? "subtype" : element === els.slot ? "slot" : "size"] = element.value; restartResults(); }));
-  els.reset.addEventListener("click", () => { state.type = state.subtype = state.slot = state.size = state.component_class = state.component_grade = "all"; els.search.value = els.materialSearch.value = ""; closeSuggestions(); restartResults(); });
+  els.reset.addEventListener("click", () => { state.type = state.subtype = state.slot = state.size = state.component_class = state.component_grade = "all"; state.sourceOnly = false; if (els.sourceOnly) els.sourceOnly.checked = false; els.search.value = els.materialSearch.value = ""; closeSuggestions(); restartResults(); });
+  els.sourceOnly?.addEventListener("change", () => { state.sourceOnly = els.sourceOnly.checked; loadSourceNames().then(restartResults); });
   els.openFilters?.addEventListener("click", () => setDrawer(true));
   els.closeFilters?.addEventListener("click", () => setDrawer(false));
   els.backdrop?.addEventListener("click", () => setDrawer(false));
   els.applyFilters?.addEventListener("click", () => { setDrawer(false); els.summary.scrollIntoView({ behavior: "smooth", block: "start" }); });
-  els.activeFilters?.addEventListener("click", (event) => {
-    const chip = event.target.closest("[data-clear-filter]");
+  els.activeFilters?.addEventListener("click", (event) => {    const chip = event.target.closest("[data-clear-filter]");
     if (!chip) return;
     const key = chip.dataset.clearFilter;
     if (key === "material") state.selected = state.selected.filter((id) => id !== chip.dataset.filterValue);
+    else if (key === "sourceOnly") { state.sourceOnly = false; if (els.sourceOnly) els.sourceOnly.checked = false; }
     else state[key] = "all";
     restartResults();
   });

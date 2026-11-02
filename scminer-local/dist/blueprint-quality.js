@@ -20,7 +20,22 @@
   const toolbar=dialog.querySelector('.bp-quality-toolbar');
   function changed(recipe,preset,index) {return preset.values[index]!==recipe.stats[index].base;}
   function information(info) {
-    return info.map(line=>words.tags?.[line] || words.sections?.[line] || line.replace(/^Size\s*(\d+)$/,'S$1').replace(/^Mag:\s*(\d+)$/,'弹容量 $1')).map(line=>`<span>${escape(line)}</span>`).join('');
+    return info.map(line=>words.tags?.[line] || words.sections?.[line] || line.replace(/^Size\s*(\d+)$/,'S$1').replace(/^Mag:\s*(\d+)$/,'弹容量 $1')).map(line=>`<span style="--tag-hue:${tagHue(line)}">${escape(line)}</span>`).join('');
+  }
+  function pctMark(stat,value,direction) {
+    const base=num(stat.base),now=num(value);
+    const pct=Number.isFinite(base)&&Number.isFinite(now)&&base?(now-base)/base*100:NaN;
+    if(!Number.isFinite(pct)||Math.abs(pct)<0.005) return '';
+    const good=direction!==0&&Math.sign(pct)===direction;
+    return `<small class="${direction===0?'':good?'up':'down'}">${pct>0?'+':''}${pct.toFixed(2)}%</small>`;
+  }
+  function statDirection(index,qualities) {
+    const {recipe}=current,m=model.models[index];
+    if(!m.verified||!m.slots.length) return 0;
+    const lo=qualities.map(Number),hi=qualities.map(Number);
+    m.slots.forEach(slotIndex=>{const q=recipe.slots[slotIndex].quality;if(q){lo[slotIndex]=Number(q.min);hi[slotIndex]=Number(q.max);}});
+    const vLo=m.calculate(lo),vHi=m.calculate(hi);
+    return Number.isFinite(vLo)&&Number.isFinite(vHi)?Math.sign(vHi-vLo):0;
   }
   function renderStats(recipe,preset) {
     const groups=new Map();
@@ -29,17 +44,27 @@
       const section=stat.section || '成品参数';
       if(!groups.has(section)) groups.set(section,[]);
       const value=preset.values[index];
-      const estimated=selected==='custom' && model.models[index].verified;
-      const unavailable=selected==='custom' && !model.models[index].verified && !model.models[index].fixed;
-      groups.get(section).push(`<div class="bp-quality-stat${changed(recipe,preset,index)?' changed':''}"><span>${escape(translated('stats',stat.label))}</span><strong>${escape(value)}</strong>${estimated?'<small>估算值</small>':unavailable?'<small>规则未核对，保留预设值</small>':''}${changed(recipe,preset,index)?`<small>原始值 ${escape(stat.base)}</small>`:'<small>与原始值相同</small>'}</div>`);
+      const isChanged=changed(recipe,preset,index);
+      groups.get(section).push(`<tr${isChanged?' class="changed"':''}><td>${escape(translated('stats',stat.label))}</td><td class="bp-quality-num"><strong>${escape(value)}</strong></td><td class="bp-quality-delta">${pctMark(stat,value,statDirection(index,preset.qualities))||'<span class="bp-quality-same">—</span>'}</td></tr>`);
     });
     if(!groups.size) return `<p class="bp-quality-empty">${onlyChanges?'此预设没有变化的参数。':'此物品没有记录数值型成品参数。'}</p>`;
-    return [...groups].map(([section,rows])=>`<section class="bp-quality-stat-section"><h4>${escape(translated('sections',section))}</h4>${section==='DAMAGE RESISTANCE'?'<p class="bp-quality-caption">数值为承受伤害倍率，越低代表减伤越高。</p>':''}<div class="bp-quality-stat-grid">${rows.join('')}</div></section>`).join('');
+    return [...groups].map(([section,rows])=>`<section class="bp-quality-stat-section"><h4>${escape(translated('sections',section))}</h4>${section==='DAMAGE RESISTANCE'?'<p class="bp-quality-caption">数值为承受伤害倍率，越低代表减伤越高。</p>':''}<table class="bp-quality-table"><thead><tr><th>属性</th><th>数值</th><th>较原始值</th></tr></thead><tbody>${rows.join('')}</tbody></table></section>`).join('');
   }
-  function ruleText(rule) {
-    if(rule.kind==='multiplier_endpoints') return `<p class="bp-quality-rule">品质 ${rule.quality_min}–${rule.quality_max} · 倍率 ×${rule.multiplier_at_min} → ×${rule.multiplier_at_max}<br>基础品质 ${rule.base_quality}</p>`;
-    if(rule.kind==='steps') return `<details class="bp-quality-steps"><summary>查看品质分档</summary><ul>${rule.tiers.map(tier=>`<li><span>品质 ${tier.min}–${tier.max}</span><strong>${tier.delta>0?'+':''}${tier.delta} 格</strong></li>`).join('')}</ul></details>`;
-    return `<p class="bp-quality-warning">源页面规则异常，暂不据此计算。</p><code class="bp-quality-raw-rule">${escape(rule.raw)}</code>`;
+  const num=text=>Number(String(text).replace(/−/g,'-').match(/[-+]?\d+(?:\.\d+)?/)?.[0]);
+  const tagHue=text=>{let hash=0;for(const char of String(text))hash=(hash*31+char.codePointAt(0))>>>0;return hash%360;};
+  function renderLive(slotIndex,qualities) {
+    const {recipe}=current;
+    const slot=recipe.slots[slotIndex];
+    const values=selected==='custom'?custom.values:recipe.presets[selected].values;
+    return recipe.stats.map((stat,i)=>{
+      const m=model.models[i];
+      if(!m.verified || !m.slots.includes(slotIndex)) return '';
+      const lo=qualities.map(Number),hi=qualities.map(Number);
+      lo[slotIndex]=Number(slot.quality.min);hi[slotIndex]=Number(slot.quality.max);
+      const vLo=m.calculate(lo),vHi=m.calculate(hi);
+      const direction=Number.isFinite(vLo)&&Number.isFinite(vHi)?Math.sign(vHi-vLo):0;
+      return `<span><em>${escape(translated('stats',stat.label))}</em><strong>${escape(values[i])}</strong>${pctMark(stat,values[i],direction)}</span>`;
+    }).join('');
   }
   function renderMaterials(item,recipe,preset) {
     return recipe.slots.map((slot,index)=>{
@@ -49,14 +74,9 @@
       const issue=preset.quality_issues?.find(value=>value.slot===index);
       const issueText=issue?`<p class="bp-quality-warning">来源控件显示：${Object.entries(issue.displayed_values).map(([kind,value])=>`${kind==='number'?'数字框':'滑块'} ${escape(value)}`).join(' · ')}${issue.outside_range?'；包含超出页面标注范围的数值':''}。保留原采集值。</p>`:'';
       const enabled=model?.slotEnabled[index];
-      const controls=slot.quality && enabled?`<div class="bp-quality-controls"><label>材料品质 <input type="number" inputmode="numeric" min="${slot.quality.min}" max="${slot.quality.max}" step="1" data-quality-number="${index}" aria-label="${escape(slots[slot.slot]||slot.slot)}品质" value="${Math.max(Number(slot.quality.min),Number(preset.qualities[index]))}"></label><input type="range" min="${slot.quality.min}" max="${slot.quality.max}" step="1" data-quality-range="${index}" aria-label="${escape(slots[slot.slot]||slot.slot)}品质滑块" value="${Math.max(Number(slot.quality.min),Number(preset.qualities[index]))}"><div class="bp-quality-live" data-quality-live="${index}"></div></div>`:'';
+      const controls=slot.quality && enabled?`<div class="bp-quality-controls"><label>材料品质 <input type="number" inputmode="numeric" min="${slot.quality.min}" max="${slot.quality.max}" step="1" data-quality-number="${index}" aria-label="${escape(slots[slot.slot]||slot.slot)}品质" value="${Math.max(Number(slot.quality.min),Number(preset.qualities[index]))}"></label><input type="range" min="${slot.quality.min}" max="${slot.quality.max}" step="1" data-quality-range="${index}" aria-label="${escape(slots[slot.slot]||slot.slot)}品质滑块" value="${Math.max(Number(slot.quality.min),Number(preset.qualities[index]))}"><div class="bp-quality-live" data-quality-live="${index}">${renderLive(index,preset.qualities)}</div></div>`:'';
       const unavailable=slot.quality && !enabled?'<p class="bp-quality-caption">此槽位规则尚未通过预设校验，暂保留采集结果。</p>':'';
-      const effects=slot.effects.map((effect,number)=>{
-        const label=effect.name.replace(/\s*⚠\s*$/,'');
-        const observed=preset.effects[index]?.[number];
-        return `<div class="bp-quality-effect"><div><strong>${escape(translated('effects',label))}</strong><span>${escape(effect.rule.kind==='steps'?(observed?.multiplier || '').replace(/\bpips?\b/g,'格'):(observed?.multiplier || ''))} ${escape(observed?.delta || '')}</span></div>${ruleText(effect.rule)}</div>`;
-      }).join('');
-      return `<article class="bp-quality-material"><div class="bp-quality-material-heading"><h4>${escape(slots[slot.slot] || slot.slot)}</h4><span>${escape(slot.quantity)}</span></div><p class="bp-quality-material-name">${escape(name)}</p>${slot.quality?`<p class="bp-quality-value">当前品质 <strong>${escape(preset.qualities[index])}</strong><small>可用品质 ${escape(slot.quality.min)}–${escape(slot.quality.max)}</small></p>`:'<p class="bp-quality-no-effect">此槽位没有品质加成</p>'}${controls}${unavailable}${issueText}<div data-quality-effects="${index}">${effects}</div></article>`;
+      return `<article class="bp-quality-material"><div class="bp-quality-material-heading"><h4>${escape(slots[slot.slot] || slot.slot)}</h4><span>${escape(slot.quantity)}</span></div><p class="bp-quality-material-name">${escape(name)}</p>${slot.quality?'':'<p class="bp-quality-no-effect">此槽位没有品质加成</p>'}${controls}${unavailable}${issueText}</article>`;
     }).join('');
   }
   function render() {
@@ -121,11 +141,7 @@
     dialog.querySelector(`[data-quality-number="${index}"]`).value=value;
     dialog.querySelector('.bp-quality-stats').innerHTML=renderStats(recipe,custom);
     dialog.querySelector('.bp-quality-product > .bp-quality-caption').textContent='自定义材料品质 · 规则估算，实际以游戏为准';
-    dialog.querySelectorAll('[data-quality-live]').forEach(live=>{
-    live.innerHTML=recipe.stats.map((stat,i)=>model.models[i].verified && model.models[i].slots.includes(Number(live.dataset.qualityLive))?`<span>${escape(translated('stats',stat.label))}<strong>${escape(custom.values[i])}</strong></span>`:'').join('');});
-    const holder=document.createElement('div');holder.innerHTML=renderMaterials(current.item,recipe,custom);
-    dialog.querySelectorAll('[data-quality-effects]').forEach(node=>{node.innerHTML=holder.querySelector(`[data-quality-effects="${node.dataset.qualityEffects}"]`).innerHTML;});
-    dialog.querySelectorAll('.bp-quality-value strong').forEach((node,i)=>{const qualitySlots=recipe.slots.map((s,i)=>s.quality?i:null).filter(i=>i!==null);node.textContent=custom.qualities[qualitySlots[i]];});
+    dialog.querySelectorAll('[data-quality-live]').forEach(live=>{live.innerHTML=renderLive(Number(live.dataset.qualityLive),custom.qualities);});
   }
   dialog.addEventListener('input',event=>updateQuality(event));
   dialog.addEventListener('change',event=>{

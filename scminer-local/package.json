@@ -1,0 +1,9 @@
+{
+  "name": "scminer-local",
+  "version": "0.0.0",
+  "private": true,
+  "description": "星航助手 / 星际公民随身助手 —— 纯静态发布目录预览（无构建步骤，仅本地开发服务器）",
+  "scripts": {
+    "dev": "node dev-server.mjs"
+  }
+}
