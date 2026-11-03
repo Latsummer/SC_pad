@@ -55,6 +55,9 @@ PendingHidDispatch hid_pending_queue[kHidPendingQueueCapacity];
 uint8_t hid_pending_head = 0;
 uint8_t hid_pending_count = 0;
 
+// Mirrors the header ATTACH switch so loop() can flush HID when it turns off.
+bool attach_was_enabled = true;
+
 uint8_t hid_key(sc_pad::Key key)
 {
     if (key >= sc_pad::Key::A && key <= sc_pad::Key::Z) {
@@ -123,6 +126,15 @@ void clear_hid_pending_queue()
 {
     hid_pending_head = 0;
     hid_pending_count = 0;
+}
+
+// Drops every queued key and releases whatever is currently held. Used when
+// ATTACH is switched off: silencing the panel must also cancel a burst that
+// was already submitted, not only reject new commands.
+void release_all_hid()
+{
+    finish_hid_dispatch();
+    clear_hid_pending_queue();
 }
 
 bool is_queueable_hid_binding(const sc_pad::KeyBinding &binding)
@@ -286,6 +298,11 @@ void send_command(sc_pad::Command command, void *user_data)
         return;
     }
 #endif
+    // Single gate for host-bound keys. The UI keeps the on-screen model alive
+    // while ATTACH is off, so every page arrives here and is dropped here.
+    if (!sc_pad::attach_enabled()) {
+        return;
+    }
     submit_hid_dispatch(sc_pad::key_binding_for(command));
 }
 
@@ -335,6 +352,14 @@ void setup()
 
 void loop()
 {
+    // Turning ATTACH off silences the host right away: release held keys and
+    // drop anything already queued before the dispatch state advances.
+    const bool attach_now = sc_pad::attach_enabled();
+    if (attach_was_enabled && !attach_now) {
+        release_all_hid();
+    }
+    attach_was_enabled = attach_now;
+
     update_hid_dispatch();
 #if SC_PAD_ENABLE_DYNAMIC_ROTATION
     if (orientation_restart_pending) {

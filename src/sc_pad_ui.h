@@ -54,6 +54,12 @@ using CommandCallback = void (*)(Command command, void *user_data);
 // Builds the complete 1024 x 600 interface on LVGL's active screen.
 void create_ui(CommandCallback callback, void *user_data = nullptr);
 
+// Returns whether the header ATTACH switch currently permits HID output.
+// The firmware and the desktop simulator consult this at their single
+// command-dispatch point, so ATTACH OFF silences every page at once; call
+// sites inside the UI must not re-check it.
+bool attach_enabled();
+
 // The firmware sets this before building the UI so the SYSTEM page can show
 // the orientation that was restored from non-volatile storage.
 void set_orientation_180(bool enabled);

@@ -92,6 +92,10 @@ void handle_events()
 
 void print_command(sc_pad::Command command, void *)
 {
+    // Match the firmware envelope: ATTACH OFF drops every host-bound command.
+    if (!sc_pad::attach_enabled()) {
+        return;
+    }
     constexpr std::array<const char *, static_cast<std::size_t>(sc_pad::Command::Count)> names = {
         "GEAR", "DOORS", "MINING MODE", "MISSILE MODE", "LIGHTS", "QUANTUM",
         "SCAN", "MAP", "POWER", "ENGINES", "REQUEST ATC", "LEAVE SEAT",

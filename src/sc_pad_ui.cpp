@@ -10,6 +10,9 @@ LV_FONT_DECLARE(sc_pad_font_source_han_22)
 LV_FONT_DECLARE(sc_pad_font_jetbrains_mono_12)
 LV_FONT_DECLARE(sc_pad_font_jetbrains_mono_16)
 LV_FONT_DECLARE(sc_pad_font_jetbrains_mono_20)
+// Elapsed readout inside the AFK master button: this is the only place the
+// panel needs a genuinely large face, so it borrows LVGL's Montserrat.
+LV_FONT_DECLARE(lv_font_montserrat_48)
 
 namespace sc_pad {
 namespace {
@@ -161,6 +164,9 @@ struct AfkState {
     int interval_index = 1;
     // SPACE, Q, E, W, A, S, D.
     bool key_pool[7] = {true, true, true, true, true, true, true};
+    // Start of the current guard run, used by the elapsed readout inside the
+    // master button. Reset on every start, never persisted.
+    uint32_t started_ms = 0;
 };
 
 // Maps the AFK GUARD key pool order (SPACE, Q, E, W, A, S, D) to commands.
@@ -227,6 +233,8 @@ AfkState afk_state;
 lv_obj_t *afk_status_label = nullptr;
 lv_obj_t *afk_master_detail = nullptr;
 lv_obj_t *afk_next_label = nullptr;
+// Large elapsed-time readout hosted inside the AFK master button.
+lv_obj_t *afk_elapsed_label = nullptr;
 // The scheduler timer outlives page rebuilds: it only writes to
 // afk_next_label behind a null check and never touches freed objects.
 lv_timer_t *afk_timer = nullptr;
@@ -274,8 +282,9 @@ lv_style_t style_flight_state_ring_transition;
 lv_style_t style_nav;
 lv_style_t style_nav_active;
 
-// Attach ON permits HID output; Attach OFF keeps the on-screen model editable
-// without sending commands to the host.
+// The on-screen ATTACH state. It is deliberately not persisted: every boot
+// starts attached. Enforcing the gate is the firmware's job (see its command
+// dispatcher); this flag only drives the header button and attach_enabled().
 bool attach_mode = true;
 #if SC_PAD_ENABLE_DYNAMIC_ROTATION
 bool orientation_180 = false;
@@ -1034,6 +1043,7 @@ void rebuild_ui(void *)
     afk_status_label = nullptr;
     afk_master_detail = nullptr;
     afk_next_label = nullptr;
+    afk_elapsed_label = nullptr;
     afk_indicator = nullptr;
     afk_indicator_dot = nullptr;
     afk_indicator_label = nullptr;
@@ -1091,16 +1101,12 @@ void action_event_cb(lv_event_t *event)
 
     const int action_index = static_cast<int>(runtime - action_runtime);
     if (action_index == 2) {
-        if (attach_mode) {
-            send_command(*runtime);
-        }
+        send_command(*runtime);
         start_page_transition(PanelPage::Mining, runtime->button);
         return;
     }
 
-    if (attach_mode) {
-        send_command(*runtime);
-    }
+    send_command(*runtime);
 
     switch (runtime->spec->behavior) {
         case ButtonBehavior::Momentary:
@@ -1418,7 +1424,7 @@ void create_ship_control_button(
                 return;
             }
             const auto *control = static_cast<const ShipControlRuntime *>(lv_event_get_user_data(event));
-            if (control != nullptr && attach_mode) {
+            if (control != nullptr) {
                 send_command(control->command);
             }
         },
@@ -1601,9 +1607,7 @@ void mining_control_event_cb(lv_event_t *event)
         return;
     }
 
-    if (attach_mode) {
-        send_command(runtime->command);
-    }
+    send_command(runtime->command);
 
     switch (runtime->control) {
         case MiningControl::LaserDecrease:
@@ -1731,9 +1735,7 @@ void afk_fire_random_key()
     while (!afk_state.key_pool[pick]) {
         pick = static_cast<uint8_t>((pick + 1) % 7);
     }
-    if (attach_mode) {
-        send_command(kAfkKeyCommands[pick]);
-    }
+    send_command(kAfkKeyCommands[pick]);
 }
 
 void update_afk_countdown()
@@ -1761,6 +1763,37 @@ void update_afk_countdown()
         static_cast<unsigned>(total_s % 60));
 }
 
+// Elapsed guard time shown inside the master button. It survives page
+// rebuilds through AfkState::started_ms and is driven by the one-second guard
+// timer; when the guard is off it reads 00:00.
+void update_afk_elapsed()
+{
+    if (afk_elapsed_label == nullptr) {
+        return;
+    }
+    uint32_t elapsed_s = 0;
+    if (afk_state.enabled) {
+        elapsed_s = (lv_tick_get() - afk_state.started_ms) / 1000;
+    }
+    const uint32_t hours = elapsed_s / 3600;
+    const uint32_t minutes = (elapsed_s / 60) % 60;
+    const uint32_t seconds = elapsed_s % 60;
+    if (hours > 0) {
+        lv_label_set_text_fmt(
+            afk_elapsed_label,
+            "%u:%02u:%02u",
+            static_cast<unsigned>(hours),
+            static_cast<unsigned>(minutes),
+            static_cast<unsigned>(seconds));
+    } else {
+        lv_label_set_text_fmt(
+            afk_elapsed_label,
+            "%02u:%02u",
+            static_cast<unsigned>(minutes),
+            static_cast<unsigned>(seconds));
+    }
+}
+
 void afk_timer_cb(lv_timer_t *)
 {
     if (!afk_state.enabled) {
@@ -1771,6 +1804,7 @@ void afk_timer_cb(lv_timer_t *)
         afk_fire_random_key();
         schedule_afk_fire();
     }
+    update_afk_elapsed();
     update_afk_countdown();
 }
 
@@ -1778,6 +1812,7 @@ void set_afk_enabled(bool enabled)
 {
     afk_state.enabled = enabled;
     if (enabled) {
+        afk_state.started_ms = lv_tick_get();
         schedule_afk_fire();
         if (afk_timer == nullptr) {
             afk_timer = lv_timer_create(afk_timer_cb, 1000, nullptr);
@@ -1820,6 +1855,7 @@ void update_afk_presentation()
     if (afk_status_label != nullptr) {
         lv_label_set_text(afk_status_label, afk_state.enabled ? "STATUS: ACTIVE" : "STATUS: STANDBY");
     }
+    update_afk_elapsed();
     update_afk_countdown();
 
     for (int i = 0; i < 3; ++i) {
@@ -1940,10 +1976,20 @@ void create_antiafk_page(lv_obj_t *page)
     lv_obj_set_style_text_font(afk_status_label, &sc_pad_font_jetbrains_mono_12, 0);
 
     create_afk_button(guard, 0, AfkControl::MasterToggle, "AFK GUARD OFF", 15, 65, 449, 190, true);
-    lv_obj_align(afk_controls[0].label, LV_ALIGN_CENTER, 0, -14);
+    lv_obj_align(afk_controls[0].label, LV_ALIGN_CENTER, 0, -62);
+
+    // The elapsed readout is the focal point of the guard card, so it uses the
+    // only large face the panel ships and sits between the title and the hint.
+    afk_elapsed_label = lv_label_create(afk_controls[0].button);
+    lv_obj_align(afk_elapsed_label, LV_ALIGN_CENTER, 0, -2);
+    lv_label_set_text(afk_elapsed_label, "00:00");
+    lv_obj_set_style_text_color(afk_elapsed_label, color(theme().text), 0);
+    lv_obj_set_style_text_color(afk_elapsed_label, color(theme().local_state_text), LV_STATE_CHECKED);
+    lv_obj_set_style_text_color(afk_elapsed_label, lv_color_black(), LV_STATE_USER_1);
+    lv_obj_set_style_text_font(afk_elapsed_label, &lv_font_montserrat_48, 0);
 
     afk_master_detail = lv_label_create(afk_controls[0].button);
-    lv_obj_align(afk_master_detail, LV_ALIGN_CENTER, 0, 44);
+    lv_obj_align(afk_master_detail, LV_ALIGN_CENTER, 0, 58);
     lv_obj_set_style_text_color(afk_master_detail, color(theme().muted_text), 0);
     lv_obj_set_style_text_color(afk_master_detail, color(theme().local_state_text), LV_STATE_CHECKED);
     lv_obj_set_style_text_color(afk_master_detail, lv_color_black(), LV_STATE_USER_1);
@@ -2102,6 +2148,11 @@ void set_theme_index(int index)
 int theme_index()
 {
     return current_theme;
+}
+
+bool attach_enabled()
+{
+    return attach_mode;
 }
 
 } // namespace sc_pad
