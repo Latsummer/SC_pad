@@ -21,3 +21,4 @@
 - Erkul 脚本保持 userscript 元信息和启停功能；其既有约定是翻译界面，保留飞船、装备、厂商专名。调整翻译后检查动态界面、输入与链接是否正常，必要时更新 `@version`。
 - 检查与改动相关的功能和 `git diff --check`，不为文档或简单样式改动添加重复实现的测试。
 - 部署、提交、推送及创建 PR/MR 按用户当前授权执行。GitHub 远程使用 GitHub PR 流程；不要套用其他仓库的 CNB Issue、changeset 或版本发布约定。
+- 分支命名使用常见前缀：`feat/`、`fix/`、`docs/`、`refactor/`、`chore/` 等；不要使用 `codex/` 之类的工具或代理前缀。
