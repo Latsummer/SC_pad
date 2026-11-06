@@ -153,12 +153,12 @@
 
   function renderSelected() {
     if (!state.selected.length) {
-      els.selected.innerHTML = '<span class="selection-hint">选择一种或多种矿物，查看共同分布</span>';
+      els.selected.innerHTML = '';
       return;
     }
     els.selected.innerHTML = state.selected.map((id) => `
       <span class="mineral-chip" style="--tag-hue:${tagHue(id)}">
-        ${escapeHtml(displayName(id))}
+        <span class="mineral-chip-name">${escapeHtml(displayName(id))}</span>
         <button type="button" data-remove="${id}" aria-label="移除 ${escapeHtml(displayName(id))}">×</button>
       </span>`).join("");
     const params = new URLSearchParams({ mode: "blueprints" });
@@ -167,6 +167,8 @@
   }
 
   function renderFilters() {
+    document.querySelector("#mineralFilterSummary").textContent = `${state.system === "all" ? "全部星系" : state.system} · ${methodLabel(state.method)}`;
+    document.querySelector("#mineralWorkspace").classList.toggle("has-selection", state.selected.length > 0);
     const systems = ["all", ...new Set(data.locations.map((item) => item.system))];
     els.systems.innerHTML = systems.map((system) => {
       const count = state.selected.length ? matchingLocations({ system, method: state.method }).length : null;
@@ -206,8 +208,8 @@
 
   function renderLocations() {
     if (!state.selected.length) {
-      els.summary.innerHTML = '<span><strong>请先选择矿物</strong></span><code>支持多选与共同分布查询</code>';
-      els.locations.innerHTML = '<div class="empty-list">从上方下拉框选择一种或多种矿物，这里会显示相应的推荐地点。</div>';
+      els.summary.innerHTML = '';
+      els.locations.innerHTML = '<div class="empty-list"><h2>从矿物开始，找到开采地点</h2><p>支持多选，比较共同分布与丰度</p><small>选择后也可查看价格、扫描特征和制造用途</small></div>';
       return;
     }
     const results = matchingLocations();
@@ -292,7 +294,7 @@
   function renderDetails() {
     els.details.innerHTML = state.selected.length
       ? state.selected.map((id) => renderDetailCard(mineralById.get(id))).join("")
-      : '<article class="detail-card"><span class="detail-kicker">MINERAL DETAILS</span><h2>等待选择矿物</h2><p class="reverse-note">选择后会显示价格、扫描特征、属性和伴生矿物。</p></article>';
+      : '';
   }
 
   function renderMineralMode() {
@@ -376,6 +378,12 @@
   els.methods.addEventListener("click", (event) => {
     const button = event.target.closest("[data-method]");
     if (button) { state.method = button.dataset.method; renderMineralMode(); }
+  });
+  document.querySelector("#mineralFilterToggle").addEventListener("click", (event) => {
+    const toggle = event.currentTarget;
+    const expanded = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(expanded));
+    toggle.closest(".filter-panel").classList.toggle("filters-expanded", expanded);
   });
   els.reset.addEventListener("click", () => { state.system = "all"; state.method = "all"; renderMineralMode(); });
   els.details.addEventListener("click", (event) => {

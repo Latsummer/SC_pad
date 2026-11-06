@@ -41,3 +41,12 @@
   background: hsl(var(--tag-hue, 210) 45% 55% / .12);
   border-color: hsl(var(--tag-hue, 210) 45% 55% / .35);
 }
+
+/* Keep metadata quiet beside the task name and reward. */
+html[data-theme="field-workbench"] .mission-tag.accent{background:var(--surface-3);color:var(--muted)}
+@media(max-width:760px){
+ .mission-kicker,.mission-en,.mission-tag,.mission-card-stats small{font-size:12px;letter-spacing:0}
+ .mission-card{padding:16px;gap:12px}
+ .mission-card h2{font-weight:500}
+ .mission-card-stats strong{font-weight:500;font-variant-numeric:tabular-nums}
+}

@@ -577,3 +577,60 @@ a.mode-button{text-decoration:none}
 /* "可从任务产出" toggle inside the blueprint filter drawer. */
 .blueprint-controls label.blueprint-source-only { display:flex; align-items:center; gap:8px; min-height:44px; margin:0; font-size:13px; color:var(--text); cursor:pointer; }
 .blueprint-controls .blueprint-source-only input { flex:0 0 18px; width:18px; min-height:18px; height:18px; margin:0; padding:0; accent-color:var(--cyan); }
+
+/* Mobile field workbench polish. Direction informed by unslop by @heydamir (CC BY 4.0). */
+.mineral-filter-toggle{display:none}
+.selected-minerals:empty,.summary-bar:empty,.detail-column:empty{display:none}
+.empty-list h2{margin:0 0 12px;font-size:18px;font-weight:500;color:var(--text)}
+.empty-list p{margin:0 0 12px;font-size:14px;line-height:1.6}
+.empty-list small{display:block;font-size:12px;line-height:1.6}
+html[data-theme="field-workbench"] :is(.primary-button,.secondary-button,.filter-drawer-trigger,.blueprint-jump,.mode-button.active){font-weight:600}
+html[data-theme="field-workbench"] :is(.brand strong,.location-head h3,.detail-card h2){font-weight:600}
+html[data-theme="field-workbench"] :is(.balance-score,.stat strong){font-weight:500;font-variant-numeric:tabular-nums}
+html[data-theme="field-workbench"] .meter>span{box-shadow:none;animation:none}
+@media(max-width:760px){
+ .topbar{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px 0}
+ .brand{min-height:40px;padding-right:56px;gap:8px}
+ .brand strong{font-size:16px;letter-spacing:0}
+ .brand small{font-size:12px;letter-spacing:0;margin-top:4px}
+ .topbar-actions{display:block;width:auto}
+ .topbar-actions .theme-picker{position:absolute;right:0;top:12px}
+ .theme-picker-toggle{width:44px;height:44px}
+ .theme-picker-menu{left:auto;right:0}
+ .dataset-meta{font-size:12px;gap:8px;line-height:1.5}
+ .mineral-controls{gap:12px}
+ .mineral-filter-toggle{display:flex;align-items:center;width:100%;min-height:48px;padding:0 16px;gap:12px;border:0;background:transparent;color:var(--text);font:500 14px var(--sans);cursor:pointer;text-align:left}
+ #mineralFilterSummary{margin-left:auto;color:var(--muted);font-size:12px;font-weight:400}
+ .filters-expanded .mineral-filter-toggle svg{transform:rotate(180deg)}
+ #mineralWorkspace>.filter-panel{padding:0;display:block;position:static}
+ .mineral-filter-fields{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
+ .filters-expanded .mineral-filter-fields{display:block}
+ .mineral-filter-fields .panel-title-row{min-height:48px}
+ .mineral-filter-fields .panel-title-row h2{font-size:13px;font-weight:500;color:var(--muted)}
+ .mineral-filter-fields fieldset+fieldset{margin-top:16px}
+ .mineral-filter-fields legend{font-size:12px;letter-spacing:0;margin-bottom:8px}
+ .mineral-filter-fields legend small{font-size:12px;letter-spacing:0;color:var(--muted)}
+ .mineral-filter-fields .filter-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+ .mineral-filter-fields .filter-button{flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;padding:8px 4px;font-size:12px}
+ .mineral-filter-fields .ranking-note{display:none}
+ #mineralWorkspace{gap:16px}
+ #mineralWorkspace:not(.has-selection) .empty-list{border:0;padding:40px 16px;text-align:left;min-height:0}
+ .location-card{padding:16px}
+ .location-meta,.balance-score small,.stat span{font-size:12px}
+ .location-meta{line-height:1.6}
+ .location-head h3{font-size:16px}
+ .detail-kicker{font-size:12px;letter-spacing:0}
+ .mineral-chip button{min-width:44px;min-height:44px}
+ .summary-bar code{font-size:12px}
+}
+
+/* A short document must not clip the absolutely positioned mineral picker. */
+body{min-height:100vh;min-height:100dvh;overflow-x:clip}
+@media(max-width:760px){
+ #selectedMinerals{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;min-height:0}
+ #selectedMinerals:empty{display:none}
+ #selectedMinerals .mineral-chip{display:flex;justify-content:space-between;gap:4px;width:auto;max-width:100%;min-width:0;min-height:32px;padding:0 4px 0 10px;font-size:13px;line-height:1.4;animation:none}
+ #selectedMinerals .mineral-chip-name{min-width:0;overflow-wrap:anywhere;padding:6px 0}
+ #selectedMinerals .mineral-chip button{flex:0 0 28px;width:28px;height:28px;min-width:28px;min-height:28px;padding:0;border-radius:4px;background:transparent}
+ #selectedMinerals .selected-blueprint-link{align-self:center;margin-left:0;border:0;background:transparent;padding:0 4px;min-height:32px;font-size:13px}
+}

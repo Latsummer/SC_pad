@@ -1,4 +1,4 @@
-const CACHE_NAME = "xinghang-assistant-dc14d5f5d29eece9";
+const CACHE_NAME = "xinghang-assistant-64b1647607771747";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -13,10 +13,10 @@ const APP_SHELL = [
   "./missions/blueprint-sources.json?v=a9a7bb1037e4",
   "./missions/blueprint-source-names.json?v=a8d1d48f9510",
   "./missions.js?v=445b8afc92cc",
-  "./missions.css?v=98e5fb3dfcb3",
+  "./missions.css?v=602f9e8af833",
   "./theme.js?v=7c30c0eee6dd",
-  "./styles.css?v=8e7b46d5c50a",
-  "./app.js?v=b1ff64279bf2",
+  "./styles.css?v=f187db5470cf",
+  "./app.js?v=ffc8ad77d06d",
   "./app-data.js?v=2c2c3b7a586e",
   "./blueprint-index.js?v=b34bcdc532f8",
   "./blueprints-data.js?v=b4393f5a4cfb",
