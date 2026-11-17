@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "archive": "scmdb-public-missions-2026-11-17T04-54-31-885Z.json.gz",
+  "source_filename": "scmdb-public-missions-2026-11-17T04-54-31-885Z.json",
+  "source_url": "https://scmdb.net/",
+  "captured_at": "2026-11-17T04:54:31.771Z",
+  "helper_version": 8,
+  "game_data_version": "4.10.3",
+  "game_data_version_status": "user-confirmed patch; full build not asserted",
+  "content_language": "en",
+  "content_language_basis": "operator confirmed via --english; not inferred from HTML lang",
+  "raw_bytes": 30584659,
+  "archive_bytes": 1729009,
+  "raw_sha256": "13f1ceb15566c2eb25917d08a81416d9f5bfa4fba17abb50ea0e32526dbf379b",
+  "archive_sha256": "9b29115eacf2e0e86af75ad93db4cb3daf8692506aea0911fce0ef38f239f9b4",
+  "counts": {
+    "listed_missions": 1734,
+    "completed_missions": 1734,
+    "location_completed_missions": 1734,
+    "tabs": {
+      "overview": 1734,
+      "requirements": 1734,
+      "calculator": 1734,
+      "combat": 717
+    }
+  },
+  "coverage_note": "Complete for this exported list only. Missing IDs are candidates, not confirmed removals.",
+  "source_version_text": "4.10.3-live.13165946",
+  "review_notes": [
+    "Operator confirmed RSI Disc. Month (30) and Orison Relief (13) events ended; absent tasks intentionally excluded from current catalog.",
+    "Two other absent IDs have same-title new IDs; no identity equivalence assumed."
+  ]
+}

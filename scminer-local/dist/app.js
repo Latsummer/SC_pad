@@ -86,7 +86,7 @@
     const mineral = mode === "mineral";
     const scan = mode === "scan";
     const blueprints = mode === "blueprints";
-    els.version.textContent = blueprints && window.SCMDB_BLUEPRINTS?.source?.game_data_version ? `${window.SCMDB_BLUEPRINTS.source.game_data_version} · ${window.SCMDB_BLUEPRINTS.counts.blueprints} 张蓝图 · 离线数据` : `${data.game_data_version} · ${data.counts.minerals} 种资源 · 离线数据`;
+    els.version.textContent = blueprints && window.SCMDB_BLUEPRINTS?.source?.game_data_version ? `${window.XINGHANG_CONFIG.gameVersion} · ${window.SCMDB_BLUEPRINTS.counts.blueprints} 张蓝图 · 离线数据` : `${window.XINGHANG_CONFIG.gameVersion} · ${data.counts.minerals} 种资源 · 离线数据`;
     els.mineralControls.hidden = !mineral;
     els.scanControls.hidden = !scan;
     els.mineralWorkspace.hidden = !mineral;
@@ -343,7 +343,7 @@
     els.scanResults.innerHTML = `<div class="scan-result-header"><div><p>OBSERVED SIGNATURE</p><h2>${formatNumber(observed, 0)}</h2></div><span class="match-badge ${exact.length ? "" : "nearest"}">${exact.length ? `${exact.length} 个精确候选` : "未精确命中 · 显示最近候选"}</span></div><div class="candidate-grid">${cards}</div>`;
   }
 
-  els.version.textContent = `${data.game_data_version} · ${data.counts.minerals} 种资源 · 离线数据`;
+  els.version.textContent = `${window.XINGHANG_CONFIG.gameVersion} · ${data.counts.minerals} 种资源 · 离线数据`;
   els.modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
   els.search.addEventListener("focus", openSuggestions);
   els.search.addEventListener("input", openSuggestions);

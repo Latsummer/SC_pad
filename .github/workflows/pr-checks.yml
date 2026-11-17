@@ -52,6 +52,7 @@ jobs:
           node tools/test_scmdb_blueprint_details.cjs
           node tools/test_scmdb_blueprint_groups.cjs
           python3 tools/test_blueprint_details.py
+          python3 tools/test_blueprint_ini_locale.py
           python3 tools/test_blueprint_quality_data.py
           node tools/test_blueprint_quality_ui.cjs
           node tools/test_blueprint_quality_model.cjs

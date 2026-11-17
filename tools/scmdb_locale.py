@@ -12,7 +12,7 @@ SOURCE_URL = 'https://github.com/Walkersifolia/SCMDB_zh_cn/blob/bff507d0bedf34d5
 
 
 class BlueprintTranslator:
-    def __init__(self, locale_path=LOCALE, overrides_path=OVERRIDES, expected_version=None):
+    def __init__(self, locale_path=LOCALE, overrides_path=OVERRIDES, expected_version=None, source_url=SOURCE_URL):
         raw = Path(locale_path).read_bytes()
         data = json.loads(raw)
         overrides = json.loads(Path(overrides_path).read_text())
@@ -29,7 +29,7 @@ class BlueprintTranslator:
             if en and zh and en != zh and re.search('[\u4e00-\u9fff]', zh):
                 self.forward[en].add(zh)
                 self.reverse[zh].add(en)
-        self.metadata = {'version': self.version, 'source_url': SOURCE_URL,
+        self.metadata = {'version': self.version, 'source_url': source_url,
                          'sha256': hashlib.sha256(raw).hexdigest()}
 
     def translate(self, item):

@@ -129,7 +129,7 @@
     });
   }
   function loadSourceNames() {
-    if (!sourceNamesPromise) sourceNamesPromise = fetch('missions/blueprint-source-names.json?v=a8d1d48f9510').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).then(data => { sourceNames = new Set(data.names); markSourceButtons(); }).catch(() => { sourceNamesPromise = null; });
+    if (!sourceNamesPromise) sourceNamesPromise = fetch('missions/blueprint-source-names.json?v=e9e49f2a0222').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).then(data => { sourceNames = new Set(data.names); markSourceButtons(); }).catch(() => { sourceNamesPromise = null; });
     return sourceNamesPromise;
   }
   const sourcesDialog = document.createElement('dialog');
@@ -152,7 +152,7 @@
     body.textContent = '正在查询产出任务…';
     if (!sourcesDialog.open) sourcesDialog.showModal();
     try {
-      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json?v=a9a7bb1037e4').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
+      if (!missionSourcesPromise) missionSourcesPromise = fetch('missions/blueprint-sources.json?v=539ebccc19c1').then(response => { if (!response.ok) throw Error('load'); return response.json(); }).catch(error => { missionSourcesPromise = null; throw error; });
       const data = await missionSourcesPromise;
       if (!sourcesDialog.open || request !== sourceRequest) return;
       const tasks = data.blueprints[name] || [];
@@ -188,7 +188,7 @@
   idle(loadSourceNames);
   const initialRecipe=new URLSearchParams(location.search).get('blueprint');
   if(initialRecipe) {const item=catalog.blueprints.find(value=>value.id===initialRecipe);if(item) window.BlueprintQuality?.open(item);}
-  if (els.version) els.version.textContent = `${catalog.counts.blueprints.toLocaleString("zh-CN")} 张蓝图 · 离线数据`;
+  if (els.version) els.version.textContent = `${window.XINGHANG_CONFIG.gameVersion} · ${catalog.counts.blueprints.toLocaleString("zh-CN")} 张蓝图 · 离线数据`;
   els.search.addEventListener("input", restartResults);
   els.materialSearch.addEventListener("focus", openSuggestions);
   els.materialSearch.addEventListener("input", openSuggestions);

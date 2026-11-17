@@ -48,3 +48,33 @@
 这些是与当前四预设相容的估算模型，不是仅凭四点证明的任意组合游戏公式。每个材料效果先匹配已采倍率（容许来源三位小数舍入），每项成品再匹配全部预设（容许显示末位舍入与原始值精度）；任一不符不计算该项。异常规则不补齐。相同名属性保留射击模式上下文，不跨配方套用。估算统一标识，未匹配成品项显示“规则未核对，保留预设值”。
 
 验证命令：`node tools/test_blueprint_quality_model.cjs` 覆盖全部 6265 个来源快照，另测混合槽位、供电边界、异常拒绝；`node tools/test_blueprint_quality_ui.cjs` 覆盖预设与异步载入。新增规则先用独立槽位／混合品质公开样本核对，然后扩展映射及回归样本，运行 `make site-cache`。
+
+## 2026-11-17：4.10.3 基线
+
+当前固定详情源更新为 `scmdb-blueprint-details-2026-11-17T06-30-21-424Z.json.gz`，
+完整版本 `4.10.3-live.13165946`，1630 个不同配方 ID 全部完成、失败 0。
+相对旧版新增 16 个 ID、此次缺少 4 个 ID；不据此声称已经永久删除。
+1563 个配方有品质变化，67 个固定；5140 条倍率端点、150 条阶梯、3 条异常原文。
+同文字卡片会去重，1628 条卡片文字与1630个配方 ID 不矛盾；详情由映射分别验证。
+
+矿物库仍保留其原版本，仅用于稳定矿物名／ID关联，不再要求用矿物版本替代
+蓝图独立来源版本。蓝图模板必须与采集完整 build 一致。
+历史 `scmdb-locale.zh-CN.json` 和旧卡片目录留存，不重新标注成新版。
+当前蓝图翻译使用 `data/scmdb-current-locale.zh-CN.json`，由同 build 的任务模板和
+本次新版 `global.ini`（上传临时名 `1global.ini`）补充；独立维护表为 `blueprint-current-overrides.zh-CN.json`。
+
+生成补充表（先完成任务翻译导入）：
+
+```sh
+python3 tools/build_blueprint_ini_locale.py --template scminer-local/data/scmdb-mission-locale.zh-CN.json --capture scminer-local/imports/scmdb/blueprint-details/scmdb-blueprint-details-2026-11-17T06-30-21-424Z.json.gz --ini scminer-local/imports/localization/4.10.3/1global.ini.gz --output scminer-local/data/scmdb-current-locale.zh-CN.json
+make blueprint-quality-build
+make missions-build
+make site-cache
+```
+
+只按 INI 明确中英对照、嵌入的完整英文名或精确配方物品键补译；冲突留英文，
+`blueprint_ini_provenance` 记录 INI 哈希和键名，不依赖模糊名称猜测。
+任务奖励名称和配方关联读取当前品质目录，不再读取历史蓝图卡片基线。
+新增翻译匹配逻辑执行 `python3 tools/test_blueprint_ini_locale.py`。
+
+英文语言模板与生成器的固定版本、归档及生成流程见[任务 SOP 的 SCMDB_LANG 入口](mission-data-sop.md)。

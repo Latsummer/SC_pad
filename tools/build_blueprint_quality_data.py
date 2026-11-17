@@ -13,7 +13,7 @@ from inspect_blueprint_details import inspect, quality_range
 from scmdb_locale import BlueprintTranslator, report_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = 'imports/scmdb/blueprint-details/scmdb-blueprint-details-2026-10-21T10-26-31-626Z.json.gz'
+BASELINE = 'imports/scmdb/blueprint-details/scmdb-blueprint-details-2026-11-17T06-30-21-424Z.json.gz'
 PRESETS = ('min', 'base', 'half', 'max')
 SHARDS = 64
 
@@ -153,10 +153,14 @@ def build(capture, data_dir, capture_name, raw_sha):
             raise ValueError('Invalid card link')
         links[recipe_id].add(raw)
     lookup = mineral_lookup(data_dir / 'names.zh-CN.json')
-    expected_version = json.loads((data_dir / 'scminer-data.json').read_text())['game_data_version']
-    if capture.get('source_version_text','').split('-')[0] != expected_version.split('-')[0]:
-        raise ValueError('Capture patch version differs from local mineral/translation baseline; update source tables before building')
-    translator = BlueprintTranslator(expected_version=expected_version)
+    # Mineral identifiers are a separate dataset; never relabel their source version.
+    locale_path = data_dir / 'scmdb-current-locale.zh-CN.json'
+    expected_version = json.loads(locale_path.read_text())['version']
+    if capture.get('source_version_text', '') != expected_version:
+        raise ValueError('Capture patch version differs from current blueprint translation build')
+    translator = BlueprintTranslator(locale_path=locale_path,
+        overrides_path=data_dir / 'blueprint-current-overrides.zh-CN.json', expected_version=expected_version,
+        source_url='https://github.com/KrovaxCode/SCMDB_LANG/tree/83d4869bbe9843710db497a7364bee33cdd35b59')
     recipes, catalog, translations = [], [], []
     for index, entry in enumerate(sorted(capture['details'], key=lambda item: item['recipe_id']), 1):
         candidates = [parse_card(raw, index) for raw in sorted(links[entry['recipe_id']])]

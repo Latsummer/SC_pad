@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 ROOT=Path(__file__).resolve().parents[1]
-ASSETS=('missions/index.json','missions/blueprint-sources.json','missions/blueprint-source-names.json','missions.js','missions.css','theme.js','styles.css','app.js','app-data.js','blueprint-index.js','blueprints-data.js','blueprint-locale.js','blueprint-quality-model.js','blueprint-quality.js','blueprints.js')
+ASSETS=('site-config.js','missions/index.json','missions/blueprint-sources.json','missions/blueprint-source-names.json','missions.js','missions.css','theme.js','styles.css','app.js','app-data.js','blueprint-index.js','blueprints-data.js','blueprint-locale.js','blueprint-quality-model.js','blueprint-quality.js','blueprints.js')
 
 
 def refresh(dist):

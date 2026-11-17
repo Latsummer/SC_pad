@@ -15,3 +15,5 @@
 缓存（`.sync-cache/`、`__pycache__/`、EdgeOne 状态）不提交，采集调试文件、截图和临时小批量导出不放进发布目录。历史归档不按时间自动删除，需要确认不再用于追溯后单独决定。
 
 蓝图完整详情基线在 `imports/scmdb/blueprint-details/` 压缩归档。`data/scmdb-blueprint-quality.json` 为独立规范目录与精简预设，优先生成当前网页的 1618 个稳定 ID 配方；旧 `data/scmdb-blueprints.json` 为历史卡片基线，继续用于原始卡片翻译校验。`dist/blueprints-data.js` 只含列表配方和分片地址，`dist/blueprint-quality/` 的 64 个摘要分片在点击制造详情后才加载。原始 58 MB 导出与完整汉化文件均不部署。新文件构建入口为 `make blueprint-quality-build`，不能手改生成数据。
+
+2026-11-17 已重新同步矿物公开来源，其版本原文为 `4.10.3-live.12881860`，保留原文，不替换成任务／蓝图的 build 号。此次 37 种矿物、53 个地点、495 条分布、260 条扫描行的内容与旧版一致，更新的是来源元信息。历史蓝图卡片的翻译校验使用自身快照版本，不随矿物版本改变。
