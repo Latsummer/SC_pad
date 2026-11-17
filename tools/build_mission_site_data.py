@@ -10,7 +10,7 @@ import re
 from mission_translation import canonical, resolve_title, community_title_index, resolve_community_title
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CAPTURE = ROOT / 'scminer-local/imports/scmdb/missions/scmdb-public-missions-2026-10-20T12-11-46-279Z.json.gz'
+DEFAULT_CAPTURE = ROOT / 'scminer-local/imports/scmdb/missions/scmdb-public-missions-2026-11-17T04-54-31-885Z.json.gz'
 
 
 def normalize(value):
@@ -43,7 +43,7 @@ def minimum_rank(basis, marker="MIN"):
     """Read marked minimum rank from captured tables; never infer from title/XP."""
     levels = set()
     for table in basis.get('rank_tables', []):
-        for rank in table['ranks']:
+        for rank_index, rank in enumerate(table['ranks']):
             if not re.search(marker + r'(?=MIN|MAX|$|\s)', rank['rank']):
                 continue
             match = re.search(r'lv\.(\d+)', rank.get('rank_zh') or '', re.I)
@@ -51,6 +51,9 @@ def minimum_rank(basis, marker="MIN"):
                 levels.add(int(match[1]))
             elif rank['rank'].replace('MIN', '').replace('MAX', '').strip() == 'Neutral':
                 levels.add(0)
+            elif len(table['ranks']) > 1 and all('xp_to_fill_text' in row for row in table['ranks']):
+                # Captured rank order is authoritative; translations need not contain lv.N.
+                levels.add(rank_index)
     return next(iter(levels)) if len(levels) == 1 else None
 
 
@@ -81,7 +84,7 @@ def build(capture, output_root, previous=None):
     source = json.loads(gzip.decompress(raw) if capture.suffix == '.gz' else raw)
     if source.get('format') != 'scmdb-public-missions-capture-v1':
         raise ValueError('Unsupported mission capture format')
-    locale_raw = (ROOT / 'scminer-local/data/scmdb-locale.zh-CN.json').read_bytes()
+    locale_raw = (ROOT / 'scminer-local/data/scmdb-mission-locale.zh-CN.json').read_bytes()
     locale = json.loads(locale_raw)
     game_path = ROOT / 'scminer-local/data/game-locale.zh-CN.json'
     game_raw = game_path.read_bytes() if game_path.exists() else None
@@ -116,7 +119,9 @@ def build(capture, output_root, previous=None):
     for en, candidates in translations.items():
         title_index[canonical(en)].update(candidates)
     descriptions.sort(key=lambda entry: -len(entry[0]))
-    blueprint_catalog = json.loads((ROOT / 'scminer-local/data/scmdb-blueprints.json').read_text())
+    quality_path = ROOT / 'scminer-local/data/scmdb-blueprint-quality.json'
+    quality = json.loads(quality_path.read_text()) if quality_path.exists() else None
+    blueprint_catalog = quality['catalog'] if quality else json.loads((ROOT / 'scminer-local/data/scmdb-blueprints.json').read_text())
     blueprint_names = {}
     for blueprint in blueprint_catalog['blueprints']:
         if blueprint.get('name_en'):

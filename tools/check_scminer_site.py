@@ -26,12 +26,12 @@ def check_archives_and_assets():
         if hashlib.sha256(packed).hexdigest() != metadata['archive_sha256'] or hashlib.sha256(gzip.decompress(packed)).hexdigest() != metadata['raw_sha256']:
             raise SystemExit(f'Archive checksum mismatch: {path}')
     game_locale = json.loads((site / 'data/game-locale.zh-CN.json').read_text())
-    ini = site / 'imports/localization' / game_locale['game_version'] / 'global.ini.gz'
+    ini = site / 'imports/localization' / game_locale['game_version'] / (game_locale.get('source_name', 'global.ini') + '.gz')
     if hashlib.sha256(gzip.decompress(ini.read_bytes())).hexdigest() != game_locale['source_sha256']:
         raise SystemExit('Game locale does not match its original archived global.ini')
     mission_locale = json.loads((site / 'data/scmdb-mission-locale.zh-CN.json').read_text())
-    archive = site / 'imports/localization' / mission_locale['version'].split('-')[0] / f"scmdb-lang-{mission_locale['version']}.json.gz"
-    if gzip.decompress(archive.read_bytes()) != (site / 'data/scmdb-mission-locale.zh-CN.json').read_bytes():
+    archives = (site / 'imports/localization' / mission_locale['version'].split('-')[0]).glob(f"scmdb-lang-{mission_locale['version']}*.json.gz")
+    if not any(gzip.decompress(path.read_bytes()) == (site / 'data/scmdb-mission-locale.zh-CN.json').read_bytes() for path in archives):
         raise SystemExit('Mission locale differs from archived source')
     # Prevent an omitted icon or renamed asset from breaking service-worker installation.
     import re
@@ -67,7 +67,8 @@ def main():
         raise SystemExit('Blueprint count does not match records')
     if sum(len(b['materials']) for b in source['blueprints']) != source['counts']['materials']:
         raise SystemExit('Material count does not match records')
-    version = json.loads((ROOT / 'scminer-local/data/scminer-data.json').read_text())['game_data_version']
+    # This retained card catalog is historical; validate its own translation snapshot.
+    version = source['translation_report']['locale']['version']
     translator = BlueprintTranslator(expected_version=version)
     materials = mineral_lookup(ROOT / 'scminer-local/data/names.zh-CN.json')
     results = []

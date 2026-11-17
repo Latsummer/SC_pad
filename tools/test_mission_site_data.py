@@ -21,12 +21,12 @@ class MissionCatalogTests(unittest.TestCase):
         cls.temp.cleanup()
 
     def test_complete_capture_and_unique_identifiers(self):
-        self.assertEqual(len(self.catalog['missions']), 1765)
-        self.assertEqual(len({m['id'] for m in self.catalog['missions']}), 1765)
+        self.assertEqual(len(self.catalog['missions']), 1734)
+        self.assertEqual(len({m['id'] for m in self.catalog['missions']}), 1734)
         special = next(m for m in self.catalog['missions'] if m['id'] == '1fmm468')
         self.assertTrue(special['debug_name'].endswith(' '))
         self.assertEqual(public_id(special['debug_name']), special['id'])
-        self.assertEqual(self.catalog['source']['game_data_version'], '4.10.2')
+        self.assertEqual(self.catalog['source']['game_data_version'], '4.10.3')
 
     def test_no_guessed_title_translation_and_no_unknown_zero_rewards(self):
         title = next(m for m in self.catalog['missions'] if m['id'] == 'uxvr19')
@@ -51,7 +51,7 @@ class MissionCatalogTests(unittest.TestCase):
         capture['completed_mission_keys'].pop()
         incomplete = self.output / 'incomplete.json'
         incomplete.write_text(json.dumps(capture))
-        (self.output / 'incomplete.manifest.json').write_text(json.dumps({'game_data_version': '4.10.2'}))
+        (self.output / 'incomplete.manifest.json').write_text(json.dumps({'game_data_version': '4.10.3'}))
         before = (self.output / 'data/scmdb-missions.json').read_bytes()
         with self.assertRaisesRegex(ValueError, 'Incomplete mission'):
             build(incomplete, self.output)
@@ -89,16 +89,15 @@ class MissionCatalogTests(unittest.TestCase):
         names = json.loads((self.output / 'dist/missions/blueprint-source-names.json').read_text())['names']
         self.assertEqual(names, sorted(reverse.keys()))
 
-    def test_community_notes_across_mission_types(self):
-        for category in ['Mercenary','Refueling','Investigation','Salvage','Delivery','Hauling - Local']:
-            tasks = [m for m in self.catalog['missions'] if m['type']==category and m['name_notes_zh']]
-            self.assertTrue(tasks, category)
-            self.assertTrue(all(m['name_translation_method']=='community-locale' and m['name_translation_keys'] for m in tasks))
-            self.assertTrue(all('<EM4>' not in m['name_zh'] and not any(note in m['name_zh'] for note in m['name_notes_zh']) for m in tasks))
+    def test_selected_ini_has_current_community_notes(self):
+        self.assertEqual(sum(bool(m['name_notes_zh']) for m in self.catalog['missions']), 1068)
+        self.assertTrue(all('<EM4>' not in (m['name_zh'] or '') for m in self.catalog['missions']))
+        self.assertEqual(self.catalog['translation']['version'], '4.10.3-live.13165946')
+        self.assertEqual(self.catalog['translation']['game_locale']['bridge_version'], '4.10.3-live.13165946')
 
     def test_hauling_title_and_route(self):
         task = next(m for m in self.catalog['missions'] if m['id'] == 'd1ahu3')
-        self.assertIn('lv.4 运输老炮', task['name_zh'])
+        self.assertEqual(task['name_zh'], 'lv.4 运输老炮 级别 - 小型 货物运输')
         self.assertEqual(task['hauling'], {'total_scu':'14-32', 'pickups':4, 'dropoffs':1})
         intro = next(m for m in self.catalog['missions'] if m['id'] == '1ab8sjm')
         self.assertEqual(intro['name_zh'], '成为独立货运员的机会')
@@ -111,6 +110,9 @@ class MissionCatalogTests(unittest.TestCase):
         self.assertIsNone(minimum_rank({'rank_tables': [{'ranks': [{'rank': 'UnknownMIN', 'rank_zh': None}]}]}))
         self.assertEqual(minimum_rank({'rank_tables': [{'ranks': [{'rank': 'NeutralMIN', 'rank_zh': '中立'}]}]}), 0)
         self.assertIsNone(minimum_rank({'rank_tables': []}))
+        self.assertEqual(minimum_rank({'rank_tables': [{'ranks': [
+            {'rank': 'Trainee', 'rank_zh': '实习生', 'xp_to_fill_text': '50'},
+            {'rank': 'RookieMIN', 'rank_zh': '新人', 'xp_to_fill_text': '200'}]}]}), 1)
         same_rank = {'rank_tables': [{'ranks': [{'rank': 'Elite ContractorMINMAX', 'rank_zh': 'lv.6 精英承包商'}]}]}
         self.assertEqual(minimum_rank(same_rank), 6)
         self.assertEqual(minimum_rank(same_rank, 'MAX'), 6)

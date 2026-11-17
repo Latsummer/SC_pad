@@ -1,0 +1,16 @@
+{
+  "format": "scmdb-blueprint-detail-archive-manifest-v1",
+  "source_filename": "scmdb-blueprint-details-2026-11-17T06-30-21-424Z.json",
+  "archive": "scmdb-blueprint-details-2026-11-17T06-30-21-424Z.json.gz",
+  "source_url": "https://scmdb.net/?page=fab",
+  "captured_at": "2026-11-17T06:30:21.176Z",
+  "source_version_text": "4.10.3-live.13165946",
+  "raw_sha256": "55c186dd54702da7e8ee09e424b52bda97736f0df50ca7ea6eb7779bd249090a",
+  "archive_sha256": "450bb3d88a9093e812960daaa724a0d76c16e8fc02c10e028627492936f6c89f",
+  "raw_bytes": 58511393,
+  "archive_bytes": 1337974,
+  "counts": {
+    "recipes": 1630,
+    "complete": 1630
+  }
+}

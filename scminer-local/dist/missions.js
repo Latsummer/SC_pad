@@ -302,7 +302,7 @@
   window.addEventListener('popstate',() => { const id = new URLSearchParams(location.search).get('id'); if (id) openDetail(id,false); else if ($('missionDetail').open) $('missionDetail').close(); });
   async function load() {
     try {
-      const response = await fetch('missions/index.json?v=7b1f3b50b3ff');
+      const response = await fetch('missions/index.json?v=43a27b58ba80');
       if (!response.ok) throw Error('索引读取失败');
       state.catalog = await response.json(); state.all = state.catalog.missions;
       state.all.forEach((m) => {
@@ -310,8 +310,8 @@
         searchIndex.set(m,normalize([m.name_en,m.name_zh,...(m.name_notes_zh || []),m.contractor,m.contractor_zh,TYPES[m.type],m.type,m.rewards_search].join(' ')));
         contractorLabels[m.contractor] = m.contractor_zh || m.contractor; });
       const date = state.catalog.source.captured_at.slice(0,10);
-      $('missionVersion').textContent = `${state.catalog.source.game_data_version || date} · 任务档案`;
-      $('missionDataNote').textContent = `SCMDB 公开页面采集于 ${date}，共 ${state.all.length} 个列表任务。任务版本 ${state.catalog.source.game_data_version || '未记录'}，不代表实时可接任务或游戏全部任务。中文参考 SCMDB 社区翻译；缺失或有歧义时保留英文。`;
+      $('missionVersion').textContent = `${window.XINGHANG_CONFIG.gameVersion} · 任务档案`;
+      $('missionDataNote').textContent = `SCMDB 公开页面采集于 ${date}，共 ${state.all.length} 个列表任务。任务版本 ${window.XINGHANG_CONFIG.gameVersion}，不代表实时可接任务或游戏全部任务。中文参考 SCMDB 社区翻译；缺失或有歧义时保留英文。`;
       for (const [id,key,map,placeholder] of [['missionSystem','system',SYSTEMS,'全部星系']]) {
         $(id).innerHTML = `<option value="all">${placeholder}</option>` + [...new Set(state.all.map((m) => m[key]))].sort().map((value) => `<option value="${escape(value)}">${escape(map[value] || value)}</option>`).join('');
       }

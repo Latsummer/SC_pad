@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/KrovaxCode/SCMDB_LANG",
+  "commit": "83d4869bbe9843710db497a7364bee33cdd35b59",
+  "command": "python3 build_lang_template.py -p live --translate /path/global.ini",
+  "note": "Generated locally; targetLanguage normalized from global to zh_CN. No old-version translations merged.",
+  "files": {
+    "lang-template-4.10.3-live.13165946.json.gz": {
+      "raw_sha256": "b47e49cb36e732e1743d51663edc88822d7e00accc01b65c3f7c6156f3488dd4",
+      "archive_sha256": "be0b253a6fb40e9be355cd4a6ccc88329ada1801c744f8b1b9b8a57daaa9cad1"
+    },
+    "build-report.txt.gz": {
+      "raw_sha256": "93e420ac5e6ad9e59d6a4008fb388cdd847f39f6e8d2f69f345d94c040bac1b8",
+      "archive_sha256": "06484055d111b4836a07a14a90218289a382ba018e2b5b685fcfab8ab08174ba"
+    },
+    "build_lang_template.py.gz": {
+      "raw_sha256": "c9698894a120e381727b17cb611cfd6dce50342f820a58bfdd9a033b53d67cdd",
+      "archive_sha256": "6731ac4e6454f7c8b8853b4811eb8325a2d0098497898e85d9cd98335cd3a203"
+    }
+  }
+}

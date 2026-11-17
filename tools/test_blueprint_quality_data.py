@@ -17,7 +17,7 @@ class QualityDataTests(unittest.TestCase):
         cls.by_id={item['id']:item for item in cls.data['recipes']}
 
     def test_all_identities_preserved_including_same_title(self):
-        self.assertEqual(len(self.data['recipes']),1618)
+        self.assertEqual(len(self.data['recipes']),1630)
         self.assertEqual(set(self.by_id),{item['recipe_id'] for item in self.capture['details']})
         same=[item for item in self.data['catalog']['blueprints'] if item['name_en']=='Inquisitor Core Olive']
         self.assertEqual(len(same),2)
